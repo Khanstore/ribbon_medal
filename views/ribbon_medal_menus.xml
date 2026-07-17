@@ -11,6 +11,9 @@
     <menuitem id="menu_personal_awards" name="Personnel Awards"
               parent="menu_ribbon_medal_personnel" sequence="11"
               action="action_personal_awards_acton"/>
+    <menuitem id="menu_excluded_awards" name="Excluded Awards"
+              parent="menu_ribbon_medal_personnel" sequence="12"
+              action="action_excluded_awards_acton"/>
 
     <menuitem id="menu_ribbon_medal_decorations" name="Decorations"
               parent="menu_ribbon_medal_root" sequence="20"/>

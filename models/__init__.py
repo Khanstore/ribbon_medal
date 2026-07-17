@@ -8,3 +8,4 @@ from . import res_person
 from . import bcs_batch
 from . import attachments
 from . import rm_personal_award
+from . import rm_excluded_award
