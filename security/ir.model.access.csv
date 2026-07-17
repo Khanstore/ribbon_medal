@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_res_person_user,res.person.user,model_res_person,group_ribbon_medal_user,1,1,1,0
+access_res_person_manager,res.person.manager,model_res_person,group_ribbon_medal_manager,1,1,1,1
+access_rm_forces_user,rm.forces.user,model_rm_forces,group_ribbon_medal_user,1,0,0,0
+access_rm_forces_manager,rm.forces.manager,model_rm_forces,group_ribbon_medal_manager,1,1,1,1
+access_rm_ranks_user,rm.ranks.user,model_rm_ranks,group_ribbon_medal_user,1,0,0,0
+access_rm_ranks_manager,rm.ranks.manager,model_rm_ranks,group_ribbon_medal_manager,1,1,1,1
+access_rm_acquisition_rules_user,rm.acquisition.rules.user,model_rm_acquisition_rules,group_ribbon_medal_user,1,0,0,0
+access_rm_acquisition_rules_manager,rm.acquisition.rules.manager,model_rm_acquisition_rules,group_ribbon_medal_manager,1,1,1,1
+access_rm_prb_user,rm.prb.user,model_rm_prb,group_ribbon_medal_user,1,0,0,0
+access_rm_prb_manager,rm.prb.manager,model_rm_prb,group_ribbon_medal_manager,1,1,1,1
+access_rm_unit_category_user,rm.unit.category.user,model_rm_unit_category,group_ribbon_medal_user,1,0,0,0
+access_rm_unit_category_manager,rm.unit.category.manager,model_rm_unit_category,group_ribbon_medal_manager,1,1,1,1
+access_rm_unit_user,rm.unit.user,model_rm_unit,group_ribbon_medal_user,1,0,0,0
+access_rm_unit_manager,rm.unit.manager,model_rm_unit,group_ribbon_medal_manager,1,1,1,1
+ribbon_medal.access_rm_bcs_batch,access_rm_bcs_batch,ribbon_medal.model_rm_bcs_batch,base.group_user,1,1,1,0
+ribbon_medal.access_rm_personal_awards,access_rm_personal_awards,ribbon_medal.model_rm_personal_awards,base.group_user,1,1,1,0

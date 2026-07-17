@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_ribbon_medal" model="ir.module.category">
+        <field name="name">Ribbon Medal</field>
+        <field name="description">Personnel and decorations management</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="group_ribbon_medal_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_ribbon_medal"/>
+        <field name="comment">Can view and manage personnel records and their decorations.</field>
+    </record>
+
+    <record id="group_ribbon_medal_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_ribbon_medal"/>
+        <field name="implied_ids" eval="[(4, ref('group_ribbon_medal_user'))]"/>
+        <field name="comment">Can manage master data: forces, ranks, acquisition rules and decorations, in addition to personnel records.</field>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+
+    <!-- Every Internal User automatically gets Ribbon Medal / User access,
+         so the app menu is visible and usable out of the box without an
+         admin having to assign the group to each person one by one.
+         Elevated "Manager" rights (master data: forces, ranks, rules,
+         decorations) still require explicit assignment. -->
+    <record id="base.group_user" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_ribbon_medal_user'))]"/>
+    </record>
+</odoo>

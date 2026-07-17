@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rm_bcs_batch_list" model="ir.ui.view">
+        <field name="name">rm.bcs.batch</field>
+        <field name="model">rm.bcs.batch</field>
+        <field name="arch" type="xml">
+            <list string="BCS" sample="1">
+                <field name="name"/>
+                <field name="joining_date"/>
+                <field name="description" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rm_bcs_batch_form" model="ir.ui.view">
+        <field name="name">rm.bcs.batch.form</field>
+        <field name="model">rm.bcs.batch</field>
+        <field name="arch" type="xml">
+            <form string="BCS Record">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                <field name="joining_date"/>
+                <field name="description" optional="show"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+
+
+
+    <record id="action_rm_bcs_acton" model="ir.actions.act_window">
+        <field name="name">BCS Batch</field>
+        <field name="res_model">rm.bcs.batch</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a BCS Record</p>
+            <p>Record bec batch number and official Joining date.</p>
+        </field>
+    </record>
+</odoo>

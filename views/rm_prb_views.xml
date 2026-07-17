@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rm_prb_list" model="ir.ui.view">
+        <field name="name">rm.prb.list</field>
+        <field name="model">rm.prb</field>
+        <field name="arch" type="xml">
+            <list string="Decorations">
+                <field name="award_name"/>
+                <field name="force_id"/>
+                <field name="is_ribbon"/>
+                <field name="is_medal"/>
+                <field name="seniority_sequence"/>
+                <field name="starting_date"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rm_prb_form" model="ir.ui.view">
+        <field name="name">rm.prb.form</field>
+        <field name="model">rm.prb</field>
+        <field name="arch" type="xml">
+            <form string="Decoration">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_res_person)d" type="action"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="person_count" widget="statinfo" string="Recipients"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="award_name"/>
+                        <h1><field name="award_name" placeholder="Award name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="force_id"/>
+                            <field name="rule_id"/>
+                            <field name="mission_name"/>
+                            <field name="starting_date"/>
+                        </group>
+                        <group>
+                            <field name="is_ribbon"/>
+                            <field name="is_medal"/>
+                            <field name="seniority_sequence"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Images">
+                            <group>
+                                <field name="ribbon_image" widget="image"
+                                       invisible="not is_ribbon"/>
+                                <field name="medal_image" widget="image"
+                                       invisible="not is_medal"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rm_prb_search" model="ir.ui.view">
+        <field name="name">rm.prb.search</field>
+        <field name="model">rm.prb</field>
+        <field name="arch" type="xml">
+            <search string="Search Decorations">
+                <field name="award_name"/>
+                <field name="force_id"/>
+                <field name="mission_name"/>
+                <filter name="filter_ribbon" string="Ribbons" domain="[('is_ribbon', '=', True)]"/>
+                <filter name="filter_medal" string="Medals" domain="[('is_medal', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_force" string="Force" context="{'group_by': 'force_id'}"/>
+                    <filter name="group_by_rule" string="Acquisition Rule" context="{'group_by': 'rule_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rm_prb" model="ir.actions.act_window">
+        <field name="name">Decorations</field>
+        <field name="res_model">rm.prb</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a Ribbon or Medal</p>
+        </field>
+    </record>
+</odoo>
