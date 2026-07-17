@@ -37,4 +37,10 @@
     <menuitem id="menu_rm_unit" name="Units"
               parent="menu_ribbon_medal_configuration" sequence="40"
               action="action_rm_unit"/>
+    <menuitem id="menu_rm_bcs_batch" name="BCS Batches"
+              parent="menu_ribbon_medal_configuration" sequence="50"
+              action="action_rm_bcs_acton"/>
+    <menuitem id="menu_rm_attachment" name="Attachments"
+              parent="menu_ribbon_medal_configuration" sequence="60"
+              action="action_rm_attachment"/>
 </odoo>

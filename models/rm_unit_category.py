@@ -17,21 +17,3 @@ class RmUnitCategory(models.Model):
              'of this category if their own rank seniority does not exceed '
              "the chief's rank seniority.")
     active = fields.Boolean(default=True)
-
-    # unit_ids = fields.One2many('rm.unit', 'level_id', string='Units')
-    # unit_count = fields.Integer(compute='_compute_unit_count')
-
-    def _compute_unit_count(self):
-        for category in self:
-            category.unit_count = len(category.unit_ids)
-
-    def action_view_units(self):
-        self.ensure_one()
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Units',
-            'res_model': 'rm.unit',
-            'view_mode': 'list,form',
-            'domain': [('level_id', '=', self.id)],
-            'context': {'default_level_id': self.id, 'default_force_id': self.force_id.id},
-        }

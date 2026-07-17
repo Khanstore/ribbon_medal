@@ -20,8 +20,8 @@
                 <sheet>
                     <group>
                         <field name="name"/>
-                <field name="joining_date"/>
-                <field name="description" optional="show"/>
+                        <field name="joining_date"/>
+                        <field name="description"/>
                     </group>
                 </sheet>
             </form>

@@ -36,6 +36,7 @@
                         <group>
                             <field name="force_id"/>
                             <field name="rule_id"/>
+                            <field name="attachment_id"/>
                             <field name="mission_name"/>
                             <field name="starting_date"/>
                         </group>

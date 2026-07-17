@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import _, fields, models
 
 
 class RmForces(models.Model):
@@ -45,3 +45,8 @@ class RmForces(models.Model):
             'domain': [('force_id', '=', self.id)],
             'context': {'default_force_id': self.id},
         }
+
+    def copy(self, default=None):
+        default = dict(default or {})
+        default.setdefault('name', _('%s (copy)') % self.name)
+        return super().copy(default)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import _, fields, models
 
 
 class RmRanks(models.Model):
@@ -33,3 +33,11 @@ class RmRanks(models.Model):
                 rank.display_name = '%s / %s' % (rank.force_id.name, rank.name)
             else:
                 rank.display_name = rank.name
+
+    def copy(self, default=None):
+        default = dict(default or {})
+        default.setdefault('name', _('%s (copy)') % self.name)
+        # code is unique per force; clear it so the duplicate doesn't
+        # collide with the original and trigger the SQL constraint.
+        default.setdefault('code', False)
+        return super().copy(default)

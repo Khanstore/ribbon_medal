@@ -20,7 +20,7 @@
         <field name="name">rm.personal.awards.form</field>
         <field name="model">rm.personal.awards</field>
         <field name="arch" type="xml">
-            <form string="BCS Record">
+            <form string="Personal Award">
                 <sheet>
                     <group>
                         <field name="award_name"/>
@@ -29,7 +29,7 @@
                         <field name="add_to_ribbon"/>
                         <field name="add_to_big_medal"/>
                         <field name="add_to_mini_medal"/>
-                        <field name="note" optional="show"/>
+                        <field name="note"/>
                     </group>
                 </sheet>
             </form>

@@ -45,7 +45,7 @@
                     <group>
                         <group string="Service Information">
                             <field name="id_number"/>
-                            <field name="current_workplace" domain="[('level','>',rank_id.level-2)]"/>
+                            <field name="current_workplace" domain="[('level', '>', rank_seniority_level - 2)]"/>
                             <field name="bcs_batch"/>
                             <field name="service_confirmation_date"/>
                             <field name="birth_date"/>
@@ -69,12 +69,12 @@
                             </field>
                         </page>
                     </notebook>
-                    <div class="oe_chatter">
+                </sheet>
+                <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
                     <field name="activity_ids" widget="mail_activity"/>
                     <field name="message_ids" widget="mail_thread"/>
                 </div>
-                </sheet>
             </form>
         </field>
     </record>
