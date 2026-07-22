@@ -16,7 +16,7 @@ class RmForces(models.Model):
     prb_ids = fields.One2many('rm.prb', 'force_id', string='Decorations')
     unit_ids = fields.One2many('rm.unit', 'force_id', string='Units')
     rank_count = fields.Integer(compute='_compute_rank_count')
-    prb_count = fields.Integer(compute='_compute_prb_count')
+    decoration_count = fields.Integer(compute='_compute_decoration_count')
     unit_count = fields.Integer(compute='_compute_unit_count')
 
     _sql_constraints = [
@@ -27,9 +27,9 @@ class RmForces(models.Model):
         for force in self:
             force.rank_count = len(force.rank_ids)
 
-    def _compute_prb_count(self):
+    def _compute_decoration_count(self):
         for force in self:
-            force.prb_count = len(force.prb_ids)
+            force.decoration_count = len(force.prb_ids)
 
     def _compute_unit_count(self):
         for force in self:

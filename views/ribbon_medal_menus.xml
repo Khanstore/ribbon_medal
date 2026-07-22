@@ -11,19 +11,31 @@
     <menuitem id="menu_personal_awards" name="Personnel Awards"
               parent="menu_ribbon_medal_personnel" sequence="11"
               action="action_personal_awards_acton"/>
-    <menuitem id="menu_excluded_awards" name="Excluded Awards"
+    <menuitem id="menu_mission_posting" name="Missions"
               parent="menu_ribbon_medal_personnel" sequence="12"
+              action="action_mission_posting_acton"/>
+    <menuitem id="menu_excluded_awards" name="Excluded Awards"
+              parent="menu_ribbon_medal_personnel" sequence="13"
               action="action_excluded_awards_acton"/>
 
     <menuitem id="menu_ribbon_medal_decorations" name="Decorations"
               parent="menu_ribbon_medal_root" sequence="20"/>
-    <menuitem id="menu_rm_prb" name="Ribbons / Medals"
+    <menuitem id="menu_rm_decoration" name="Ribbons / Medals"
+              parent="menu_ribbon_medal_decorations" sequence="10"
+              action="action_rm_decoration"/>
+    <menuitem id="menu_rm_prb" name="PRB"
               parent="menu_ribbon_medal_decorations" sequence="10"
               action="action_rm_prb"/>
-    <menuitem id="menu_rm_acquisition_rules" name="Acquisition Rules"
+    <menuitem id="menu_rm_rules_category" name="Acquisition Rules Category"
               parent="menu_ribbon_medal_decorations" sequence="20"
-              action="action_rm_acquisition_rules"
+              action="action_rm_rules_category"
               groups="group_ribbon_medal_manager"/>
+    <menuitem id="menu_rm_acquisition" name="Acquisition Ledger"
+              parent="menu_ribbon_medal_decorations" sequence="30"
+              action="action_rm_acquisition"/>
+    <menuitem id="menu_rm_acquisition_custom" name="Customised Ledgers"
+              parent="menu_ribbon_medal_decorations" sequence="40"
+              action="action_rm_acquisition_custom"/>
 
     <menuitem id="menu_ribbon_medal_configuration" name="Configuration"
               parent="menu_ribbon_medal_root" sequence="90"

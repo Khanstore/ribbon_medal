@@ -8,12 +8,12 @@
             <div t-else="" class="o_ribbon_rack_grid">
                 <t t-foreach="gridCells" t-as="cell" t-key="cell_index">
                     <div t-attf-class="o_ribbon_rack_cell {{ cell ? 'o_ribbon_rack_filled' : 'o_ribbon_rack_blank' }}"
-                         t-att-title="cell ? cell.data.award_name : ''">
+                         t-att-title="cell ? cell.data.decoration_name : ''">
                         <t t-if="cell">
                             <img t-if="getImageUrl(cell)" t-att-src="getImageUrl(cell)"
-                                 t-att-alt="cell.data.award_name" class="o_ribbon_rack_img"/>
+                                 t-att-alt="cell.data.decoration_name" class="o_ribbon_rack_img"/>
                             <div t-else="" class="o_ribbon_rack_placeholder">
-                                <span t-esc="cell.data.award_name"/>
+                                <span t-esc="cell.data.decoration_name"/>
                             </div>
                         </t>
                     </div>

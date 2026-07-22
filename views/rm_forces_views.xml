@@ -7,7 +7,7 @@
             <list string="Forces">
                 <field name="name"/>
                 <field name="rank_count"/>
-                <field name="prb_count"/>
+                <field name="decoration_count"/>
                 <field name="active" column_invisible="1"/>
             </list>
         </field>
@@ -26,10 +26,10 @@
                                 context="{'default_force_id': id}">
                             <field name="rank_count" widget="statinfo" string="Ranks"/>
                         </button>
-                        <button name="%(action_rm_prb)d" type="action"
+                        <button name="%(action_rm_decoration)d" type="action"
                                 class="oe_stat_button" icon="fa-medkit"
                                 context="{'default_force_id': id}">
-                            <field name="prb_count" widget="statinfo" string="Decorations"/>
+                            <field name="decoration_count" widget="statinfo" string="Decorations"/>
                         </button>
                         <button name="action_view_units" type="object"
                                 class="oe_stat_button" icon="fa-building">

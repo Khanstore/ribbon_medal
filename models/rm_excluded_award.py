@@ -8,8 +8,8 @@ class excludedAwards(models.Model):
     """Award record record."""
     _name = 'rm.excluded.awards'
     _description = 'awards excluded/withheld/revoked from a person are listed here'
-    _rec_name = 'award_name'
-    award_name = fields.Many2one('rm.prb', string='Award Name')
+    _rec_name = 'decoration_name'
+    decoration_name = fields.Many2one('rm.decoration', string='Award Name')
     person_id = fields.Many2one('res.person', string='Person')
     exclusion_year = fields.Integer(string='Exclusion Year')
     reason = fields.Char(string='Reason')

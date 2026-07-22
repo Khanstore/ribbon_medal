@@ -8,8 +8,8 @@ class personalAwards(models.Model):
     """Award record record."""
     _name = 'rm.personal.awards'
     _description = 'all achievement and award listed here'
-    _rec_name = 'award_name'
-    award_name = fields.Many2one('rm.prb',string='Award Name')
+    _rec_name = 'decoration_name'
+    decoration_name = fields.Many2one('rm.decoration',string='Award Name')
     person_id=fields.Many2one('res.person',string='Person')
     award_year = fields.Integer(string='Award Date')
     note = fields.Char(string='note')

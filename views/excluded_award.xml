@@ -5,7 +5,7 @@
         <field name="model">rm.excluded.awards</field>
         <field name="arch" type="xml">
             <list string="Excluded Awards" sample="1">
-                <field name="award_name"/>
+                <field name="decoration_name"/>
                 <field name="person_id"/>
                 <field name="exclusion_year"/>
                 <field name="reason"/>
@@ -21,7 +21,7 @@
             <form string="Excluded Award">
                 <sheet>
                     <group>
-                        <field name="award_name"/>
+                        <field name="decoration_name"/>
                         <field name="person_id"/>
                         <field name="exclusion_year"/>
                         <field name="reason"/>
@@ -37,12 +37,12 @@
         <field name="model">rm.excluded.awards</field>
         <field name="arch" type="xml">
             <search string="Search Excluded Awards">
-                <field name="award_name"/>
+                <field name="decoration_name"/>
                 <field name="person_id"/>
                 <field name="reason"/>
                 <group expand="0" string="Group By">
                     <filter name="group_by_person" string="Person" context="{'group_by': 'person_id'}"/>
-                    <filter name="group_by_award" string="Award" context="{'group_by': 'award_name'}"/>
+                    <filter name="group_by_award" string="Award" context="{'group_by': 'decoration_name'}"/>
                 </group>
             </search>
         </field>

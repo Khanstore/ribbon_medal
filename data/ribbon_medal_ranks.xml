@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="Police_ranks_IGP" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">IGP</field>
+            <field name="code">IGP</field>
+            <field name="seniority_level">15</field>
+        </record>
+        <record id="Police_ranks_Add_IGP" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Add IGP</field>
+            <field name="code">Add IGP</field>
+            <field name="seniority_level">14</field>
+        </record>
+        <record id="Police_ranks_DIG" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">DIG</field>
+            <field name="code">DIG</field>
+            <field name="seniority_level">13</field>
+        </record>
+        <record id="Police_ranks_Add_DIG" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Additional Deputy Inspector General</field>
+            <field name="code">Add DIG</field>
+            <field name="seniority_level">12</field>
+        </record>
+        <record id="Police_ranks_SP" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Police Super</field>
+            <field name="code">SP</field>
+            <field name="seniority_level">11</field>
+        </record>
+        <record id="Police_ranks_Add_SP" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Additional Police Super</field>
+            <field name="code">Add SP</field>
+            <field name="seniority_level">10</field>
+        </record>
+        <record id="Police_ranks_SrASP" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Senior Assistant Police Super</field>
+            <field name="code">SrASP</field>
+            <field name="seniority_level">9</field>
+        </record>
+        <record id="Police_ranks_ASP" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Assistant Police Super</field>
+            <field name="code">ASP</field>
+            <field name="seniority_level">8</field>
+        </record>
+        <record id="Police_ranks_Inspector" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Inspector</field>
+            <field name="code">Inspector</field>
+            <field name="seniority_level">7</field>
+        </record>
+        <record id="Police_ranks_Sgt" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Sergeant</field>
+            <field name="code">Sgt</field>
+            <field name="seniority_level">6</field>
+        </record>
+        <record id="Police_ranks_SI" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Sub Inspector</field>
+            <field name="code">SI</field>
+            <field name="seniority_level">6</field>
+        </record>
+        <record id="Police_ranks_ASI" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Asistant Sub Inspector</field>
+            <field name="code">ASI</field>
+            <field name="seniority_level">5</field>
+        </record>
+        <record id="Police_ranks_ATSI" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Asistant Town Sub Inspector </field>
+            <field name="code">ATSI</field>
+            <field name="seniority_level">5</field>
+        </record>
+        <record id="Police_ranks_NK" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Nayek</field>
+            <field name="code">NK</field>
+            <field name="seniority_level">3</field>
+        </record>
+        <record id="Police_ranks_PC" model="rm.ranks">
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="name">Contable</field>
+            <field name="code">PC</field>
+            <field name="seniority_level">1</field>
+        </record>
+    </data>
+</odoo>

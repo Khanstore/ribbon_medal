@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="attachment_2" model="rm.attachment">
+        <field name="name">2</field>
+        <field name="force_id" ref="ribbon_medal.force_police"/>
+    </record>
+    <record id="attachment_3" model="rm.attachment">
+        <field name="name">3</field>
+        <field name="force_id" ref="ribbon_medal.force_police"/>
+    </record>
+    <record id="attachment_4" model="rm.attachment">
+        <field name="name">4</field>
+        <field name="force_id" ref="ribbon_medal.force_police"/>
+    </record>
+    <record id="attachment_5" model="rm.attachment">
+        <field name="name">5</field>
+        <field name="force_id" ref="ribbon_medal.force_police"/>
+    </record>
+    <record id="attachment_6" model="rm.attachment">
+        <field name="name">6</field>
+        <field name="force_id" ref="ribbon_medal.force_police"/>
+    </record>
+    <record id="attachment_club" model="rm.attachment">
+        <field name="name">Club</field>
+        <field name="force_id" ref="ribbon_medal.force_police"/>
+    </record>
+    <record id="attachment_sword" model="rm.attachment">
+        <field name="name">Sword</field>
+        <field name="force_id" ref="ribbon_medal.force_police"/>
+    </record>
+</odoo>
