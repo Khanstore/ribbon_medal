@@ -80,6 +80,7 @@ class RmAcquisition(models.Model):
 
     person_id = fields.Many2one('res.person', string='Person', readonly=True)
     award_id = fields.Many2one('rm.prb', string='Award', readonly=True)
+    seniority_sequence = fields.Integer(string='Seniority Sequence', readonly=True)
     source = fields.Selection([
         ('personal', 'Personal Award'),
         ('mission', 'Mission'),
@@ -97,6 +98,7 @@ class RmAcquisition(models.Model):
                     row_number() OVER () AS id,
                     src.person_id AS person_id,
                     src.award_id AS award_id,
+                    award_prb.seniority_sequence AS seniority_sequence,
                     src.source AS source,
                     src.year AS year,
                     src.note AS note
@@ -170,6 +172,11 @@ class RmAcquisition(models.Model):
                       AND rp.service_confirmation_date < prb.starting_date
 
                 ) src
+                -- Resolve seniority_sequence from the award's own rm.prb
+                -- record - award_id always points at rm.prb across all
+                -- four sources, so one join here covers them all.
+                JOIN rm_prb award_prb
+                    ON award_prb.id = src.award_id
                 -- Deduct anything excluded for that person/decoration pair,
                 -- across ALL four sources at once. Exclusions are keyed on
                 -- rm.decoration, so match through the PRB's medal/ribbon.

@@ -54,9 +54,16 @@ class ResPerson(models.Model):
     bcs_batch = fields.Many2one('rm.bcs.batch',string='BCS Batch')
     service_confirmation_date = fields.Date(string='Service Confirmation Date')
 
+    # Derived from the consolidated Acquisition Ledger (rm.acquisition) -
+    # Personal Awards + Missions + Seniority + Batch, minus Excluded -
+    # rather than a manually-maintained relation, so the Ribbon Rack
+    # always reflects what the person has actually acquired with no
+    # separate bookkeeping. Not stored: rm.acquisition is a SQL view, so
+    # compute dependencies can't track it - cheap enough to recompute on
+    # read, same as award_count below.
     obtained_awards_ids = fields.Many2many(
-        'rm.prb', 'rm_prb_res_person_rel', 'person_id', 'prb_id',
-        string='Obtained Awards')
+        'rm.prb', string='Obtained Awards',
+        compute='_compute_obtained_awards_ids')
     award_count = fields.Integer(compute='_compute_award_count')
     force_id = fields.Many2one(
         'rm.forces', string='Force', related='rank_id.force_id', store=True, readonly=True)
@@ -112,6 +119,12 @@ class ResPerson(models.Model):
         today = fields.Date.today()
         for person in self:
             person.is_retired = bool(person.retirement_date and person.retirement_date <= today)
+
+    def _compute_obtained_awards_ids(self):
+        Acquisition = self.env['rm.acquisition']
+        for person in self:
+            entries = Acquisition.search([('person_id', '=', person.id)])
+            person.obtained_awards_ids = entries.award_id
 
     def _compute_award_count(self):
         # Counts from the consolidated Acquisition Ledger (Personal Awards +
