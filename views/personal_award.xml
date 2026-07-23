@@ -5,7 +5,7 @@
         <field name="model">rm.personal.awards</field>
         <field name="arch" type="xml">
             <list string="Personal Awards" sample="1">
-                <field name="prb_id"/>
+                <field name="award_id"/>
                 <field name="person_id"/>
                 <field name="award_year"/>
                 <field name="add_to_ribbon"/>
@@ -23,7 +23,7 @@
             <form string="Personal Award">
                 <sheet>
                     <group>
-                        <field name="prb_id"/>
+                        <field name="award_id"/>
                         <field name="person_id"/>
                         <field name="award_year"/>
                         <field name="add_to_ribbon"/>

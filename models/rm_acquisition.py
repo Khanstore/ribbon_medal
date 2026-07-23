@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models,  api,tools
+from datetime import date, datetime
+from odoo.exceptions import ValidationError
 
 class postingMissions(models.Model):
     """Mission record record."""
     _name = 'rm.mission.posting'
     _description = 'all Special posting and missions are listed here'
-    _rec_name = 'mission_name'
-    mission_name = fields.Many2one('rm.prb',string='Award Name')
+    _rec_name = 'mission_id'
+    mission_id = fields.Many2one('rm.prb',string='Award Name')
     person_id=fields.Many2one('res.person',string='Person')
     award_year = fields.Integer(string='Award Date')
     attachment_id = fields.Many2one('rm.attachment',string='Attachment')
@@ -27,8 +29,8 @@ class personalAwards(models.Model):
     """Award record record."""
     _name = 'rm.personal.awards'
     _description = 'all achievement and award listed here'
-    _rec_name = 'prb_id'
-    prb_id = fields.Many2one('rm.prb',string='Award Name')
+    _rec_name = 'award_id'
+    award_id = fields.Many2one('rm.prb',string='Award Name')
     person_id=fields.Many2one('res.person',string='Person')
     award_year = fields.Integer(string='Award Date')
     note = fields.Char(string='note')
@@ -58,9 +60,14 @@ class RmAcquisition(models.Model):
       for the person's own force, whose `starting_date` is after the
       person's own `service_confirmation_date`.
 
-    Anything listed in `rm.excluded.awards` for a given person/decoration
-    pair is deducted from the combined result of all four sources (not
-    just one leg).
+    `award_id` always points at the `rm.prb` record - that is true for
+    Personal Awards and Missions (which are entered directly against a
+    `rm.prb`) and for the two derived legs (the `rm.prb` record that
+    satisfied the rule *is* the award). Exclusions in
+    `rm.excluded.awards`, however, are keyed on `rm.decoration`
+    (`decoration_name`), not `rm.prb`, so a PRB row is treated as
+    excluded when its `medal_id` or `ribbon_id` matches an active
+    exclusion for that person - this covers all four sources uniformly.
 
     This is backed by a PostgreSQL VIEW (`_auto = False`) rather than a
     real table, so it always reflects live data with no sync/duplication
@@ -69,7 +76,7 @@ class RmAcquisition(models.Model):
     _name = 'rm.acquisition'
     _description = 'Consolidated Award Acquisition Ledger'
     _auto = False
-    _order = 'person_id, source, year desc'
+    _order = 'person_id asc, source asc, year desc'
 
     person_id = fields.Many2one('res.person', string='Person', readonly=True)
     award_id = fields.Many2one('rm.prb', string='Award', readonly=True)
@@ -98,13 +105,13 @@ class RmAcquisition(models.Model):
                     -- Personal Awards (individually entered).
                     SELECT
                         pa.person_id AS person_id,
-                        pa.id AS award_id,
+                        pa.award_id AS award_id,
                         'personal' AS source,
                         pa.award_year AS year,
                         pa.note AS note
                     FROM rm_personal_awards pa
                     WHERE pa.person_id IS NOT NULL
-                      AND pa.id IS NOT NULL
+                      AND pa.award_id IS NOT NULL
                       AND pa.active IS TRUE
 
                     UNION ALL
@@ -112,13 +119,13 @@ class RmAcquisition(models.Model):
                     -- Missions (individually entered).
                     SELECT
                         mp.person_id AS person_id,
-                        mp.mission_name AS award_id,
+                        mp.mission_id AS award_id,
                         'mission' AS source,
                         mp.award_year AS year,
                         mp.note AS note
                     FROM rm_mission_posting mp
                     WHERE mp.person_id IS NOT NULL
-                      AND mp.mission_name IS NOT NULL
+                      AND mp.mission_id IS NOT NULL
                       AND mp.active IS TRUE
 
                     UNION ALL
@@ -128,18 +135,16 @@ class RmAcquisition(models.Model):
                     -- within their own force.
                     SELECT
                         rp.id AS person_id,
-                        dec.id AS award_id,
+                        prb.id AS award_id,
                         'seniority' AS source,
                         NULL::integer AS year,
                         NULL::varchar AS note
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'seniority'
-                    JOIN res_person rp 
+                    JOIN res_person rp
                         ON rp.force_id = prb.force_id
-                    JOIN rm_decoration dec
-                        ON lower(trim(dec.decoration_name)) = lower(trim(prb.decoration_name))
-                    WHERE prb.decoration_name IS NOT NULL
+                    WHERE prb.active IS TRUE
                       AND prb.service_age IS NOT NULL
                       AND rp.service_confirmation_date IS NOT NULL
                       AND EXTRACT(YEAR FROM age(CURRENT_DATE, rp.service_confirmation_date)) >= prb.service_age
@@ -150,29 +155,32 @@ class RmAcquisition(models.Model):
                     -- is before the PRB's starting_date, within their own force.
                     SELECT
                         rp.id AS person_id,
-                        dec.id AS award_id,
+                        prb.id AS award_id,
                         'batch' AS source,
                         NULL::integer AS year,
                         NULL::varchar AS note
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'batch'
-                    JOIN res_person rp 
+                    JOIN res_person rp
                         ON rp.force_id = prb.force_id
-                    JOIN rm_decoration dec
-                        ON lower(trim(dec.decoration_name)) = lower(trim(prb.decoration_name))
-                    WHERE prb.id IS NOT NULL
+                    WHERE prb.active IS TRUE
                       AND prb.starting_date IS NOT NULL
                       AND rp.service_confirmation_date IS NOT NULL
                       AND rp.service_confirmation_date < prb.starting_date
 
                 ) src
                 -- Deduct anything excluded for that person/decoration pair,
-                -- across ALL four sources at once.
+                -- across ALL four sources at once. Exclusions are keyed on
+                -- rm.decoration, so match through the PRB's medal/ribbon.
                 WHERE NOT EXISTS (
-                    SELECT 1 FROM rm_excluded_awards ex
+                    SELECT 1
+                    FROM rm_excluded_awards ex
+                    JOIN rm_prb ex_prb
+                        ON ex_prb.id = src.award_id
+                       AND (ex_prb.medal_id = ex.decoration_name
+                            OR ex_prb.ribbon_id = ex.decoration_name)
                     WHERE ex.person_id = src.person_id
-                      AND ex.decoration_name = src.award_id
                       AND ex.active IS TRUE
                 )
             )

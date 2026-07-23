@@ -5,7 +5,7 @@
         <field name="model">rm.mission.posting</field>
         <field name="arch" type="xml">
             <list string="Missions" sample="1">
-                <field name="mission_name"/>
+                <field name="mission_id"/>
                 <field name="person_id"/>
                 <field name="award_year"/>
                 <field name="attachment_id" optional="show"/>
@@ -24,7 +24,7 @@
             <form string="Mission Posting">
                 <sheet>
                     <group>
-                        <field name="mission_name"/>
+                        <field name="mission_id"/>
                         <field name="person_id"/>
                         <field name="award_year"/>
                         <field name="attachment_id"/>
@@ -43,7 +43,7 @@
         <field name="model">rm.mission.posting</field>
         <field name="arch" type="xml">
             <search string="Search Missions">
-                <field name="mission_name"/>
+                <field name="mission_id"/>
                 <field name="person_id"/>
                 <group expand="0" string="Group By">
                     <filter name="group_by_person" string="Person" context="{'group_by': 'person_id'}"/>

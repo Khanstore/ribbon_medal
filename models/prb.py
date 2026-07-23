@@ -6,9 +6,9 @@ from odoo.exceptions import ValidationError
 class RmPRB(models.Model):
     _name = 'rm.prb'
     _description = 'PRB of decorations'
-    _order = 'seniority_sequence desc, _name'
+    _order = 'seniority_sequence desc, name'
 
-    name = fields.Char(required=True, string='Decoration Name')
+    name = fields.Char(required=True, string='PRB Name')
     medal_id = fields.Many2one('rm.decoration', string='Medal')
     ribbon_id = fields.Many2one('rm.decoration', string='Ribbon')
     seniority_sequence=fields.Integer("seniority")
@@ -26,3 +26,18 @@ class RmPRB(models.Model):
     force_id = fields.Many2one('rm.forces', string='Force', ondelete='restrict', index=True)
     rule_category_id = fields.Many2one(
         'rm.rules.category', string='Rules Category', ondelete='restrict')
+
+    @api.model
+    def copy(self, default=None):
+        # 1. Initialize the default dictionary if it's not provided
+        default = dict(default or {})
+
+        # 2. Add the suffix to the name field
+        if self.name:
+            default['name'] = f"{self.name} (copy)"
+
+        # 3. Clear out the field value (set it to False)
+        default['mission_name'] = False
+
+        # 4. Call the super method to finalize creation
+        return super(RmPRB, self).copy(default=default)

@@ -78,6 +78,9 @@ class ResPerson(models.Model):
     service_ledger_ids = fields.One2many(
         'rm.acquisition', 'person_id', string='Service',
         domain=[('source', '=', 'batch')])
+    mission_ledger_ids = fields.One2many(
+        'rm.mission.posting', 'person_id', string='Mision'
+        )
     seniority_ledger_ids = fields.One2many(
         'rm.acquisition', 'person_id', string='Seniority',
         domain=[('source', '=', 'seniority')])
@@ -117,9 +120,9 @@ class ResPerson(models.Model):
         # truth for "what has this person acquired" now. Not stored: it's
         # backed by a SQL view (rm.acquisition), so compute dependencies
         # can't track it - it's cheap enough to recompute on read.
-        # Acquisition = self.env['rm.acquisition']
+        Acquisition = self.env['rm.acquisition']
         for person in self:
-            person.award_count =6 # Acquisition.search_count([('person_id', '=', person.id)])
+            person.award_count = Acquisition.search_count([('person_id', '=', person.id)])
 
     @api.onchange('id_number')
     def extract_years_from_id_number(self):
