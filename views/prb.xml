@@ -6,7 +6,9 @@
         <field name="model">rm.prb</field>
         <field name="arch" type="xml">
             <list>
-                <field name="decoration_id"/>
+                <field name="name"/>
+                <field name="medal_id"/>
+                <field name="ribbon_id"/>
                 <field name="force_id"/>
                 <field name="sequence"/>
                 <field name="starting_date"/>
@@ -24,7 +26,9 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="decoration_id"/>
+                            <field name="name"/>
+                            <field name="medal_id"/>
+                            <field name="ribbon_id"/>
                             <field name="force_id"/>
                             <field name="rule_category_id"/>
                             <field name="mission_name"/>
@@ -54,12 +58,16 @@
         <field name="arch" type="xml">
             <kanban>
                 <field name="id"/>
-                <field name="decoration_id"/>
+                <field name="name"/>
+                <field name="medal_id"/>
+                <field name="ribbon_id"/>
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_global_click">
                             <div class="oe_kanban_details">
-                                <strong><field name="decoration_id"/></strong>
+                                <strong><field name="name"/></strong>
+                                <div>Medal: <field name="medal_id"/></div>
+                                <div>Ribbon: <field name="ribbon_id"/></div>
                                 <div>Force: <field name="force_id"/></div>
                                 <div>Mission: <field name="mission_name"/></div>
                             </div>

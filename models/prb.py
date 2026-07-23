@@ -6,10 +6,11 @@ from odoo.exceptions import ValidationError
 class RmPRB(models.Model):
     _name = 'rm.prb'
     _description = 'PRB of decorations'
-    _order = 'seniority_sequence desc, decoration_id'
-    _rec_name = 'decoration_id'
+    _order = 'seniority_sequence desc, _name'
 
-    decoration_id = fields.Many2one('rm.decoration',required=True, string='Decoration Name')
+    name = fields.Char(required=True, string='Decoration Name')
+    medal_id = fields.Many2one('rm.decoration', string='Medal')
+    ribbon_id = fields.Many2one('rm.decoration', string='Ribbon')
     seniority_sequence=fields.Integer("seniority")
     sequence = fields.Float(string='Sequence')
     starting_date = fields.Date(string='Starting Date')

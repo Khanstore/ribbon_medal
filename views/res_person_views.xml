@@ -67,7 +67,7 @@
                         <page string="Decorations" name="decorations">
                            <!-- <field name="obtained_awards_ids" widget="ribbon_rack" nolabel="1">
                                 <list>
-                                    <field name="decoration_id"/>
+                                    <field name="decoration_name"/>
                                     <field name="seniority_sequence"/>
                                     <field name="is_ribbon"/>
                                     <field name="is_medal"/>
@@ -78,18 +78,18 @@
                         </page>
                         <page string="Award" name="personal_awards">
                             <field name="personal_award_ledger_ids" nolabel="1"
-                                   options="{'create': false, 'delete': false, 'edit': false}">
-                                <list create="false" delete="false" edit="false">
-                                    <field name="award_id"/>
-                                    <field name="year"/>
+                                   >
+                                <list>
+                                    <field name="prb_id"/>
+<!--                                    <field name="award_year "/>-->
                                     <field name="note"/>
                                 </list>
                             </field>
                         </page>
                         <page string="Service" name="service">
                             <field name="service_ledger_ids" nolabel="1"
-                                   options="{'create': false, 'delete': false, 'edit': false}">
-                                <list create="false" delete="false" edit="false">
+                                   >
+                                <list >
                                     <field name="award_id"/>
                                     <field name="note"/>
                                 </list>

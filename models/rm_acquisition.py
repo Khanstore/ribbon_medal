@@ -1,6 +1,48 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models, tools
+from odoo import fields, models,  api,tools
 
+class postingMissions(models.Model):
+    """Mission record record."""
+    _name = 'rm.mission.posting'
+    _description = 'all Special posting and missions are listed here'
+    _rec_name = 'mission_name'
+    mission_name = fields.Many2one('rm.prb',string='Award Name')
+    person_id=fields.Many2one('res.person',string='Person')
+    award_year = fields.Integer(string='Award Date')
+    attachment_id = fields.Many2one('rm.attachment',string='Attachment')
+    note = fields.Char(string='note')
+    active = fields.Boolean(default=True)
+    add_to_ribbon = fields.Boolean(string="Tunic ribbon",default=True)
+    add_to_big_medal = fields.Boolean(string="Tunic Medal",default=True)
+    add_to_mini_medal = fields.Boolean(string="Mini Medal",default=True)
+
+    @api.constrains('award_year')
+    def _check_award_year(self):
+        current_year = date.today().year
+        for record in self:
+            if record.award_year and (record.award_year < 1900 or record.award_year > current_year):
+                raise ValidationError(f"The year must be between 1900 and {current_year}.")
+
+class personalAwards(models.Model):
+    """Award record record."""
+    _name = 'rm.personal.awards'
+    _description = 'all achievement and award listed here'
+    _rec_name = 'prb_id'
+    prb_id = fields.Many2one('rm.prb',string='Award Name')
+    person_id=fields.Many2one('res.person',string='Person')
+    award_year = fields.Integer(string='Award Date')
+    note = fields.Char(string='note')
+    active = fields.Boolean(default=True)
+    add_to_ribbon = fields.Boolean(string="Tunic ribbon",default=True)
+    add_to_big_medal = fields.Boolean(string="Tunic Medal",default=True)
+    add_to_mini_medal = fields.Boolean(string="Mini Medal",default=True)
+
+    @api.constrains('award_year')
+    def _check_award_year(self):
+        current_year = date.today().year
+        for record in self:
+            if record.award_year and (record.award_year < 1900 or record.award_year > current_year):
+                raise ValidationError(f"The year must be between 1900 and {current_year}.")
 
 class RmAcquisition(models.Model):
     """Read-only, consolidated ledger of every award a person has actually
@@ -30,7 +72,7 @@ class RmAcquisition(models.Model):
     _order = 'person_id, source, year desc'
 
     person_id = fields.Many2one('res.person', string='Person', readonly=True)
-    award_id = fields.Many2one('rm.decoration', string='Award', readonly=True)
+    award_id = fields.Many2one('rm.prb', string='Award', readonly=True)
     source = fields.Selection([
         ('personal', 'Personal Award'),
         ('mission', 'Mission'),
@@ -56,13 +98,13 @@ class RmAcquisition(models.Model):
                     -- Personal Awards (individually entered).
                     SELECT
                         pa.person_id AS person_id,
-                        pa.decoration_name AS award_id,
+                        pa.id AS award_id,
                         'personal' AS source,
                         pa.award_year AS year,
                         pa.note AS note
                     FROM rm_personal_awards pa
                     WHERE pa.person_id IS NOT NULL
-                      AND pa.decoration_name IS NOT NULL
+                      AND pa.id IS NOT NULL
                       AND pa.active IS TRUE
 
                     UNION ALL
@@ -86,15 +128,18 @@ class RmAcquisition(models.Model):
                     -- within their own force.
                     SELECT
                         rp.id AS person_id,
-                        prb.decoration_id AS award_id,
+                        dec.id AS award_id,
                         'seniority' AS source,
                         NULL::integer AS year,
                         NULL::varchar AS note
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'seniority'
-                    JOIN res_person rp ON rp.force_id = prb.force_id
-                    WHERE prb.decoration_id IS NOT NULL
+                    JOIN res_person rp 
+                        ON rp.force_id = prb.force_id
+                    JOIN rm_decoration dec
+                        ON lower(trim(dec.decoration_name)) = lower(trim(prb.decoration_name))
+                    WHERE prb.decoration_name IS NOT NULL
                       AND prb.service_age IS NOT NULL
                       AND rp.service_confirmation_date IS NOT NULL
                       AND EXTRACT(YEAR FROM age(CURRENT_DATE, rp.service_confirmation_date)) >= prb.service_age
@@ -102,19 +147,21 @@ class RmAcquisition(models.Model):
                     UNION ALL
 
                     -- Batch (derived): person's service_confirmation_date
-                    -- is before the PRB's starting_date, within their own
-                    -- force.
+                    -- is before the PRB's starting_date, within their own force.
                     SELECT
                         rp.id AS person_id,
-                        prb.decoration_id AS award_id,
+                        dec.id AS award_id,
                         'batch' AS source,
                         NULL::integer AS year,
                         NULL::varchar AS note
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'batch'
-                    JOIN res_person rp ON rp.force_id = prb.force_id
-                    WHERE prb.decoration_id IS NOT NULL
+                    JOIN res_person rp 
+                        ON rp.force_id = prb.force_id
+                    JOIN rm_decoration dec
+                        ON lower(trim(dec.decoration_name)) = lower(trim(prb.decoration_name))
+                    WHERE prb.id IS NOT NULL
                       AND prb.starting_date IS NOT NULL
                       AND rp.service_confirmation_date IS NOT NULL
                       AND rp.service_confirmation_date < prb.starting_date

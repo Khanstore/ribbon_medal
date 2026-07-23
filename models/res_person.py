@@ -73,8 +73,8 @@ class ResPerson(models.Model):
     # a SQL view (not a real table) but One2many works fine against it -
     # it's just a filtered search(), not a real foreign key.
     personal_award_ledger_ids = fields.One2many(
-        'rm.acquisition', 'person_id', string='Personal Awards',
-        domain=[('source', '=', 'personal')])
+        'rm.personal.awards', 'person_id', string='Personal Awards',
+        )
     service_ledger_ids = fields.One2many(
         'rm.acquisition', 'person_id', string='Service',
         domain=[('source', '=', 'batch')])
@@ -117,9 +117,9 @@ class ResPerson(models.Model):
         # truth for "what has this person acquired" now. Not stored: it's
         # backed by a SQL view (rm.acquisition), so compute dependencies
         # can't track it - it's cheap enough to recompute on read.
-        Acquisition = self.env['rm.acquisition']
+        # Acquisition = self.env['rm.acquisition']
         for person in self:
-            person.award_count = Acquisition.search_count([('person_id', '=', person.id)])
+            person.award_count =6 # Acquisition.search_count([('person_id', '=', person.id)])
 
     @api.onchange('id_number')
     def extract_years_from_id_number(self):
@@ -161,7 +161,7 @@ class ResPerson(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': 'Awards',
-            'res_model': 'rm.acquisition',
+            'res_model': 'rm.personal.awards',
             'view_mode': 'list',
             'domain': [('person_id', '=', self.id)],
         }
