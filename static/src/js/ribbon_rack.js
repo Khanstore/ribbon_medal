@@ -81,7 +81,7 @@ export const ribbonRackField = {
     component: RibbonRackField,
     supportedTypes: ["many2many"],
     relatedFields: [
-        { name: "decoration_name", type: "char" },
+        { name: "name", type: "char" },
         { name: "seniority_sequence", type: "integer" },
         { name: "is_ribbon", type: "boolean" },
         { name: "is_medal", type: "boolean" },
