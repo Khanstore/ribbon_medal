@@ -20,5 +20,5 @@ access_rm_excluded_awards,rm.excluded.awards,model_rm_excluded_awards,base.group
 access_rm_attachment_user,rm.attachment.user,model_rm_attachment,group_ribbon_medal_user,1,0,0,0
 access_rm_attachment_manager,rm.attachment.manager,model_rm_attachment,group_ribbon_medal_manager,1,1,1,1
 access_rm_acquisition,rm.acquisition,model_rm_acquisition,base.group_user,1,1,1,1
-ribbon_medal.access_rm_prb,access_rm_prb,ribbon_medal.model_rm_prb,base.group_user,1,1,1,0
+ribbon_medal.access_rm_prb,access_rm_prb,ribbon_medal.model_rm_prb,base.group_user,1,1,1,1
 access_rm_acquisition_custom,rm.acquisition.custom,model_rm_acquisition_custom,base.group_user,1,1,1,1

@@ -76,7 +76,7 @@ class RmAcquisition(models.Model):
     _name = 'rm.acquisition'
     _description = 'Consolidated Award Acquisition Ledger'
     _auto = False
-    _order = 'person_id asc, source asc, year desc'
+    _order = 'seniority_sequence desc'
 
     person_id = fields.Many2one('res.person', string='Person', readonly=True)
     award_id = fields.Many2one('rm.prb', string='Award', readonly=True)

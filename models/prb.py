@@ -27,17 +27,4 @@ class RmPRB(models.Model):
     rule_category_id = fields.Many2one(
         'rm.rules.category', string='Rules Category', ondelete='restrict')
 
-    @api.model
-    def copy(self, default=None):
-        # 1. Initialize the default dictionary if it's not provided
-        default = dict(default or {})
-
-        # 2. Add the suffix to the name field
-        if self.name:
-            default['name'] = f"{self.name} (copy)"
-
-        # 3. Clear out the field value (set it to False)
-        default['mission_name'] = False
-
-        # 4. Call the super method to finalize creation
-        return super(RmPRB, self).copy(default=default)
+    

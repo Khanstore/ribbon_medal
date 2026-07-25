@@ -25,10 +25,12 @@ Features
     'data': [
         'security/ribbon_medal_security.xml',
         'security/ir.model.access.csv',
-        'data/ribbon_medal_data.xml',
+        'data/rm.forces.csv',
         'data/rm_attachment_data.xml',
         'data/rm.decoration.csv',
-        # 'data/rm.ranks.csv',
+        'data/rm.rules.category.csv',
+        'data/rm.prb.csv',
+        'data/rm.ranks.csv',
         'data/ribbon_medal_ranks.xml',
         'data/force_unit_data.xml',
 

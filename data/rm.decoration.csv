@@ -1,113 +1,114 @@
-id,decoration_name,mission_name,is_medal,is_ribbon
-decortion_200_years_of_bgb,200 Years Of BGB,200 Years of Bgb,TRUE,TRUE
-decortion_afganistan,Afganistan,Afghanistan,TRUE,TRUE
-decortion_angola,Angola,MONUA,TRUE,TRUE
-decortion_bangabandhu_award,Bangabandhu Award,Bangabandhu Award,TRUE,TRUE
-decortion_bangabandhu_janma_shatabarshiki,Bangabandhu Janma Shatabarshiki,Janma Shata Barshiki,TRUE,TRUE
-decortion_bangladesh_ansar_medal_gallantry,Bangladesh Ansar Medal Gallantry,BAM Galantry,TRUE,TRUE
-decortion_bgb_medal,BGB Medal,BGB Service Medal,TRUE,TRUE
-decortion_bijoy_padak__1971,Bijoy Padak  1971,Bijoy Padak  1971,TRUE,TRUE
-decortion_bmm,BMM,Bar To The Medal Of Merit,TRUE,TRUE
-decortion_bosnia_harjegovina,Bosnia Harjegovina,UNMIBH,TRUE,TRUE
-decortion_bpm,BPM,BPM,TRUE,TRUE
-decortion_bpm_(sheba),BPM (sheba),BPM (sheba),TRUE,TRUE
-decortion_bvm_shahshikata,BVM Shahshikata,Bangladesh Ansar Vdp Medal Shashikata,TRUE,TRUE
-decortion_cnc,CNC,Chief National Comisioner,TRUE,TRUE
-decortion_croatia,Croatia,UNMOP,TRUE,TRUE
-decortion_cyclone_91,Cyclone 91,91 Ghurnijhar,TRUE,TRUE
-decortion_cyprus,Cyprus,UNFICYP,TRUE,TRUE
-decortion_dabanal,Dabanal,Dabanal,TRUE,TRUE
-decortion_dankon_march,Dankon March,Dankon March,FALSE,TRUE
-decortion_darfur,Darfur,UNAMID,TRUE,TRUE
-decortion_dhal_talowar,Dhal Talowar,SaradaBar,TRUE,TRUE
-decortion_el_salvador,El Salvador,ONUSAL,TRUE,TRUE
-decortion_election1991,Election1991,1991 Election,TRUE,TRUE
-decortion_election1996,Election1996,1996 Election,TRUE,TRUE
-decortion_election2001,Election2001,2001 Election,TRUE,TRUE
-decortion_election2008,Election2008,2008 Election,TRUE,TRUE
-decortion_election2014,Election2014,2014 Election,TRUE,TRUE
-decortion_election2018,Election2018,2018 Election,TRUE,TRUE
-decortion_election2024,Election2024,2024 Election,TRUE,TRUE
-decortion_eritria,Eritria,UNMEE,TRUE,TRUE
-decortion_ethiopia,Ethiopia,UNMEE,TRUE,TRUE
-decortion_georzia,Georzia,UNOMIG,TRUE,TRUE
-decortion_golden_jubilee,Golden Jubilee,50 Years of East Bengal,TRUE,TRUE
-decortion_golden_jubilee_of_independence,Golden Jubilee Of Independence,Shadhinata 100,FALSE,TRUE
-decortion_guatemala,Guatemala,MINGUA,TRUE,TRUE
-decortion_ig_badge_a,IG Badge A,IG-A,FALSE,TRUE
-decortion_ig_badge_b,IG Badge B,IG-B,FALSE,TRUE
-decortion_ig_badge_c,IG Badge C,IG-C,FALSE,TRUE
-decortion_ig_badge_d,IG Badge D,IG-D,FALSE,TRUE
-decortion_ig_badge_e,IG Badge E,IG-E,FALSE,TRUE
-decortion_ig_badge_f,IG Badge F,IG-F,FALSE,TRUE
-decortion_irak_iran,Irak Iran,UNIMOG,TRUE,TRUE
-decortion_iran_irak,Iran Irak,UNIMOG,TRUE,TRUE
-decortion_ivoricoast,Ivoricoast,UNOCI,TRUE,TRUE
-decortion_kosovo,kosovo,UNMIK,TRUE,TRUE
-decortion_kuwait,Kuwait,UNIKOM,TRUE,TRUE
-decortion_lebanon,Lebanon,UNIFIL,TRUE,TRUE
-decortion_liberia,Liberia,UNOMIL,TRUE,TRUE
-decortion_unmil,Liberia,UNMIL,TRUE,TRUE
-decortion_libia,Libia,UNSMIL,TRUE,TRUE
-decortion_mali,Mali,MINUSMA,TRUE,TRUE
-decortion_medal_of_merit,Medal Of Merit,Medal Of Merit,TRUE,TRUE
-decortion_MICAH,Haiti,MICAH,TRUE,TRUE
-decortion_minujusth,Minujusth,Minujusth,TRUE,TRUE
-decortion_minusca,Central African republic,MINUSCA,TRUE,TRUE
-decortion_minustah,Haiti,MINUSTAH,TRUE,TRUE
-decortion_MIPONUH,Haiti,MIPONUH,TRUE,TRUE
-decortion_Monusco,Congo,MONUSCO,TRUE,TRUE
-decortion_mozambik,Mozambik,ONUMOZ,TRUE,TRUE
-decortion_mukti_taroka,mukti Taroka,mukti Taroka,TRUE,TRUE
-decortion_namibia,Namibia,UNTAG,TRUE,TRUE
-decortion_nirapotta,Nirapotta,Nirapotta,TRUE,TRUE
-decortion_norcon_march,Norcon March,Norcon March,TRUE,TRUE
-decortion_pam_gallantry,PAM Gallantry,President Ansar Medal Gallantry,TRUE,TRUE
-decortion_pam_shahashikata,PAM Shahashikata,President Ansar Medal Shahashikata,TRUE,TRUE
-decortion_pam_sheba,PAM Sheba,President Ansar Medal Sheba,TRUE,TRUE
-decortion_plabon_1988,Plabon 1988,Plabon 1988,TRUE,TRUE
-decortion_plabon_1998,Plabon 1998,98 plabon,TRUE,TRUE
-decortion_ppm,PPM,PPM,TRUE,TRUE
-decortion_ppm_(sheba),PPM (Sheba),PPM Sheba,TRUE,TRUE
-decortion_president_vdp_medal_seba,President VDP Medal Seba,PVM_Seba,TRUE,TRUE
-decortion_psc,PSC,Police Staff College,TRUE,TRUE
-decortion_punargthan_bgb,Punargthan BGB,BGB Punargathan,TRUE,TRUE
-decortion_rajat_jayanti,Rajat Jayanti,Rajat Jayanti,TRUE,TRUE
-decortion_rono_taroka,Rono taroka,Rono taroka,TRUE,TRUE
-decortion_unamir,Ruanda,UNAMIR,TRUE,TRUE
-decortion_unomur,Rwanda,UNOMUR,TRUE,TRUE
-decortion_unimir,Rwanda,UNIMIR,TRUE,TRUE
-decortion_samor_padak,Samor Padak,Samor Padak,TRUE,TRUE
-decortion_sarada,sarada,sarada,TRUE,TRUE
-decortion_seniority_1,Seniority1,Jesthata 1,TRUE,TRUE
-decortion_seniority_2,seniority2,Jesthata 2,TRUE,TRUE
-decortion_seniority_3,Seniority3,Jesthata 3,TRUE,TRUE
-decortion_shadhinota,Shadhinota,Shadhinata,TRUE,TRUE
-decortion_shavapati,Shavapati,Shavapati,TRUE,TRUE
-decortion_shimanto,Shimanto,Shimanto,TRUE,TRUE
-decortion_shongbidhan,Shongbidhan,Shongbidhan,TRUE,TRUE
-decortion_sieralion,Sieralion,UNOMSIL,TRUE,TRUE
-decortion_somalia,Somalia,UNOSOM II,TRUE,TRUE
-decortion_south_sudan,South Sudan,UNMISS,TRUE,TRUE
-decortion_unmis,Sudan,UNMIS,TRUE,TRUE
-decortion_unmiss,Sudan,UNISFA,TRUE,TRUE
-decortion_tajikistan,Tajikistan,UNMOT,TRUE,TRUE
-decortion_timore_leste,Timore Leste Soliderity Medal,President Timore Medal,TRUE,TRUE
-decortion_uganda,Uganda,UNOMUR,TRUE,TRUE
-decortion_un_head_quarter,UN Head Quarter,UNHQ,TRUE,TRUE
-decortion_unamet,East Timore,UNAMET,TRUE,TRUE
-decortion_unamic,Cambodia 91-92,UNAMIC,TRUE,TRUE
-decortion_uncro,Croatia,UNCRO,TRUE,TRUE
-decortion_unmha,United Nations Mission to Support the Hudaydah Agreement in Yemen,UNMHA,TRUE,TRUE
-decortion_UNSSM,United Nations Special Service Mission,UNSSM,TRUE,TRUE
-decortion_unmih,Haiti,UNMIH,TRUE,TRUE
-decortion_unmiset,East Timore,UNMISET,TRUE,TRUE
-decortion_unmit,East Timore,UNMIT,TRUE,TRUE
-decortion_UNSMIH,Haiti,UNSMIH,TRUE,TRUE
-decortion_untac,Cambodia 92-93,UNTAC,TRUE,TRUE
-decortion_untaes,Croatia,UNTAES,TRUE,TRUE
-decortion_untaet,East Timore,UNTAET,TRUE,TRUE
-decortion_untmih,Haiti,UNTMIH,TRUE,TRUE
-decortion_uttaran,Uttaran,Uttaran,TRUE,TRUE
-decortion_west_shahara,west Shahara,MINURSO,TRUE,TRUE
-decortion_yougoslavia,Yougoslavia,UNPROFOR,TRUE,TRUE
+"id","decoration_name","mission_name","is_medal","is_ribbon"
+"ribbon_medal_decoration_jesthata_1","Seniority1","Jesthata 1",1,1
+"ribbon_medal_decoration_jesthata_2","seniority2","Jesthata 2",1,1
+"ribbon_medal_decoration_jesthata_3","Seniority3","Jesthata 3",1,1
+"ribbon_medal_decoration_1991_election","Election1991","1991 Election",1,1
+"ribbon_medal_decoration_2001_election","Election2001","2001 Election",1,1
+"ribbon_medal_decoration_1996_election","Election1996","1996 Election",1,1
+"ribbon_medal_decoration_shadhinata","Shadhinota","Shadhinata",1,1
+"ribbon_medal_decoration_bpm_sheba","BPM (sheba)","BPM sheba",1,1
+"ribbon_medal_decoration_bpm","BPM","BPM",1,1
+"ribbon_medal_decoration_ppm_sheba","PPM (Sheba)","PPM Sheba",1,1
+"ribbon_medal_decoration_ig-a","IG Badge A","IG-A",1,1
+"ribbon_medal_decoration_ig-b","IG Badge B","IG-B",1,1
+"ribbon_medal_decoration_ig-c","IG Badge C","IG-C",1,1
+"ribbon_medal_decoration_ig-d","IG Badge D","IG-D",1,1
+"ribbon_medal_decoration_ig-e","IG Badge E","IG-E",1,1
+"ribbon_medal_decoration_ig-f","IG Badge F","IG-F",1,1
+"ribbon_medal_decoration_ppm","PPM","PPM",1,1
+"ribbon_medal_decoration_rajat_jayanti","Rajat Jayanti","Rajat Jayanti",1,1
+"ribbon_medal_decoration_plabon_1988","Plabon 1988","Plabon 1988",1,1
+"ribbon_medal_decoration_bijoy_padak__1971","Bijoy Padak  1971","Bijoy Padak  1971",1,1
+"ribbon_medal_decoration_shongbidhan","Shongbidhan","Shongbidhan",1,1
+"ribbon_medal_decoration_nirapotta","Nirapotta","Nirapotta",1,1
+"ribbon_medal_decoration_unmih","Haiti","UNMIH",1,1
+"ribbon_medal_decoration_rono_taroka","Rono taroka","Rono taroka",1,1
+"ribbon_medal_decoration_mukti_taroka","mukti Taroka","mukti Taroka",1,1
+"ribbon_medal_decoration_sarada","sarada","sarada",1,1
+"ribbon_medal_decoration_unmik","kosovo","UNMIK",1,1
+"ribbon_medal_decoration_monua","Angola","MONUA",1,1
+"ribbon_medal_decoration_unmibh","Bosnia Harjegovina","UNMIBH",1,1
+"ribbon_medal_decoration_unamic","Cambodia 91-92","UNAMIC",1,1
+"ribbon_medal_decoration_untac","Cambodia 92-93","UNTAC",1,1
+"ribbon_medal_decoration_monusco","Congo","MONUSCO",1,1
+"ribbon_medal_decoration_uncro","Croatia","UNCRO",1,1
+"ribbon_medal_decoration_unamid","Darfur","UNAMID",1,1
+"ribbon_medal_decoration_onusal","El Salvador","ONUSAL",1,1
+"ribbon_medal_decoration_unmee","Eritria","UNMEE",1,1
+"ribbon_medal_decoration_unmee","Ethiopia","UNMEE",1,1
+"ribbon_medal_decoration_unomig","Georzia","UNOMIG",1,1
+"ribbon_medal_decoration_mingua","Guatemala","MINGUA",1,1
+"ribbon_medal_decoration_minustah","Haiti","MINUSTAH",1,1
+"ribbon_medal_decoration_unimog","Iran Irak","UNIMOG",1,1
+"ribbon_medal_decoration_unimog","Irak Iran","UNIMOG",1,1
+"ribbon_medal_decoration_unikom","Kuwait","UNIKOM",1,1
+"ribbon_medal_decoration_unifil","Lebanon","UNIFIL",1,1
+"ribbon_medal_decoration_unomil","Liberia","UNOMIL",1,1
+"ribbon_medal_decoration_onumoz","Mozambik","ONUMOZ",1,1
+"ribbon_medal_decoration_untag","Namibia","UNTAG",1,1
+"ribbon_medal_decoration_unamir","Ruanda","UNAMIR",1,1
+"ribbon_medal_decoration_unomsil","Sieralion","UNOMSIL",1,1
+"ribbon_medal_decoration_unosom_ii","Somalia","UNOSOM II",1,1
+"ribbon_medal_decoration_unmis","Sudan","UNMIS",1,1
+"ribbon_medal_decoration_unmot","Tajikistan","UNMOT",1,1
+"ribbon_medal_decoration_unmit","East Timore","UNMIT",1,1
+"ribbon_medal_decoration_untaet","East Timore","UNTAET",1,1
+"ribbon_medal_decoration_unomur","Uganda","UNOMUR",1,1
+"ribbon_medal_decoration_minurso","west Shahara","MINURSO",1,1
+"ribbon_medal_decoration_untaes","Yugoslavia","UNTAES",1,1
+"ribbon_medal_decoration_unoci","Ivoricoast","UNOCI",1,1
+"ribbon_medal_decoration_untaes","Croatia","UNTAES",1,1
+"ribbon_medal_decoration_unmop","Croatia","UNMOP",1,1
+"ribbon_medal_decoration_unomur","Rwanda","UNOMUR",1,1
+"ribbon_medal_decoration_minusma","Mali","MINUSMA",1,1
+"ribbon_medal_decoration_unimir","Rwanda","UNIMIR",1,1
+"ribbon_medal_decoration_unsmih","Haiti","UNSMIH",1,1
+"ribbon_medal_decoration_untmih","Haiti","UNTMIH",1,1
+"ribbon_medal_decoration_miponuh","Haiti","MIPONUH",1,1
+"ribbon_medal_decoration_micah","Haiti","MICAH",1,1
+"ribbon_medal_decoration_unhq","UN Head Quarter","UNHQ",1,1
+"ribbon_medal_decoration_unmiss","South Sudan","UNMISS",1,1
+"ribbon_medal_decoration_unisfa","Sudan","UNISFA",1,1
+"ribbon_medal_decoration_unmil","Liberia","UNMIL",1,1
+"ribbon_medal_decoration_unamet","East Timore","UNAMET",1,1
+"ribbon_medal_decoration_unmiset","East Timore","UNMISET",1,1
+"ribbon_medal_decoration_president_ansar_medal_shahashikata","PAM Shahashikata","President Ansar Medal Shahashikata",1,1
+"ribbon_medal_decoration_samor_padak","Samor Padak","Samor Padak",1,1
+"ribbon_medal_decoration_monuc","Congo","MONUC",1,1
+"ribbon_medal_decoration_president_timore_medal","Timore Leste Soliderity Medal","President Timore Medal",1,1
+"ribbon_medal_decoration_unprofor","Yougoslavia","UNPROFOR",1,1
+"ribbon_medal_decoration_afghanistan","Afganistan","Afghanistan",1,1
+"ribbon_medal_decoration_dabanal","Dabanal","Dabanal",1,1
+"ribbon_medal_decoration_uttaran","Uttaran","Uttaran",1,1
+"ribbon_medal_decoration_98_plabon","Plabon 1998","98 plabon",1,1
+"ribbon_medal_decoration_91_ghurnijhar","Cyclone 91","91 Ghurnijhar",1,1
+"ribbon_medal_decoration_police_staff_college","PSC","Police Staff College",1,1
+"ribbon_medal_decoration_50_years_of_east_bengal","Golden Jubilee","50 Years of East Bengal",1,1
+"ribbon_medal_decoration_bgb_service_medal","BGB Medal","BGB Service Medal",1,1
+"ribbon_medal_decoration_200_years_of_bgb","200 Years Of BGB","200 Years of Bgb",1,1
+"ribbon_medal_decoration_bgb_punargathan","Punargthan BGB","BGB Punargathan",1,1
+"ribbon_medal_decoration_shimanto","Shimanto","Shimanto",1,1
+"ribbon_medal_decoration_pvm_seba","President VDP Medal Seba","PVM_Seba",1,1
+"ribbon_medal_decoration_minujusth","Minujusth","Minujusth",1,1
+"ribbon_medal_decoration_unssm","United Nations Special Service Mission","UNSSM",1,1
+"ribbon_medal_decoration_medal_of_merit","Medal Of Merit","Medal Of Merit",1,1
+"ribbon_medal_decoration_bar_to_the_medal_of_merit","BMM","Bar To The Medal Of Merit",1,1
+"ribbon_medal_decoration_chief_national_comisioner","CNC","Chief National Comisioner",1,1
+"ribbon_medal_decoration_shavapati","Shavapati","Shavapati",1,1
+"ribbon_medal_decoration_dankon_march","Dankon March","Dankon March",1,1
+"ribbon_medal_decoration_bangladesh_ansar_vdp_medal_shashikata","BVM Shahshikata","Bangladesh Ansar Vdp Medal Shashikata",1,1
+"ribbon_medal_decoration_unmha","United Nations Mission to Support the Hudaydah Agreement in Yemen","UNMHA",1,1
+"ribbon_medal_decoration_2008_election","Election2008","2008 Election",1,1
+"ribbon_medal_decoration_2014_election","Election2014","2014 Election",1,1
+"ribbon_medal_decoration_2018_election","Election2018","2018 Election",1,1
+"ribbon_medal_decoration_norcon_march","Norcon March","Norcon March",1,1
+"ribbon_medal_decoration_bangabandhu_award","Bangabandhu Award","Bangabandhu Award",1,1
+"ribbon_medal_decoration_janma_shata_barshiki","Bangabandhu Janma Shatabarshiki","Janma Shata Barshiki",1,1
+"ribbon_medal_decoration_shadhinata_100","Golden Jubilee Of Independence","Shadhinata 100",1,1
+"ribbon_medal_decoration_president_ansar_medal_sheba","PAM Sheba","President Ansar Medal Sheba",1,1
+"ribbon_medal_decoration_president_ansar_medal_gallantry","PAM Gallantry","President Ansar Medal Gallantry",1,1
+"ribbon_medal_decoration_2024_election","Election2024","2024 Election",1,1
+"ribbon_medal_decoration_bam_galantry","Bangladesh Ansar Medal Gallantry","BAM Galantry",1,1
+"ribbon_medal_decoration_minusca","Central African republic","MINUSCA",1,1
+"ribbon_medal_decoration_unsmil","Libia","UNSMIL",1,1
+"ribbon_medal_decoration_unficyp","Cyprus","UNFICYP",1,1
