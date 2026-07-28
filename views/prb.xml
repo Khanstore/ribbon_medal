@@ -27,8 +27,8 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="medal_id"/>
-                            <field name="ribbon_id"/>
+                            <field name="medal_id" domain="[('is_medal', '=', True)]"/>
+                            <field name="ribbon_id" domain="[('is_ribbon', '=', True)]"/>
                             <field name="force_id"/>
                             <field name="rule_category_id"/>
                             <field name="mission_name"/>
@@ -57,20 +57,19 @@
         <field name="model">rm.prb</field>
         <field name="arch" type="xml">
             <kanban>
-                <field name="id"/>
                 <field name="name"/>
                 <field name="medal_id"/>
                 <field name="ribbon_id"/>
+                <field name="force_id"/>
+                <field name="mission_name"/>
                 <templates>
-                    <t t-name="kanban-box">
-                        <div class="oe_kanban_global_click">
-                            <div class="oe_kanban_details">
-                                <strong><field name="name"/></strong>
-                                <div>Medal: <field name="medal_id"/></div>
-                                <div>Ribbon: <field name="ribbon_id"/></div>
-                                <div>Force: <field name="force_id"/></div>
-                                <div>Mission: <field name="mission_name"/></div>
-                            </div>
+                    <t t-name="card">
+                        <div class="d-flex flex-column">
+                            <strong><field name="name"/></strong>
+                            <div t-if="record.medal_id.raw_value">Medal: <field name="medal_id"/></div>
+                            <div t-if="record.ribbon_id.raw_value">Ribbon: <field name="ribbon_id"/></div>
+                            <div t-if="record.force_id.raw_value">Force: <field name="force_id"/></div>
+                            <div t-if="record.mission_name.raw_value">Mission: <field name="mission_name"/></div>
                         </div>
                     </t>
                 </templates>

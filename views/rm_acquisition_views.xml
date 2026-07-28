@@ -7,7 +7,6 @@
             <list string="Acquisition Ledger" create="false" edit="false" delete="false" sample="1">
                 <field name="person_id"/>
                 <field name="award_id"/>
-                <field name="seniority_sequence" optional="hide"/>
                 <field name="source" widget="badge"
                        decoration-info="source == 'personal'"
                        decoration-success="source == 'mission'"

@@ -23,6 +23,20 @@
                         <button name="%(action_res_person)d" type="action"
                                 class="oe_stat_button" icon="fa-users">
                         </button>
+                        <button name="action_view_ribbon_product" type="object"
+                                class="oe_stat_button" icon="fa-tag"
+                                invisible="not ribbon_product_tmpl_id">
+                            <div class="o_form_field o_stat_info">
+                                <span class="o_stat_text">Ribbon Product</span>
+                            </div>
+                        </button>
+                        <button name="action_view_medal_product" type="object"
+                                class="oe_stat_button" icon="fa-tag"
+                                invisible="not medal_product_tmpl_id">
+                            <div class="o_form_field o_stat_info">
+                                <span class="o_stat_text">Medal Product</span>
+                            </div>
+                        </button>
                     </div>
                     <div class="oe_title">
                         <label for="decoration_name"/>
@@ -37,6 +51,8 @@
                             <field name="is_ribbon"/>
                             <field name="is_medal"/>
                             <field name="active" invisible="1"/>
+                            <field name="ribbon_product_tmpl_id" invisible="1"/>
+                            <field name="medal_product_tmpl_id" invisible="1"/>
                         </group>
                     </group>
                     <notebook>

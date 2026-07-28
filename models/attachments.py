@@ -10,7 +10,6 @@ class ribbonAttachments(models.Model):
 
     name = fields.Char(required=True, string='Name')
     image = fields.Binary(string='Image', attachment=True)
-    force_name = fields.Many2one('rm.forces',string='Force')
     active = fields.Boolean(default=True)
 
     force_id = fields.Many2one('rm.forces', string='Force', ondelete='restrict', index=True)

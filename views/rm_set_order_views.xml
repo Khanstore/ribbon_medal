@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rm_set_order_list" model="ir.ui.view">
+        <field name="name">rm.set.order.list</field>
+        <field name="model">rm.set.order</field>
+        <field name="arch" type="xml">
+            <list string="Set Orders" decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="person_id"/>
+                <field name="set_type"/>
+                <field name="production_count"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'produced'"
+                       decoration-info="state == 'confirmed'"
+                       decoration-danger="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rm_set_order_form" model="ir.ui.view">
+        <field name="name">rm.set.order.form</field>
+        <field name="model">rm.set.order</field>
+        <field name="arch" type="xml">
+            <form string="Set Order">
+                <header>
+                    <button name="action_populate_lines" type="object"
+                            string="Populate Lines from Ledger"
+                            invisible="state != 'draft'" class="btn-secondary"/>
+                    <button name="action_confirm" type="object"
+                            string="Confirm" invisible="state != 'draft'"
+                            class="btn-primary"/>
+                    <button name="action_generate_manufacturing_orders" type="object"
+                            string="Generate Manufacturing Orders"
+                            invisible="state != 'confirmed'" class="btn-primary"/>
+                    <button name="action_reset_to_draft" type="object"
+                            string="Reset to Draft"
+                            invisible="state not in ('confirmed', 'cancel')"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            invisible="state not in ('draft', 'confirmed')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,produced"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_productions" type="object"
+                                class="oe_stat_button" icon="fa-flask"
+                                invisible="production_count == 0">
+                            <field name="production_count" widget="statinfo"
+                                   string="Manufacturing Orders"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="person_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="set_type"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Lines">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="award_id"/>
+                                    <field name="point_qty"/>
+                                    <field name="component_product_id"/>
+                                    <field name="mrp_production_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rm_set_order_search" model="ir.ui.view">
+        <field name="name">rm.set.order.search</field>
+        <field name="model">rm.set.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Set Orders">
+                <field name="name"/>
+                <field name="person_id"/>
+                <filter name="filter_ribbon" string="Ribbon Set"
+                        domain="[('set_type', '=', 'ribbon')]"/>
+                <filter name="filter_big_medal" string="Big Medal Set"
+                        domain="[('set_type', '=', 'big_medal')]"/>
+                <filter name="filter_mini_medal" string="Mini Medal Set"
+                        domain="[('set_type', '=', 'mini_medal')]"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_confirmed" string="Confirmed"
+                        domain="[('state', '=', 'confirmed')]"/>
+                <filter name="filter_produced" string="Produced"
+                        domain="[('state', '=', 'produced')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="groupby_person" string="Force Member"
+                            context="{'group_by': 'person_id'}"/>
+                    <filter name="groupby_set_type" string="Set Type"
+                            context="{'group_by': 'set_type'}"/>
+                    <filter name="groupby_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rm_set_order" model="ir.actions.act_window">
+        <field name="name">Set Orders</field>
+        <field name="res_model">rm.set.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Ribbon / Medal Set production order for a Force Member
+            </p>
+        </field>
+    </record>
+</odoo>

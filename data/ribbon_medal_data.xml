@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo noupdate="1">
-    <!--<record id="rule_batch" model="rm.rules.category">
+    <record id="rule_batch" model="rm.rules.category">
         <field name="name">batch</field>
         <field name="details">Awarded to all personnel of a given training/service batch.</field>
     </record>
@@ -19,5 +19,5 @@
     <record id="force_police" model="rm.forces">
         <field name="name">Police</field>
         <field  name="description">Bangladesh Police</field>
-    </record>-->
+    </record>
 </odoo>

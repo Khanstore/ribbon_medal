@@ -18,8 +18,10 @@ class RmPRB(models.Model):
     is_medal = fields.Boolean(string='Is Medal')
     service_age=fields.Integer(string='Service Age')
     attachment_id = fields.Many2one('rm.attachment', string='Attachment')
-    ribbon_image = fields.Binary(string='Ribbon Image', attachment=True)
-    medal_image = fields.Binary(string='Medal Image', attachment=True)
+    ribbon_image = fields.Binary(
+        string='Ribbon Image', compute='_compute_award_images', inverse='_inverse_ribbon_image')
+    medal_image = fields.Binary(
+        string='Medal Image', compute='_compute_award_images', inverse='_inverse_medal_image')
     mission_name = fields.Char(string='Mission Name')
     active = fields.Boolean(default=True)
 
@@ -27,4 +29,34 @@ class RmPRB(models.Model):
     rule_category_id = fields.Many2one(
         'rm.rules.category', string='Rules Category', ondelete='restrict')
 
-    
+    def _compute_award_images(self):
+        for record in self:
+            record.ribbon_image = record.sudo().ribbon_id.ribbon_product_tmpl_id.image_1920
+            record.medal_image = record.sudo().medal_id.medal_product_tmpl_id.image_1920
+
+    def _inverse_ribbon_image(self):
+        for record in self:
+            tmpl = record.sudo().ribbon_id.ribbon_product_tmpl_id
+            if tmpl:
+                tmpl.sudo().image_1920 = record.ribbon_image
+
+    def _inverse_medal_image(self):
+        for record in self:
+            tmpl = record.sudo().medal_id.medal_product_tmpl_id
+            if tmpl:
+                tmpl.sudo().image_1920 = record.medal_image
+
+    @api.model
+    def copy(self, default=None):
+        # 1. Initialize the default dictionary if it's not provided
+        default = dict(default or {})
+
+        # 2. Add the suffix to the name field
+        if self.name:
+            default['name'] = f"{self.name} (copy)"
+
+        # 3. Clear out the field value (set it to False)
+        default['mission_name'] = False
+
+        # 4. Call the super method to finalize creation
+        return super(RmPRB, self).copy(default=default)

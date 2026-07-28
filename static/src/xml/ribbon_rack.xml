@@ -3,13 +3,15 @@
 <t t-name="ribbon_medal.RibbonRackField">
 <div class="o_ribbon_rack">
 <div t-if="!sortedAwards.length" class="o_ribbon_rack_empty_state text-muted"> No decorations obtained yet. </div>
-<div t-else="" class="o_ribbon_rack_grid">
-<t t-foreach="gridCells" t-as="cell" t-key="cell_index">
-<div t-attf-class="o_ribbon_rack_cell {{ cell ? 'o_ribbon_rack_filled' : 'o_ribbon_rack_blank' }}" t-att-title="cell ? cell.data.name : ''">
-<t t-if="cell">
+<div t-else="" class="o_ribbon_rack_rows">
+<t t-foreach="rows" t-as="row" t-key="row_index">
+<div class="o_ribbon_rack_row">
+<t t-foreach="row" t-as="cell" t-key="cell_index">
+<div class="o_ribbon_rack_cell o_ribbon_rack_filled" t-att-title="cell.data.name">
 <img t-if="getImageUrl(cell)" t-att-src="getImageUrl(cell)" t-att-alt="cell.data.name" class="o_ribbon_rack_img"/>
 <div t-else="" class="o_ribbon_rack_placeholder">
 <span t-esc="cell.data.name"/>
+</div>
 </div>
 </t>
 </div>

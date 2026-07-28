@@ -77,11 +77,9 @@
                             </field>
                         </page>
                         <page string="Award" name="personal_awards">
-                            <field name="personal_award_ledger_ids" nolabel="1"
-                                   >
+                            <field name="personal_award_ledger_ids" nolabel="1">
                                 <list>
                                     <field name="award_id"/>
-<!--                                    <field name="award_year "/>-->
                                     <field name="note"/>
                                 </list>
                             </field>
