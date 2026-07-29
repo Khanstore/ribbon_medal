@@ -55,8 +55,7 @@ class ResPerson(models.Model):
     service_confirmation_date = fields.Date(string='Service Confirmation Date')
 
     obtained_awards_ids = fields.Many2many(
-        'rm.prb', 'rm_prb_res_person_rel', 'person_id', 'prb_id',
-        string='Obtained Awards')
+        'rm.prb', string='Obtained Awards', compute='_compute_obtained_awards_ids')
     award_count = fields.Integer(compute='_compute_award_count')
     force_id = fields.Many2one(
         'rm.forces', string='Force', related='rank_id.force_id', store=True, readonly=True)
@@ -123,6 +122,17 @@ class ResPerson(models.Model):
         Acquisition = self.env['rm.acquisition']
         for person in self:
             person.award_count = Acquisition.search_count([('person_id', '=', person.id)])
+
+    def _compute_obtained_awards_ids(self):
+        # Derived live from the Acquisition Ledger (same source as
+        # award_count above), not a separately-maintained many2many - so
+        # the Ribbon Rack always reflects what's actually in the ledger
+        # (Personal Awards + Missions + Seniority + Batch, minus Excluded)
+        # instead of requiring duplicate manual assignment.
+        Acquisition = self.env['rm.acquisition']
+        for person in self:
+            acquisitions = Acquisition.search([('person_id', '=', person.id)])
+            person.obtained_awards_ids = acquisitions.mapped('award_id')
 
     @api.onchange('id_number')
     def extract_years_from_id_number(self):

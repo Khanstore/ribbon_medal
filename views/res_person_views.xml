@@ -68,7 +68,7 @@
                             <field name="obtained_awards_ids" widget="ribbon_rack" nolabel="1">
                                 <list>
                                     <field name="name"/>
-                                    <field name="seniority_sequence"/>
+                                    <field name="sequence"/>
                                     <field name="is_ribbon"/>
                                     <field name="is_medal"/>
                                     <field name="ribbon_image"/>

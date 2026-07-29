@@ -13,8 +13,10 @@ class RmDecoration(models.Model):
     attachment_id = fields.Many2one('rm.attachment', string='Attachment')
     is_ribbon = fields.Boolean(string='Is Ribbon')
     is_medal = fields.Boolean(string='Is Medal')
-    ribbon_image = fields.Binary(string='Ribbon Image', attachment=True)
-    medal_image = fields.Binary(string='Medal Image', attachment=True)
+    ribbon_image = fields.Binary(
+        string='Ribbon Image', compute='_compute_award_images', inverse='_inverse_ribbon_image')
+    medal_image = fields.Binary(
+        string='Medal Image', compute='_compute_award_images', inverse='_inverse_medal_image')
     mission_name = fields.Char(string='Mission Name')
     active = fields.Boolean(default=True)
 
@@ -38,6 +40,23 @@ class RmDecoration(models.Model):
                 raise ValidationError(
                     _('The award "%s" must be flagged as at least a Ribbon or a Medal.')
                     % record.decoration_name)
+
+    def _compute_award_images(self):
+        for record in self:
+            record.ribbon_image = record.sudo().ribbon_product_tmpl_id.image_1920
+            record.medal_image = record.sudo().medal_product_tmpl_id.image_1920
+
+    def _inverse_ribbon_image(self):
+        for record in self:
+            tmpl = record.sudo().ribbon_product_tmpl_id
+            if tmpl:
+                tmpl.sudo().image_1920 = record.ribbon_image
+
+    def _inverse_medal_image(self):
+        for record in self:
+            tmpl = record.sudo().medal_product_tmpl_id
+            if tmpl:
+                tmpl.sudo().image_1920 = record.medal_image
 
     def _get_size_attribute_and_values(self):
         """Return the shared 'Size' product.attribute and its S/L values,
@@ -83,12 +102,16 @@ class RmDecoration(models.Model):
             vals['tracking'] = 'none'
         return vals
 
-    def _sync_award_product(self, flag_field, tmpl_field, label):
+    def _sync_award_product(self, flag_field, tmpl_field, label, initial_image=None):
         """Create/reactivate or archive the product.template linked via
         `tmpl_field` to match the current value of `flag_field`. Runs as
         sudo so editing a decoration doesn't require product-module
-        access rights."""
+        access rights. `initial_image` (keyed by record id) carries an
+        image passed in the SAME create()/write() call that set the
+        flag - the image field can't supply it via its own inverse yet,
+        since the product doesn't exist until this method creates it."""
         Product = self.env['product.template'].sudo()
+        initial_image = initial_image or {}
         for record in self:
             tmpl = record[tmpl_field]
             if record[flag_field]:
@@ -96,8 +119,11 @@ class RmDecoration(models.Model):
                     if not tmpl.active:
                         tmpl.sudo().active = True
                 else:
-                    new_tmpl = Product.create(
-                        record._prepare_award_product_vals(label))
+                    vals = record._prepare_award_product_vals(label)
+                    image = initial_image.get(record.id)
+                    if image:
+                        vals['image_1920'] = image
+                    new_tmpl = Product.create(vals)
                     record.sudo().write({tmpl_field: new_tmpl.id})
             else:
                 if tmpl and tmpl.active:
@@ -106,16 +132,20 @@ class RmDecoration(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
-        records._sync_award_product('is_ribbon', 'ribbon_product_tmpl_id', 'Ribbon')
-        records._sync_award_product('is_medal', 'medal_product_tmpl_id', 'Medal')
+        ribbon_images = {r.id: v.get('ribbon_image') for r, v in zip(records, vals_list) if v.get('ribbon_image')}
+        medal_images = {r.id: v.get('medal_image') for r, v in zip(records, vals_list) if v.get('medal_image')}
+        records._sync_award_product('is_ribbon', 'ribbon_product_tmpl_id', 'Ribbon', ribbon_images)
+        records._sync_award_product('is_medal', 'medal_product_tmpl_id', 'Medal', medal_images)
         return records
 
     def write(self, vals):
         res = super().write(vals)
         if 'is_ribbon' in vals:
-            self._sync_award_product('is_ribbon', 'ribbon_product_tmpl_id', 'Ribbon')
+            image = {r.id: vals['ribbon_image'] for r in self} if vals.get('ribbon_image') else {}
+            self._sync_award_product('is_ribbon', 'ribbon_product_tmpl_id', 'Ribbon', image)
         if 'is_medal' in vals:
-            self._sync_award_product('is_medal', 'medal_product_tmpl_id', 'Medal')
+            image = {r.id: vals['medal_image'] for r in self} if vals.get('medal_image') else {}
+            self._sync_award_product('is_medal', 'medal_product_tmpl_id', 'Medal', image)
         return res
 
     def action_view_ribbon_product(self):

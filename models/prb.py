@@ -46,7 +46,6 @@ class RmPRB(models.Model):
             if tmpl:
                 tmpl.sudo().image_1920 = record.medal_image
 
-    @api.model
     def copy(self, default=None):
         # 1. Initialize the default dictionary if it's not provided
         default = dict(default or {})

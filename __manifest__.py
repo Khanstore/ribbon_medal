@@ -1,6 +1,6 @@
 {
     'name': 'Ribbon Medal - Personnel Decorations',
-    'version': '18.0.1.0.37',
+    'version': '18.0.1.0.39',
     'category': 'Human Resources',
     'summary': 'Manage personnel records and their decorations (ribbons/medals) for military/police organizations',
     'description': """
@@ -21,7 +21,7 @@ Features
 """,
     'author': 'Khan Store',
     'license': 'LGPL-3',
-    'depends': ['base', 'mail', 'product'],
+    'depends': ['base','sale','stock', 'mail', 'product'],
     'data': [
         'security/ribbon_medal_security.xml',
         'security/ir.model.access.csv',
