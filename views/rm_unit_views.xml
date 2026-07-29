@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rm_unit_list" model="ir.ui.view">
+        <field name="name">rm.unit.list</field>
+        <field name="model">rm.unit</field>
+        <field name="arch" type="xml">
+            <list string="Units">
+                <field name="name"/>
+                <field name="force_id"/>
+                <field name="level"/>
+                <field name="parent_id"/>
+                <field name="chief_id"/>
+                <field name="person_count"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rm_unit_form" model="ir.ui.view">
+        <field name="name">rm.unit.form</field>
+        <field name="model">rm.unit</field>
+        <field name="arch" type="xml">
+            <form string="Unit">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_personnel" type="object"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="person_count" widget="statinfo" string="Personnel"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Unit name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="force_id"/>
+                            <field name="level"/>
+                            <field name="parent_id" domain="[('level', '&gt;', level)]"/>
+                        </group>
+                        <group>
+                            <field name="chief_id"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rm_unit_search" model="ir.ui.view">
+        <field name="name">rm.unit.search</field>
+        <field name="model">rm.unit</field>
+        <field name="arch" type="xml">
+            <search string="Search Units">
+                <field name="name"/>
+                <field name="force_id"/>
+                <field name="level"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_force" string="Force" context="{'group_by': 'force_id'}"/>
+<!--                    <filter name="group_by_level" string="Level" context="{'group_by': 'level_id'}"/>-->
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rm_unit" model="ir.actions.act_window">
+        <field name="name">Units</field>
+        <field name="res_model">rm.unit</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a Unit</p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,51 @@
+.o_ribbon_rack {
+    padding: 8px 0;
+
+    .o_ribbon_rack_empty_state {
+        font-style: italic;
+        padding: 8px 0;
+    }
+
+    .o_ribbon_rack_rows {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .o_ribbon_rack_row {
+        display: flex;
+        gap: 4px;
+    }
+
+    .o_ribbon_rack_cell {
+        width: 72px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 2px;
+    }
+
+    .o_ribbon_rack_filled {
+        background-color: #e9e9e9;
+        border: 1px solid #c8c8c8;
+        overflow: hidden;
+    }
+
+    .o_ribbon_rack_img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .o_ribbon_rack_placeholder {
+        font-size: 9px;
+        text-align: center;
+        line-height: 1.1;
+        padding: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}

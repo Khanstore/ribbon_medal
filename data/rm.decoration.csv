@@ -1,0 +1,113 @@
+id,decoration_name,mission_name,is_medal,is_ribbon
+decortion_200_years_of_bgb,200 Years Of BGB,200 Years of Bgb,TRUE,TRUE
+decortion_afganistan,Afganistan,Afghanistan,TRUE,TRUE
+decortion_angola,Angola,MONUA,TRUE,TRUE
+decortion_bangabandhu_award,Bangabandhu Award,Bangabandhu Award,TRUE,TRUE
+decortion_bangabandhu_janma_shatabarshiki,Bangabandhu Janma Shatabarshiki,Janma Shata Barshiki,TRUE,TRUE
+decortion_bangladesh_ansar_medal_gallantry,Bangladesh Ansar Medal Gallantry,BAM Galantry,TRUE,TRUE
+decortion_bgb_medal,BGB Medal,BGB Service Medal,TRUE,TRUE
+decortion_bijoy_padak__1971,Bijoy Padak  1971,Bijoy Padak  1971,TRUE,TRUE
+decortion_bmm,BMM,Bar To The Medal Of Merit,TRUE,TRUE
+decortion_bosnia_harjegovina,Bosnia Harjegovina,UNMIBH,TRUE,TRUE
+decortion_bpm,BPM,BPM,TRUE,TRUE
+decortion_bpm_(sheba),BPM (sheba),BPM (sheba),TRUE,TRUE
+decortion_bvm_shahshikata,BVM Shahshikata,Bangladesh Ansar Vdp Medal Shashikata,TRUE,TRUE
+decortion_cnc,CNC,Chief National Comisioner,TRUE,TRUE
+decortion_croatia,Croatia,UNMOP,TRUE,TRUE
+decortion_cyclone_91,Cyclone 91,91 Ghurnijhar,TRUE,TRUE
+decortion_cyprus,Cyprus,UNFICYP,TRUE,TRUE
+decortion_dabanal,Dabanal,Dabanal,TRUE,TRUE
+decortion_dankon_march,Dankon March,Dankon March,FALSE,TRUE
+decortion_darfur,Darfur,UNAMID,TRUE,TRUE
+decortion_dhal_talowar,Dhal Talowar,SaradaBar,TRUE,TRUE
+decortion_el_salvador,El Salvador,ONUSAL,TRUE,TRUE
+decortion_election1991,Election1991,1991 Election,TRUE,TRUE
+decortion_election1996,Election1996,1996 Election,TRUE,TRUE
+decortion_election2001,Election2001,2001 Election,TRUE,TRUE
+decortion_election2008,Election2008,2008 Election,TRUE,TRUE
+decortion_election2014,Election2014,2014 Election,TRUE,TRUE
+decortion_election2018,Election2018,2018 Election,TRUE,TRUE
+decortion_election2024,Election2024,2024 Election,TRUE,TRUE
+decortion_eritria,Eritria,UNMEE,TRUE,TRUE
+decortion_ethiopia,Ethiopia,UNMEE,TRUE,TRUE
+decortion_georzia,Georzia,UNOMIG,TRUE,TRUE
+decortion_golden_jubilee,Golden Jubilee,50 Years of East Bengal,TRUE,TRUE
+decortion_golden_jubilee_of_independence,Golden Jubilee Of Independence,Shadhinata 100,FALSE,TRUE
+decortion_guatemala,Guatemala,MINGUA,TRUE,TRUE
+decortion_ig_badge_a,IG Badge A,IG-A,FALSE,TRUE
+decortion_ig_badge_b,IG Badge B,IG-B,FALSE,TRUE
+decortion_ig_badge_c,IG Badge C,IG-C,FALSE,TRUE
+decortion_ig_badge_d,IG Badge D,IG-D,FALSE,TRUE
+decortion_ig_badge_e,IG Badge E,IG-E,FALSE,TRUE
+decortion_ig_badge_f,IG Badge F,IG-F,FALSE,TRUE
+decortion_irak_iran,Irak Iran,UNIMOG,TRUE,TRUE
+decortion_iran_irak,Iran Irak,UNIMOG,TRUE,TRUE
+decortion_ivoricoast,Ivoricoast,UNOCI,TRUE,TRUE
+decortion_kosovo,kosovo,UNMIK,TRUE,TRUE
+decortion_kuwait,Kuwait,UNIKOM,TRUE,TRUE
+decortion_lebanon,Lebanon,UNIFIL,TRUE,TRUE
+decortion_liberia,Liberia,UNOMIL,TRUE,TRUE
+decortion_unmil,Liberia,UNMIL,TRUE,TRUE
+decortion_libia,Libia,UNSMIL,TRUE,TRUE
+decortion_mali,Mali,MINUSMA,TRUE,TRUE
+decortion_medal_of_merit,Medal Of Merit,Medal Of Merit,TRUE,TRUE
+decortion_MICAH,Haiti,MICAH,TRUE,TRUE
+decortion_minujusth,Minujusth,Minujusth,TRUE,TRUE
+decortion_minusca,Central African republic,MINUSCA,TRUE,TRUE
+decortion_minustah,Haiti,MINUSTAH,TRUE,TRUE
+decortion_MIPONUH,Haiti,MIPONUH,TRUE,TRUE
+decortion_Monusco,Congo,MONUSCO,TRUE,TRUE
+decortion_mozambik,Mozambik,ONUMOZ,TRUE,TRUE
+decortion_mukti_taroka,mukti Taroka,mukti Taroka,TRUE,TRUE
+decortion_namibia,Namibia,UNTAG,TRUE,TRUE
+decortion_nirapotta,Nirapotta,Nirapotta,TRUE,TRUE
+decortion_norcon_march,Norcon March,Norcon March,TRUE,TRUE
+decortion_pam_gallantry,PAM Gallantry,President Ansar Medal Gallantry,TRUE,TRUE
+decortion_pam_shahashikata,PAM Shahashikata,President Ansar Medal Shahashikata,TRUE,TRUE
+decortion_pam_sheba,PAM Sheba,President Ansar Medal Sheba,TRUE,TRUE
+decortion_plabon_1988,Plabon 1988,Plabon 1988,TRUE,TRUE
+decortion_plabon_1998,Plabon 1998,98 plabon,TRUE,TRUE
+decortion_ppm,PPM,PPM,TRUE,TRUE
+decortion_ppm_(sheba),PPM (Sheba),PPM Sheba,TRUE,TRUE
+decortion_president_vdp_medal_seba,President VDP Medal Seba,PVM_Seba,TRUE,TRUE
+decortion_psc,PSC,Police Staff College,TRUE,TRUE
+decortion_punargthan_bgb,Punargthan BGB,BGB Punargathan,TRUE,TRUE
+decortion_rajat_jayanti,Rajat Jayanti,Rajat Jayanti,TRUE,TRUE
+decortion_rono_taroka,Rono taroka,Rono taroka,TRUE,TRUE
+decortion_unamir,Ruanda,UNAMIR,TRUE,TRUE
+decortion_unomur,Rwanda,UNOMUR,TRUE,TRUE
+decortion_unimir,Rwanda,UNIMIR,TRUE,TRUE
+decortion_samor_padak,Samor Padak,Samor Padak,TRUE,TRUE
+decortion_sarada,sarada,sarada,TRUE,TRUE
+decortion_seniority_1,Seniority1,Jesthata 1,TRUE,TRUE
+decortion_seniority_2,seniority2,Jesthata 2,TRUE,TRUE
+decortion_seniority_3,Seniority3,Jesthata 3,TRUE,TRUE
+decortion_shadhinota,Shadhinota,Shadhinata,TRUE,TRUE
+decortion_shavapati,Shavapati,Shavapati,TRUE,TRUE
+decortion_shimanto,Shimanto,Shimanto,TRUE,TRUE
+decortion_shongbidhan,Shongbidhan,Shongbidhan,TRUE,TRUE
+decortion_sieralion,Sieralion,UNOMSIL,TRUE,TRUE
+decortion_somalia,Somalia,UNOSOM II,TRUE,TRUE
+decortion_south_sudan,South Sudan,UNMISS,TRUE,TRUE
+decortion_unmis,Sudan,UNMIS,TRUE,TRUE
+decortion_unmiss,Sudan,UNISFA,TRUE,TRUE
+decortion_tajikistan,Tajikistan,UNMOT,TRUE,TRUE
+decortion_timore_leste,Timore Leste Soliderity Medal,President Timore Medal,TRUE,TRUE
+decortion_uganda,Uganda,UNOMUR,TRUE,TRUE
+decortion_un_head_quarter,UN Head Quarter,UNHQ,TRUE,TRUE
+decortion_unamet,East Timore,UNAMET,TRUE,TRUE
+decortion_unamic,Cambodia 91-92,UNAMIC,TRUE,TRUE
+decortion_uncro,Croatia,UNCRO,TRUE,TRUE
+decortion_unmha,United Nations Mission to Support the Hudaydah Agreement in Yemen,UNMHA,TRUE,TRUE
+decortion_UNSSM,United Nations Special Service Mission,UNSSM,TRUE,TRUE
+decortion_unmih,Haiti,UNMIH,TRUE,TRUE
+decortion_unmiset,East Timore,UNMISET,TRUE,TRUE
+decortion_unmit,East Timore,UNMIT,TRUE,TRUE
+decortion_UNSMIH,Haiti,UNSMIH,TRUE,TRUE
+decortion_untac,Cambodia 92-93,UNTAC,TRUE,TRUE
+decortion_untaes,Croatia,UNTAES,TRUE,TRUE
+decortion_untaet,East Timore,UNTAET,TRUE,TRUE
+decortion_untmih,Haiti,UNTMIH,TRUE,TRUE
+decortion_uttaran,Uttaran,Uttaran,TRUE,TRUE
+decortion_west_shahara,west Shahara,MINURSO,TRUE,TRUE
+decortion_yougoslavia,Yougoslavia,UNPROFOR,TRUE,TRUE

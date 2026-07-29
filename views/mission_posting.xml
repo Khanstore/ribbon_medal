@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mission_posting_list" model="ir.ui.view">
+        <field name="name">rm.mission.posting</field>
+        <field name="model">rm.mission.posting</field>
+        <field name="arch" type="xml">
+            <list string="Missions" sample="1">
+                <field name="mission_id"/>
+                <field name="person_id"/>
+                <field name="award_year"/>
+                <field name="attachment_id" optional="show"/>
+                <field name="add_to_ribbon"/>
+                <field name="add_to_big_medal"/>
+                <field name="add_to_mini_medal"/>
+                <field name="note" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mission_posting_form" model="ir.ui.view">
+        <field name="name">rm.mission.posting.form</field>
+        <field name="model">rm.mission.posting</field>
+        <field name="arch" type="xml">
+            <form string="Mission Posting">
+                <sheet>
+                    <group>
+                        <field name="mission_id"/>
+                        <field name="person_id"/>
+                        <field name="award_year"/>
+                        <field name="attachment_id"/>
+                        <field name="add_to_ribbon"/>
+                        <field name="add_to_big_medal"/>
+                        <field name="add_to_mini_medal"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_mission_posting_search" model="ir.ui.view">
+        <field name="name">rm.mission.posting.search</field>
+        <field name="model">rm.mission.posting</field>
+        <field name="arch" type="xml">
+            <search string="Search Missions">
+                <field name="mission_id"/>
+                <field name="person_id"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_person" string="Person" context="{'group_by': 'person_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_mission_posting_acton" model="ir.actions.act_window">
+        <field name="name">Missions</field>
+        <field name="res_model">rm.mission.posting</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record a mission / special posting</p>
+        </field>
+    </record>
+</odoo>

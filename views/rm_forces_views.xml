@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rm_forces_list" model="ir.ui.view">
+        <field name="name">rm.forces.list</field>
+        <field name="model">rm.forces</field>
+        <field name="arch" type="xml">
+            <list string="Forces">
+                <field name="name"/>
+                <field name="rank_count"/>
+                <field name="decoration_count"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rm_forces_form" model="ir.ui.view">
+        <field name="name">rm.forces.form</field>
+        <field name="model">rm.forces</field>
+        <field name="arch" type="xml">
+            <form string="Force">
+                <sheet>
+                    <field name="logo" widget="image" class="oe_avatar"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_rm_ranks)d" type="action"
+                                class="oe_stat_button" icon="fa-star"
+                                context="{'default_force_id': id}">
+                            <field name="rank_count" widget="statinfo" string="Ranks"/>
+                        </button>
+                        <button name="%(action_rm_decoration)d" type="action"
+                                class="oe_stat_button" icon="fa-medkit"
+                                context="{'default_force_id': id}">
+                            <field name="decoration_count" widget="statinfo" string="Decorations"/>
+                        </button>
+                        <button name="action_view_units" type="object"
+                                class="oe_stat_button" icon="fa-building">
+                            <field name="unit_count" widget="statinfo" string="Units"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Force name"/></h1>
+                    </div>
+                    <group>
+                        <field name="description"/>
+                        <field name="active" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rm_forces" model="ir.actions.act_window">
+        <field name="name">Forces</field>
+        <field name="res_model">rm.forces</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a Force / Branch of Service</p>
+        </field>
+    </record>
+</odoo>

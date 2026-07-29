@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="unit_police_phq" model="rm.unit">
+            <field name="name">Police Headquarters</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_IGP"/>
+        </record>
+<!--        Addl IGP-->
+        <record id="unit_police_dmp_hq" model="rm.unit">
+            <field name="name">DMP Headquarters</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Add_IGP"/>
+        </record>
+        <record id="unit_police_ipphq" model="rm.unit">
+            <field name="name">Industrial Police Headquarters</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Add_IGP"/>
+        </record>
+        <record id="unit_police_tourist_hq" model="rm.unit">
+            <field name="name">Tourist Police Headquarters</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Add_IGP"/>
+        </record>
+        <record id="unit_river_police_hq" model="rm.unit">
+            <field name="name">River Police Headquarters</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Add_IGP"/>
+        </record>
+
+
+<!--        DIG Office-->
+        <record id="unit_police_dhaka_range" model="rm.unit">
+            <field name="name">Dhaka Range</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_DIG"/>
+        </record>
+        <record id="unit_police_ctg_range" model="rm.unit">
+            <field name="name">Chattogram Range</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_DIG"/>
+        </record>
+        <record id="unit_police_sylhet_range" model="rm.unit">
+            <field name="name">sylhet Range</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_DIG"/>
+        </record>
+        <record id="unit_police_khulna_range" model="rm.unit">
+            <field name="name">Khulna Range</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_DIG"/>
+        </record>
+        <record id="unit_police_rajshahi_range" model="rm.unit">
+            <field name="name">Rajshahi Range</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_DIG"/>
+        </record>
+        <record id="unit_police_mymensingh_range" model="rm.unit">
+            <field name="name">Mymensingh Range</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_DIG"/>
+        </record>
+        <record id="unit_police_rangpur_range" model="rm.unit">
+            <field name="name">Rangpur Range</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_DIG"/>
+        </record>
+        <record id="unit_police_barisal_range" model="rm.unit">
+            <field name="name">Barisal Range</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_phq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_DIG"/>
+        </record>
+<!--        SP Office-->
+        <record id="unit_police_ip2" model="rm.unit">
+            <field name="name">Industrial Police 2</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_ipphq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_SP"/>
+        </record>
+        <record id="unit_police_ip3" model="rm.unit">
+            <field name="name">Industrial Police 3</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_ipphq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_SP"/>
+        </record>
+        <record id="unit_police_ip4" model="rm.unit">
+            <field name="name">Industrial Police 4</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_ipphq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_SP"/>
+        </record>
+        <record id="unit_police_ip5" model="rm.unit">
+            <field name="name">Industrial Police 5</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_ipphq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_SP"/>
+        </record>
+
+<!--        SP-->
+        <record id="unit_police_wari_zone_dmp" model="rm.unit">
+            <field name="name">Wari Zone</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_dmp_hq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_SP"/>
+        </record>
+        <record id="unit_police_dhaka_district" model="rm.unit">
+            <field name="name">SP, Dhaka</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_dhaka_range"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_SP"/>
+        </record>
+        <record id="unit_police_munshiganj_district" model="rm.unit">
+            <field name="name">SP Munshigonj</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_dhaka_range"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_SP"/>
+        </record>
+
+<!--        Inspector-->
+
+        <record id="unit_police_nabinagar_dhaka" model="rm.unit">
+            <field name="name">Nabi nagar Thana</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_dhaka_district"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Inspector"/>
+        </record>
+        <record id="unit_police_paltan_dmp" model="rm.unit">
+            <field name="name">Paltan Thana</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_dmp_hq"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Inspector"/>
+        </record>
+
+
+
+        <record id="unit_police_savar_dhaka" model="rm.unit">
+            <field name="name">Savar Thana</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_dhaka_district"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Inspector"/>
+        </record>
+        <record id="unit_police_shirajdikhan_munshigonj" model="rm.unit">
+            <field name="name">Shirajdikhan Thana</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_munshiganj_district"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Inspector"/>
+        </record>
+        <record id="unit_police_sreenagar_munshigonj" model="rm.unit">
+            <field name="name">Sree nagar Thana</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_munshiganj_district"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Inspector"/>
+        </record>
+        <record id="unit_police_tongibari_munshigonj" model="rm.unit">
+            <field name="name">Tongibari Thana</field>
+            <field name="force_id" ref="ribbon_medal.force_police"/>
+            <field name="parent_id" ref="ribbon_medal.unit_police_munshiganj_district"/>
+            <field name="chief_id" ref="ribbon_medal.Police_ranks_Inspector"/>
+        </record>
+
+    </data>
+</odoo>

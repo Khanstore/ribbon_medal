@@ -1,0 +1,16 @@
+id,force_id,name,code,seniority_level
+Police_ranks_IGP,ribbon_medal.force_police,IGP,IGP,15
+Police_ranks_Add IGP,ribbon_medal.force_police,Add IGP,Add IGP,14
+Police_ranks_DIG,ribbon_medal.force_police,DIG,DIG,13
+Police_ranks_Add DIG,ribbon_medal.force_police,Additional Deputy Inspector General,Add DIG,12
+Police_ranks_SP,ribbon_medal.force_police,Police Super,SP,11
+Police_ranks_Add SP,ribbon_medal.force_police,Additional Police Super,Add SP,10
+Police_ranks_SrASP,ribbon_medal.force_police,Senior Assistant Police Super,SrASP,9
+Police_ranks_ASP,ribbon_medal.force_police,Assistant Police Super,ASP,8
+Police_ranks_Inspector,ribbon_medal.force_police,Inspector,Inspector,7
+Police_ranks_Sgt,ribbon_medal.force_police,Sergeant,Sgt,6
+Police_ranks_SI,ribbon_medal.force_police,Sub Inspector,SI,6
+Police_ranks_ASI,ribbon_medal.force_police,Asistant Sub Inspector,ASI,5
+Police_ranks_ATSI,ribbon_medal.force_police,Asistant Town Sub Inspector ,ATSI,5
+Police_ranks_NK,ribbon_medal.force_police,Nayek,NK,3
+Police_ranks_PC,ribbon_medal.force_police,Contable,PC,1
