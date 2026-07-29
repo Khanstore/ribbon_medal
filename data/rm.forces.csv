@@ -1,0 +1,10 @@
+"id","name","description"
+"force_police","Police",
+"force_ansar","Ansar",
+"force_bgb","BGB",
+"force_army","Army",
+"force_navy","Navy",
+"force_air_force","Air force",
+"force_coast_guard","Coast Guard",
+"force_scouts","Scouts",
+"force_civil","Civil",

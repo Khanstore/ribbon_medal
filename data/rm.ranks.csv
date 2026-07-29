@@ -1,16 +1,94 @@
-id,force_id,name,code,seniority_level
-Police_ranks_IGP,ribbon_medal.force_police,IGP,IGP,15
-Police_ranks_Add IGP,ribbon_medal.force_police,Add IGP,Add IGP,14
-Police_ranks_DIG,ribbon_medal.force_police,DIG,DIG,13
-Police_ranks_Add DIG,ribbon_medal.force_police,Additional Deputy Inspector General,Add DIG,12
-Police_ranks_SP,ribbon_medal.force_police,Police Super,SP,11
-Police_ranks_Add SP,ribbon_medal.force_police,Additional Police Super,Add SP,10
-Police_ranks_SrASP,ribbon_medal.force_police,Senior Assistant Police Super,SrASP,9
-Police_ranks_ASP,ribbon_medal.force_police,Assistant Police Super,ASP,8
-Police_ranks_Inspector,ribbon_medal.force_police,Inspector,Inspector,7
-Police_ranks_Sgt,ribbon_medal.force_police,Sergeant,Sgt,6
-Police_ranks_SI,ribbon_medal.force_police,Sub Inspector,SI,6
-Police_ranks_ASI,ribbon_medal.force_police,Asistant Sub Inspector,ASI,5
-Police_ranks_ATSI,ribbon_medal.force_police,Asistant Town Sub Inspector ,ATSI,5
-Police_ranks_NK,ribbon_medal.force_police,Nayek,NK,3
-Police_ranks_PC,ribbon_medal.force_police,Contable,PC,1
+"id","name","force_id/id","seniority_level"
+"police_rank_igp","IGP","force_police",1
+"police_rank_dig","DIG","force_police",3
+"police_rank_aig","AIG","force_police",6
+"police_rank_addl_ig","Addl IG","force_police",2
+"police_rank_sp","SP","force_police",6
+"police_rank_addl_sp","Addl SP","force_police",7
+"police_rank_asp","ASP","force_police",9
+"police_rank_senior_asp","Senior ASP","force_police",8
+"police_rank_sergeant","Sergeant","force_police",11
+"police_rank_inspector","Inspector","force_police",10
+"police_rank_si","SI","force_police",11
+"police_rank_asi","ASI","force_police",12
+"police_rank_nk","NK","force_police",13
+"police_rank_constable","Constable","force_police",14
+"police_rank_dc","DC","force_police",6
+"police_rank_adc","ADC","force_police",7
+"police_rank_ac","AC","force_police",8
+"police_rank_comissioner(addl_ig)","Comissioner(addl Ig)","force_police",2
+"police_rank_director","Director","force_police",3
+"police_rank_dd","DD","force_police",3
+"police_rank_addl_dig","Addl DIG","force_police",4
+"army_rank_lt","Lt","force_army",9
+"army_rank_colonel","Colonel","force_army",5
+"police_rank_atsi","ATSI","force_police",12
+"police_rank_tsi","TSI","force_police",11
+"navy_rank_admiral","Admiral","force_navy",1
+"navy_rank_vice_admiral","Vice Admiral","force_navy",2
+"navy_rank_rear_admiral","Rear Admiral","force_navy",3
+"navy_rank_comodore","Comodore","force_navy",4
+"navy_rank_captain","Captain","force_navy",5
+"navy_rank_commander","Commander","force_navy",6
+"navy_rank_lt_commander","Lt Commander","force_navy",7
+"navy_rank_lieutenant","Lieutenant","force_navy",8
+"navy_rank_sub_lieutenant","Sub Lieutenant","force_navy",9
+"ansar_rank_dg","DG","force_ansar",1
+"ansar_rank_adg","ADG","force_ansar",2
+"ansar_rank_ddg","DDG","force_ansar",3
+"ansar_rank_director","Director","force_ansar",4
+"ansar_rank_dd","DD","force_ansar",5
+"ansar_rank_district_commandant","District Commandant","force_ansar",5
+"ansar_rank_batalion_commandant","Batalion Commandant","force_ansar",5
+"ansar_rank_circle_adjutant","Circle Adjutant","force_ansar",7
+"ansar_rank_asst_adjutant","Asst Adjutant","force_ansar",7
+"ansar_rank_tavdo","TAVDO","force_ansar",7
+"ansar_rank_ti","TI","force_ansar",8
+"ansar_rank_pc","PC","force_ansar",9
+"ansar_rank_apc","APC","force_ansar",10
+"ansar_rank_ansar","Ansar","force_ansar",11
+"police_rank_ti","TI","force_police",10
+"police_rank_asi_ab","ASI AB","force_police",12
+"police_rank_si_ab","SI AB","force_police",11
+"army_rank_gen","Gen","force_army",1
+"army_rank_lt._gen","Lt. Gen","force_army",2
+"army_rank_maj._gen","Maj. Gen","force_army",3
+"army_rank_brig._gen","Brig. Gen","force_army",4
+"army_rank_bsm","BSM","force_army",16
+"army_rank_lt._col","Lt. Col","force_army",6
+"army_rank_maj.","Maj.","force_army",7
+"army_rank_capt","Capt","force_army",8
+"army_rank_rsm","RSM","force_army",16
+"army_rank_2lt","2Lt","force_army",10
+"army_rank_h/capt","H/Capt","force_army",11
+"army_rank_h/lt","H/Lt","force_army",12
+"army_rank_mwo","MWO","force_army",13
+"army_rank_swo","SWO","force_army",14
+"army_rank_wo","WO","force_army",15
+"army_rank_bqms","BQMS","force_army",17
+"army_rank_rqms","RQMS","force_army",17
+"army_rank_cqms","CQMS","force_army",18
+"army_rank_csm","CSM","force_army",18
+"army_rank_sgt","Sgt","force_army",19
+"army_rank_cpl","Cpl","force_army",20
+"army_rank_l_cpl","L Cpl","force_army",21
+"army_rank_snk","Snk","force_army",22
+"police_rank_dg","DG","force_police",2
+"police_rank_civil","Civil","force_police",25
+"bgb_rank_director","Director","force_bgb",1
+"bgb_rank_asst._director","Asst. Director","force_bgb",3
+"bgb_rank_deputy_asst_director","Deputy Asst Director","force_bgb",4
+"bgb_rank_subedar_major","Subedar Major","force_bgb",5
+"bgb_rank_subedar","subedar","force_bgb",6
+"bgb_rank_nk_subedar","NK subedar","force_bgb",7
+"bgb_rank_habildar","Habildar","force_bgb",8
+"bgb_rank_nk","NK","force_bgb",9
+"bgb_rank_lance_nayek","Lance Nayek","force_bgb",10
+"bgb_rank_sepoy","sepoy","force_bgb",11
+"bgb_rank_deputy_director","Deputy Director","force_bgb",2
+"ansar_rank_ad","AD","force_ansar",6
+"police_rank_commissioner_(dig)","commissioner (DIG)","force_police",3
+"air_force_rank_mwo","MWO","force_air_force",1
+"scouts_rank_alt","ALT","force_scouts",0
+"police_rank_sr_sp","Sr SP","force_police",5
+"civil_rank_fredom_fighter","Fredom fighter","force_civil",1

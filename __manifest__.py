@@ -29,6 +29,8 @@ Features
         'data/rm_attachment_data.xml',
         'data/product_attribute_data.xml',
         'data/rm.decoration.csv',
+        'data/rm.rules.category.csv',
+        'data/rm.prb.csv',
         # 'data/rm.ranks.csv',
         'data/ribbon_medal_ranks.xml',
         'data/force_unit_data.xml',
