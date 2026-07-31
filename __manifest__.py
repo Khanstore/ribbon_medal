@@ -1,6 +1,6 @@
 {
     'name': 'Ribbon Medal - Personnel Decorations',
-    'version': '18.0.1.0.40',
+    'version': '18.0.1.0.45',
     'category': 'Human Resources',
     'summary': 'Manage personnel records and their decorations (ribbons/medals) for military/police organizations',
     'description': """
@@ -21,7 +21,7 @@ Features
 """,
     'author': 'Khan Store',
     'license': 'LGPL-3',
-    'depends': ['base','sale','stock', 'mail', 'product'],
+    'depends': ['base', 'sale', 'stock', 'mail','website_sale','purchase' ,'product', 'mrp'],
     'data': [
         'security/ribbon_medal_security.xml',
         'security/ir.model.access.csv',
@@ -29,11 +29,12 @@ Features
         'data/rm_attachment_data.xml',
         'data/product_attribute_data.xml',
         'data/rm.decoration.csv',
-        'data/rm.rules.category.csv',
+        # 'data/rm.rules.category.csv',
         'data/rm.prb.csv',
         # 'data/rm.ranks.csv',
         'data/ribbon_medal_ranks.xml',
         'data/force_unit_data.xml',
+        'data/rm_manufacturing_data.xml',
 
         'views/res_person_views.xml',
         'views/rm_ranks_views.xml',
@@ -50,6 +51,7 @@ Features
         'views/rm_unit_views.xml',
         'views/rm_unit_category_views.xml',
         'views/rm_forces_views.xml',
+        'views/rm_set_order_views.xml',
         'views/ribbon_medal_menus.xml',
     ],
     'assets': {

@@ -13,3 +13,5 @@ from . import posting_mision
 from . import rm_excluded_award
 from . import rm_acquisition
 from . import rm_acquisition_custom
+from . import mrp_production
+from . import rm_set_order

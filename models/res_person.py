@@ -161,10 +161,11 @@ class ResPerson(models.Model):
                 record.service_confirmation_date  = False
 
     def get_sorted_awards(self):
-        """Return obtained awards sorted for Ribbon Rack display: highest
-        seniority_sequence first (destined for the bottom-right position)."""
+        """Return obtained awards sorted for Ribbon Rack display: lowest
+        `sequence` first (highest precedence, destined for the
+        bottom-right position)."""
         self.ensure_one()
-        return self.obtained_awards_ids.sorted(key=lambda decoration: decoration.seniority_sequence, reverse=True)
+        return self.obtained_awards_ids.sorted(key=lambda decoration: decoration.sequence)
 
     def action_view_awards(self):
         """Smart-button action: open this person's consolidated Acquisition
@@ -178,6 +179,16 @@ class ResPerson(models.Model):
             'view_mode': 'list',
             'domain': [('person_id', '=', self.id)],
         }
+
+    def action_generate_ribbon_rack(self):
+        """Find or create this person's rm.set.order, then open the wizard
+        to pick a quantity and generate the Manufacturing Order."""
+        self.ensure_one()
+        SetOrder = self.env['rm.set.order']
+        order = SetOrder.search([('person_id', '=', self.id)], limit=1)
+        if not order:
+            order = SetOrder.create({'person_id': self.id})
+        return order.action_open_mo_wizard()
 
     def action_copy_ledger_to_custom(self):
         """Snapshot this person's current Acquisition Ledger into their

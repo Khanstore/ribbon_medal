@@ -2,174 +2,196 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+# Fixed per the spec: each acquired decoration contributes this much Size-L
+# ribbon material (in the ribbon product's own UoM, e.g. cm) and this many
+# Kathi (mounting bar) units to a rack.
+RIBBON_QTY_PER_ACQUISITION = 0.04
+KATHI_QTY_PER_ACQUISITION = 0.25
+
 
 class RmSetOrder(models.Model):
-    """Production request for one Force Member's Ribbon Set, Big Medal Set,
-    or Mini Medal Set.
+    """Ribbon Rack manufacturing request for one person.
 
-    Bridges the read-only Acquisition Ledger (`rm.acquisition` - how many
-    times a person acquired each decoration, i.e. their "points" per
-    decoration) with Manufacturing: `action_populate_lines` groups the
-    ledger by decoration into `rm.set.order.line` rows (one per decoration,
-    qty = point count), and `action_generate_manufacturing_orders` creates
-    one `mrp.production` per line for the matching Set component product
-    (Ribbon Bar / Big Medal / Mini Medal), in the `Point` UoM - so the
-    BoM (defined per 1 Point) auto-scales raw material consumption.
+    Bridges the read-only Acquisition Ledger (`rm.acquisition`) with
+    Manufacturing: `action_get_or_create_bom` builds a `mrp.bom` specific
+    to this person's exact combination of decorations (one line of Size-L
+    ribbon per active acquisition, plus one Kathi line sized to the total
+    count), and `action_create_mo` raises a `mrp.production` against that
+    BoM for whatever quantity of racks is requested.
     """
     _name = 'rm.set.order'
-    _description = 'Ribbon / Medal Set Production Order'
+    _description = 'Ribbon Rack Set Order'
     _order = 'id desc'
 
     name = fields.Char(default='New', copy=False, readonly=True)
     person_id = fields.Many2one(
-        'res.person', required=True, string='Force Member',
-        ondelete='restrict')
-    set_type = fields.Selection([
-        ('ribbon', 'Ribbon Set'),
-        ('big_medal', 'Big Medal Set'),
-        ('mini_medal', 'Mini Medal Set'),
-    ], required=True, string='Set Type', default='ribbon')
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('confirmed', 'Confirmed'),
-        ('produced', 'Produced'),
-        ('cancel', 'Cancelled'),
-    ], default='draft', string='Status', copy=False, tracking=True)
-    line_ids = fields.One2many(
-        'rm.set.order.line', 'order_id', string='Lines')
-    production_count = fields.Integer(
-        string='Manufacturing Orders', compute='_compute_production_count')
+        'res.person', required=True, string='Person', ondelete='restrict', index=True)
+    product_id = fields.Many2one(
+        'product.product', required=True, string='Ribbon Rack Product',
+        default=lambda self: self._default_product_id(),
+        help='The finished "Ribbon Rack" product this order manufactures.')
+    quantity = fields.Float(string='Default Quantity', default=1.0, required=True)
+    bom_id = fields.Many2one(
+        'mrp.bom', string='Bill of Materials', readonly=True, copy=False,
+        help="This person's specific ribbon combination, built the first "
+             'time a BoM is needed and reused after that.')
+    mrp_production_ids = fields.One2many(
+        'mrp.production', 'rm_set_order_id', string='Manufacturing Orders')
+    mrp_production_count = fields.Integer(compute='_compute_mrp_production_count')
+
+    def _default_product_id(self):
+        rack_tmpl = self.env.ref('ribbon_medal.product_ribbon_rack', raise_if_not_found=False)
+        return rack_tmpl.product_variant_id if rack_tmpl else self.env['product.product']
 
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get('name', 'New') == 'New':
-                vals['name'] = self.env['ir.sequence'].next_by_code(
-                    'rm.set.order') or 'New'
+                vals['name'] = self.env['ir.sequence'].next_by_code('rm.set.order') or 'New'
         return super().create(vals_list)
 
-    def _compute_production_count(self):
+    def _compute_mrp_production_count(self):
         for order in self:
-            order.production_count = len(
-                order.line_ids.mapped('mrp_production_id'))
+            order.mrp_production_count = len(order.mrp_production_ids)
 
-    def _get_component_product(self, award):
-        """Resolve the Set component product (UoM=Point) to manufacture for
-        a given rm.prb award, according to this order's set_type."""
+    def _get_size_l_variant(self, product_tmpl):
+        """Return the Size=L product.product variant of `product_tmpl`."""
+        if not product_tmpl:
+            return self.env['product.product']
+        return product_tmpl.product_variant_ids.filtered(
+            lambda p: 'L' in p.product_template_attribute_value_ids.mapped(
+                'product_attribute_value_id.name')
+        )[:1]
+
+    def _prepare_bom_lines(self):
+        """One BoM line of Size-L ribbon per active acquisition, plus one
+        Kathi (mounting bar) line sized to the total acquisition count."""
         self.ensure_one()
-        if self.set_type == 'ribbon':
-            return award.ribbon_id.ribbon_bar_product_id
-        if self.set_type == 'big_medal':
-            return award.medal_id.big_medal_product_id
-        if self.set_type == 'mini_medal':
-            return award.medal_id.mini_medal_product_id
-        return self.env['product.product']
+        acquisitions = self.env['rm.acquisition'].search([('person_id', '=', self.person_id.id)])
+        if not acquisitions:
+            raise UserError(_(
+                '%s has no acquisitions on the Acquisition Ledger to build a ribbon rack for.'
+            ) % self.person_id.display_name)
 
-    def action_populate_lines(self):
-        """(Re)build line_ids from the person's live Acquisition Ledger:
-        one line per decoration actually earned, qty = number of times it
-        was earned (their "points" for that decoration), restricted to
-        decorations relevant to this order's set_type (is_ribbon for Ribbon
-        Set, is_medal for the two Medal Sets) and that have a configured
-        Set component product."""
-        Acquisition = self.env['rm.acquisition']
-        Line = self.env['rm.set.order.line']
-        for order in self:
-            if order.state != 'draft':
+        uom_unit = self.env.ref('uom.product_uom_unit', raise_if_not_found=False)
+        lines = []
+        for acquisition in acquisitions:
+            decoration = acquisition.award_id.ribbon_id
+            tmpl = decoration.ribbon_product_tmpl_id if decoration else False
+            variant = self._get_size_l_variant(tmpl)
+            if not variant:
                 raise UserError(_(
-                    'Only Draft orders can have their lines repopulated.'))
-            order.line_ids.unlink()
+                    'No Size L ribbon product variant found for "%s". Make sure that '
+                    'decoration is flagged "Is Ribbon" so its ribbon product is created.'
+                ) % (decoration.decoration_name if decoration else acquisition.award_id.name))
+            lines.append((0, 0, {
+                'product_id': variant.id,
+                'product_qty': RIBBON_QTY_PER_ACQUISITION,
+                'product_uom_id': variant.uom_id.id,
+            }))
 
-            entries = Acquisition.search([('person_id', '=', order.person_id.id)])
-            point_counts = {}
-            for entry in entries:
-                award = entry.award_id
-                if order.set_type == 'ribbon' and not award.is_ribbon:
-                    continue
-                if order.set_type in ('big_medal', 'mini_medal') and not award.is_medal:
-                    continue
-                point_counts[award] = point_counts.get(award, 0) + 1
+        kathi_tmpl = self.env.ref('ribbon_medal.product_ribbon_kathi', raise_if_not_found=False)
+        if not kathi_tmpl:
+            raise UserError(_('The "Ribbon Kathi" component product is not set up.'))
+        kathi = kathi_tmpl.product_variant_id
+        lines.append((0, 0, {
+            'product_id': kathi.id,
+            'product_qty': len(acquisitions) * KATHI_QTY_PER_ACQUISITION,
+            'product_uom_id': (uom_unit or kathi.uom_id).id,
+        }))
+        return lines
 
-            lines = []
-            for award, point_qty in point_counts.items():
-                component = order._get_component_product(award)
-                if not component:
-                    continue
-                lines.append({
-                    'order_id': order.id,
-                    'award_id': award.id,
-                    'point_qty': point_qty,
-                    'component_product_id': component.id,
-                })
-            if lines:
-                Line.create(lines)
-        return True
-
-    def action_confirm(self):
-        for order in self:
-            if not order.line_ids:
-                raise UserError(_(
-                    'Populate the lines before confirming this order.'))
-            order.state = 'confirmed'
-
-    def action_generate_manufacturing_orders(self):
-        Production = self.env['mrp.production']
-        Bom = self.env['mrp.bom']
-        for order in self:
-            if order.state != 'confirmed':
-                raise UserError(_(
-                    'Only Confirmed orders can generate Manufacturing Orders.'))
-            for line in order.line_ids.filtered(lambda l: not l.mrp_production_id):
-                bom = Bom.search([
-                    ('product_tmpl_id', '=', line.component_product_id.product_tmpl_id.id),
-                ], limit=1)
-                production = Production.create({
-                    'product_id': line.component_product_id.id,
-                    'product_qty': line.point_qty,
-                    'product_uom_id': line.component_product_id.uom_id.id,
-                    'bom_id': bom.id if bom else False,
-                    'origin': order.name,
-                })
-                line.mrp_production_id = production.id
-            order.state = 'produced'
-        return True
-
-    def action_view_productions(self):
+    def action_get_or_create_bom(self):
+        """Return this order's BoM, creating it the first time it's needed."""
         self.ensure_one()
-        productions = self.line_ids.mapped('mrp_production_id')
+        if self.bom_id:
+            return self.bom_id
+        bom = self.env['mrp.bom'].create({
+            'product_tmpl_id': self.product_id.product_tmpl_id.id,
+            'product_id': self.product_id.id,
+            'product_qty': 1.0,
+            'type': 'normal',
+            'code': f'RACK-{self.person_id.display_name}',
+            'bom_line_ids': self._prepare_bom_lines(),
+        })
+        self.bom_id = bom.id
+        return bom
+
+    def action_rebuild_bom(self):
+        """Discard and rebuild the BoM from the person's current ledger -
+        use after their acquisitions have changed since the BoM was
+        first generated."""
+        self.ensure_one()
+        old_bom = self.bom_id
+        self.bom_id = False
+        new_bom = self.action_get_or_create_bom()
+        if old_bom and old_bom != new_bom:
+            old_bom.unlink()
+        return new_bom
+
+    def action_open_mo_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Generate Manufacturing Order'),
+            'res_model': 'rm.set.order.mo.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_order_id': self.id, 'default_quantity': self.quantity},
+        }
+
+    def action_create_mo(self, quantity=None):
+        """Create and confirm an mrp.production for `quantity` racks
+        (default: this order's `quantity`), auto-creating this person's
+        BoM first if it doesn't exist yet."""
+        self.ensure_one()
+        bom = self.action_get_or_create_bom()
+        qty = quantity if quantity else (self.quantity or 1.0)
+        production = self.env['mrp.production'].create({
+            'product_id': self.product_id.id,
+            'product_qty': qty,
+            'product_uom_id': self.product_id.uom_id.id,
+            'bom_id': bom.id,
+            'rm_set_order_id': self.id,
+            'origin': self.name,
+        })
+        production.action_confirm()
+        # Note: deliberately NOT auto-opening the mrp.production form here.
+        # Use the "Manufacturing Orders" smart button on this order (list
+        # view) to see it instead.
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Manufacturing Order Created'),
+                'message': _('%s was created and confirmed for %s (qty %s). '
+                             'Use the Manufacturing Orders button to view it.')
+                           % (production.name, self.person_id.display_name, qty),
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
+    def action_view_mrp_productions(self):
+        self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
             'name': _('Manufacturing Orders'),
             'res_model': 'mrp.production',
             'view_mode': 'list,form',
-            'domain': [('id', 'in', productions.ids)],
+            'domain': [('rm_set_order_id', '=', self.id)],
         }
 
-    def action_cancel(self):
-        for order in self:
-            if order.line_ids.mapped('mrp_production_id'):
-                raise UserError(_(
-                    'Cannot cancel: Manufacturing Orders were already '
-                    'generated for this Set Order.'))
-            order.state = 'cancel'
 
-    def action_reset_to_draft(self):
-        self.write({'state': 'draft'})
+class RmSetOrderMoWizard(models.TransientModel):
+    _name = 'rm.set.order.mo.wizard'
+    _description = 'Generate Manufacturing Order for a Ribbon Rack Set Order'
 
+    order_id = fields.Many2one('rm.set.order', required=True, ondelete='cascade')
+    quantity = fields.Float(string='Quantity', default=1.0, required=True)
 
-class RmSetOrderLine(models.Model):
-    _name = 'rm.set.order.line'
-    _description = 'Ribbon / Medal Set Production Order Line'
-    _rec_name = 'award_id'
-
-    order_id = fields.Many2one(
-        'rm.set.order', required=True, ondelete='cascade', index=True)
-    person_id = fields.Many2one(
-        related='order_id.person_id', store=True, string='Force Member')
-    award_id = fields.Many2one('rm.prb', required=True, string='Award')
-    point_qty = fields.Integer(string='Points', default=1)
-    component_product_id = fields.Many2one(
-        'product.product', string='Set Component')
-    mrp_production_id = fields.Many2one(
-        'mrp.production', string='Manufacturing Order',
-        readonly=True, copy=False)
+    def action_confirm(self):
+        self.ensure_one()
+        if self.quantity <= 0:
+            raise UserError(_('Quantity must be greater than zero.'))
+        return self.order_id.action_create_mo(quantity=self.quantity)

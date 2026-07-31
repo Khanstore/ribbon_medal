@@ -37,6 +37,12 @@
               parent="menu_ribbon_medal_decorations" sequence="40"
               action="action_rm_acquisition_custom"/>
 
+    <menuitem id="menu_ribbon_medal_manufacturing" name="Manufacturing"
+              parent="menu_ribbon_medal_root" sequence="30"/>
+    <menuitem id="menu_rm_set_order" name="Ribbon Rack Set Orders"
+              parent="menu_ribbon_medal_manufacturing" sequence="10"
+              action="action_rm_set_order"/>
+
     <menuitem id="menu_ribbon_medal_configuration" name="Configuration"
               parent="menu_ribbon_medal_root" sequence="90"
               groups="group_ribbon_medal_manager"/>

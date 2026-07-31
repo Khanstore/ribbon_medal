@@ -6,7 +6,7 @@ from odoo.exceptions import ValidationError
 class RmPRB(models.Model):
     _name = 'rm.prb'
     _description = 'PRB of decorations'
-    _order = 'seniority_sequence desc, name'
+    _order = 'sequence, name'
 
     name = fields.Char(required=True, string='PRB Name')
     medal_id = fields.Many2one('rm.decoration', string='Medal')

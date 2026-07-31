@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import re
+
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 
 class RmDecoration(models.Model):
@@ -102,6 +104,62 @@ class RmDecoration(models.Model):
             vals['tracking'] = 'none'
         return vals
 
+    def _zero_value_for_field(self, field):
+        """A conservative, inoffensive default for a field we don't
+        actually care about, just to satisfy a NOT NULL constraint."""
+        if field.type == 'boolean':
+            return False
+        if field.type in ('integer', 'float', 'monetary'):
+            return 0
+        if field.type in ('char', 'text', 'html'):
+            return ''
+        if field.type == 'date':
+            return fields.Date.today()
+        if field.type == 'datetime':
+            return fields.Datetime.now()
+        if field.type == 'selection':
+            try:
+                options = field.get_description(self.env)['selection']
+                for key, _label in options:
+                    if key:
+                        return key
+                return options[0][0] if options else False
+            except Exception:
+                return False
+        return False
+
+    def _create_product_resilient(self, vals):
+        """Create a product.template, automatically supplying a default
+        for any field THIS environment's installed modules happen to
+        require at the DB level with no ORM-level default of their own
+        (seen in practice: stock's 'tracking', a customization's
+        'base_unit_count' - the exact set depends on which third-party
+        modules are installed, so rather than hardcoding a fixed list
+        this discovers them one at a time from the DB error and retries)."""
+        Product = self.env['product.template'].sudo()
+        vals = dict(vals)
+        patched_fields = set()
+        for _attempt in range(10):
+            try:
+                with self.env.cr.savepoint():
+                    new_tmpl = Product.create(vals)
+                    # Force immediate flush so any NOT NULL violation
+                    # surfaces right here (and can be retried) instead of
+                    # much later, deep in an unrelated flush.
+                    self.env.flush_all()
+                    return new_tmpl
+            except Exception as exc:
+                match = re.search(r'column "(\w+)"', str(exc))
+                field_name = match.group(1) if match else None
+                field = Product._fields.get(field_name) if field_name else None
+                if not field or field_name in patched_fields:
+                    raise
+                patched_fields.add(field_name)
+                vals[field_name] = self._zero_value_for_field(field)
+        raise UserError(_(
+            'Could not create product "%s" - repeatedly hit new required fields (%s).'
+        ) % (vals.get('name'), ', '.join(sorted(patched_fields))))
+
     def _sync_award_product(self, flag_field, tmpl_field, label, initial_image=None):
         """Create/reactivate or archive the product.template linked via
         `tmpl_field` to match the current value of `flag_field`. Runs as
@@ -110,7 +168,6 @@ class RmDecoration(models.Model):
         image passed in the SAME create()/write() call that set the
         flag - the image field can't supply it via its own inverse yet,
         since the product doesn't exist until this method creates it."""
-        Product = self.env['product.template'].sudo()
         initial_image = initial_image or {}
         for record in self:
             tmpl = record[tmpl_field]
@@ -123,7 +180,14 @@ class RmDecoration(models.Model):
                     image = initial_image.get(record.id)
                     if image:
                         vals['image_1920'] = image
-                    new_tmpl = Product.create(vals)
+                    new_tmpl = self._create_product_resilient(vals)
+                    # Note: _create_product_resilient() already flushes
+                    # immediately after creating, so this template's
+                    # variants (Size S/L) are fully materialized to the
+                    # DB before the loop moves on to the next decoration
+                    # - important when bulk-creating ~100+ decorations
+                    # (each spawning 2 products x 2 size variants) in a
+                    # single create() call.
                     record.sudo().write({tmpl_field: new_tmpl.id})
             else:
                 if tmpl and tmpl.active:

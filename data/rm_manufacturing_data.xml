@@ -1,63 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ================= Attributes (shared across ALL decorations) ==== -->
-    <record id="product_attribute_ribbon_width" model="product.attribute">
-        <field name="name">Ribbon Width</field>
-        <field name="create_variant">always</field>
-    </record>
-    <record id="product_attribute_value_ribbon_3cm" model="product.attribute.value">
-        <field name="name">3cm</field>
-        <field name="attribute_id" ref="product_attribute_ribbon_width"/>
-    </record>
-    <record id="product_attribute_value_ribbon_1_5cm" model="product.attribute.value">
-        <field name="name">1.5cm</field>
-        <field name="attribute_id" ref="product_attribute_ribbon_width"/>
-    </record>
+    <data noupdate="1">
 
-    <record id="product_attribute_medal_size" model="product.attribute">
-        <field name="name">Medal Size</field>
-        <field name="create_variant">always</field>
-    </record>
-    <record id="product_attribute_value_medal_l" model="product.attribute.value">
-        <field name="name">L</field>
-        <field name="attribute_id" ref="product_attribute_medal_size"/>
-    </record>
-    <record id="product_attribute_value_medal_s" model="product.attribute.value">
-        <field name="name">S</field>
-        <field name="attribute_id" ref="product_attribute_medal_size"/>
-    </record>
+        <!-- Generic mounting bar/frame component used on every rack,
+             regardless of which decorations are on it. -->
+        <record id="product_ribbon_kathi" model="product.template">
+            <field name="name">Ribbon Kathi (Mounting Bar)</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="False"/>
+            <field name="purchase_ok" eval="True"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
 
-    <!-- ================= UoM: "Point" = 1 acquisition of a decoration === -->
-    <record id="uom_categ_point" model="uom.category">
-        <field name="name">Decoration Point</field>
-    </record>
-    <record id="uom_point" model="uom.uom">
-        <field name="name">Point</field>
-        <field name="category_id" ref="uom_categ_point"/>
-        <field name="uom_type">reference</field>
-        <field name="rounding">1.0</field>
-    </record>
+        <!-- Finished product manufactured for a person's ribbon rack. One
+             generic product is used for every person - what differs per
+             person is the dynamically-built mrp.bom linked from their
+             rm.set.order, not the product itself. -->
+        <record id="product_ribbon_rack" model="product.template">
+            <field name="name">Ribbon Rack</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
 
-    <!-- ================= Product categories ============================ -->
-    <record id="product_category_ribbon_materials" model="product.category">
-        <field name="name">Ribbon Materials</field>
-        <field name="parent_id" ref="product.product_category_all"/>
-    </record>
-    <record id="product_category_medal_materials" model="product.category">
-        <field name="name">Medal Materials</field>
-        <field name="parent_id" ref="product.product_category_all"/>
-    </record>
-    <record id="product_category_set_components" model="product.category">
-        <field name="name">Set Components</field>
-        <field name="parent_id" ref="product.product_category_all"/>
-    </record>
+        <record id="seq_rm_set_order" model="ir.sequence">
+            <field name="name">Ribbon Rack Set Order</field>
+            <field name="code">rm.set.order</field>
+            <field name="prefix">RACK/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
 
-    <!-- ================= Sequence for rm.set.order ====================== -->
-    <record id="seq_rm_set_order" model="ir.sequence">
-        <field name="name">Ribbon / Medal Set Order</field>
-        <field name="code">rm.set.order</field>
-        <field name="prefix">SET/%(year)s/</field>
-        <field name="padding">4</field>
-        <field name="company_id" eval="False"/>
-    </record>
+    </data>
 </odoo>

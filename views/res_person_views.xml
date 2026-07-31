@@ -65,6 +65,10 @@
                     </group>
                     <notebook>
                         <page string="Decorations" name="decorations">
+                            <div class="mb-2">
+                                <button name="action_generate_ribbon_rack" type="object"
+                                        string="Generate Ribbon Rack" class="btn-primary"/>
+                            </div>
                             <field name="obtained_awards_ids" widget="ribbon_rack" nolabel="1">
                                 <list>
                                     <field name="name"/>
