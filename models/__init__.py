@@ -1,6 +1,7 @@
 from . import rm_forces
 from . import rm_ranks
 from . import rm_rules_category
+from . import rm_product_sync_mixin
 from . import rm_decoration
 from . import prb
 from . import attachments

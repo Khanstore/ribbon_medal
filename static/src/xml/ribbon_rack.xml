@@ -12,6 +12,7 @@
 <div t-else="" class="o_ribbon_rack_placeholder">
 <span t-esc="cell.data.name"/>
 </div>
+<img t-if="getDeviceImageUrl(cell)" t-att-src="getDeviceImageUrl(cell)" alt="" class="o_ribbon_rack_device"/>
 </div>
 </t>
 </div>

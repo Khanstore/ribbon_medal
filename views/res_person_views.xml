@@ -77,6 +77,8 @@
                                     <field name="is_medal"/>
                                     <field name="ribbon_image"/>
                                     <field name="medal_image"/>
+                                    <field name="device_image"/>
+                                    <field name="attachment_id"/>
                                 </list>
                             </field>
                         </page>

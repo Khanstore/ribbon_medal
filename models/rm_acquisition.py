@@ -33,6 +33,7 @@ class personalAwards(models.Model):
     award_id = fields.Many2one('rm.prb',string='Award Name')
     person_id=fields.Many2one('res.person',string='Person')
     award_year = fields.Integer(string='Award Date')
+    attachment_id = fields.Many2one('rm.attachment',string='Attachment')
     note = fields.Char(string='note')
     active = fields.Boolean(default=True)
     add_to_ribbon = fields.Boolean(string="Tunic ribbon",default=True)
@@ -69,6 +70,13 @@ class RmAcquisition(models.Model):
     excluded when its `medal_id` or `ribbon_id` matches an active
     exclusion for that person - this covers all four sources uniformly.
 
+    `attachment_id` carries the SPECIFIC device attached at that
+    acquisition (e.g. a repeat-award numeral), sourced from the source
+    row for Personal Awards and Missions. Seniority and Batch are
+    derived directly from a matching `rm.prb`, with no per-instance row
+    to hold an attachment, so `attachment_id` is always empty for those
+    two sources.
+
     This is backed by a PostgreSQL VIEW (`_auto = False`) rather than a
     real table, so it always reflects live data with no sync/duplication
     work needed, and is inherently read-only.
@@ -88,6 +96,7 @@ class RmAcquisition(models.Model):
     ], string='Source', readonly=True)
     year = fields.Integer(string='Year', readonly=True)
     note = fields.Char(string='Note', readonly=True)
+    attachment_id = fields.Many2one('rm.attachment', string='Attachment', readonly=True)
 
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
@@ -99,7 +108,8 @@ class RmAcquisition(models.Model):
                     src.award_id AS award_id,
                     src.source AS source,
                     src.year AS year,
-                    src.note AS note
+                    src.note AS note,
+                    src.attachment_id AS attachment_id
                 FROM (
 
                     -- Personal Awards (individually entered).
@@ -108,7 +118,8 @@ class RmAcquisition(models.Model):
                         pa.award_id AS award_id,
                         'personal' AS source,
                         pa.award_year AS year,
-                        pa.note AS note
+                        pa.note AS note,
+                        pa.attachment_id AS attachment_id
                     FROM rm_personal_awards pa
                     WHERE pa.person_id IS NOT NULL
                       AND pa.award_id IS NOT NULL
@@ -122,7 +133,8 @@ class RmAcquisition(models.Model):
                         mp.mission_id AS award_id,
                         'mission' AS source,
                         mp.award_year AS year,
-                        mp.note AS note
+                        mp.note AS note,
+                        mp.attachment_id AS attachment_id
                     FROM rm_mission_posting mp
                     WHERE mp.person_id IS NOT NULL
                       AND mp.mission_id IS NOT NULL
@@ -138,7 +150,8 @@ class RmAcquisition(models.Model):
                         prb.id AS award_id,
                         'seniority' AS source,
                         NULL::integer AS year,
-                        NULL::varchar AS note
+                        NULL::varchar AS note,
+                        NULL::integer AS attachment_id
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'seniority'
@@ -158,7 +171,8 @@ class RmAcquisition(models.Model):
                         prb.id AS award_id,
                         'batch' AS source,
                         NULL::integer AS year,
-                        NULL::varchar AS note
+                        NULL::varchar AS note,
+                        NULL::integer AS attachment_id
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'batch'

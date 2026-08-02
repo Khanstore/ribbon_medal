@@ -78,11 +78,26 @@ export class RibbonRackField extends Component {
         // Deliberately ribbon_image only (not medal_image) - this is
         // specifically the Ribbon Rack, so it should always show the
         // ribbon's product image, never fall back to the medal's.
-        const image = cell.data.ribbon_image;
-        if (!image) {
+        // ribbon_image itself is still fetched (see relatedFields below)
+        // just to know whether one exists; the actual <img> src is
+        // served straight from the rm.prb record via Odoo's image
+        // controller, which serves whatever format was actually
+        // uploaded (a hand-built base64 data URI hardcoded to PNG can
+        // fail to render if the source image is JPEG/GIF/etc).
+        if (!cell.data.ribbon_image) {
             return false;
         }
-        return `data:image/png;base64,${image}`;
+        return `/web/image/rm.prb/${cell.resId}/ribbon_image`;
+    }
+
+    getDeviceImageUrl(cell) {
+        // Small device/attachment badge (e.g. a repeat-award numeral or
+        // club) worn on top of the ribbon - sourced from this PRB's own
+        // attachment_id, same served-by-Odoo approach as getImageUrl.
+        if (!cell || !cell.data.device_image) {
+            return false;
+        }
+        return `/web/image/rm.prb/${cell.resId}/device_image`;
     }
 }
 
@@ -95,6 +110,7 @@ export const ribbonRackField = {
         { name: "is_ribbon", type: "boolean" },
         { name: "is_medal", type: "boolean" },
         { name: "ribbon_image", type: "binary" },
+        { name: "device_image", type: "binary" },
     ],
 };
 

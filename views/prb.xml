@@ -45,6 +45,7 @@
                     <group>
                         <field name="ribbon_image" widget="image" class="oe_avatar"/>
                         <field name="medal_image" widget="image" class="oe_avatar"/>
+                        <field name="device_image" widget="image" class="oe_avatar"/>
                     </group>
                 </sheet>
             </form>
