@@ -56,7 +56,17 @@ class ResPerson(models.Model):
 
     obtained_awards_ids = fields.Many2many(
         'rm.prb', string='Obtained Awards', compute='_compute_obtained_awards_ids')
+    rack_ledger_ids = fields.Many2many(
+        'rm.acquisition', string='Ribbon Rack Ledger', compute='_compute_rack_ledger_ids',
+        help='Same acquisitions as obtained_awards_ids, but keeping each '
+             "row's own attachment_id (the specific device received at "
+             'that acquisition) for the Ribbon Rack widget to display.')
     award_count = fields.Integer(compute='_compute_award_count')
+    rack_total_price = fields.Float(
+        string='Ribbon Rack Price', compute='_compute_rack_total_price',
+        help='Sum of each acquired ribbon product\'s list price, plus '
+             "each acquisition's attachment device product's list price "
+             '(when one is set).')
     force_id = fields.Many2one(
         'rm.forces', string='Force', related='rank_id.force_id', store=True, readonly=True)
     name_eng = fields.Char(string='Name (English)', help='Nameplate spelling in English.')
@@ -133,6 +143,25 @@ class ResPerson(models.Model):
         for person in self:
             acquisitions = Acquisition.search([('person_id', '=', person.id)])
             person.obtained_awards_ids = acquisitions.mapped('award_id')
+
+    def _compute_rack_ledger_ids(self):
+        # Same underlying data as obtained_awards_ids, but keeps the full
+        # rm.acquisition rows (not just the distinct award_id set) - the
+        # Ribbon Rack widget needs this so it can show each acquisition's
+        # OWN attachment_id (the specific device this person received),
+        # rather than rm.prb's static, award-type-level attachment.
+        Acquisition = self.env['rm.acquisition']
+        for person in self:
+            person.rack_ledger_ids = Acquisition.search([('person_id', '=', person.id)])
+
+    def _compute_rack_total_price(self):
+        Acquisition = self.env['rm.acquisition']
+        for person in self:
+            acquisitions = Acquisition.search([('person_id', '=', person.id)])
+            person.rack_total_price = (
+                sum(acquisitions.mapped('ribbon_list_price'))
+                + sum(acquisitions.mapped('attachment_list_price'))
+            )
 
     @api.onchange('id_number')
     def extract_years_from_id_number(self):

@@ -72,10 +72,10 @@ class RmAcquisition(models.Model):
 
     `attachment_id` carries the SPECIFIC device attached at that
     acquisition (e.g. a repeat-award numeral), sourced from the source
-    row for Personal Awards and Missions. Seniority and Batch are
-    derived directly from a matching `rm.prb`, with no per-instance row
-    to hold an attachment, so `attachment_id` is always empty for those
-    two sources.
+    row for Personal Awards and Missions. When that's blank - always the
+    case for Seniority and Batch, which have no per-instance row to hold
+    one, and optionally for Personal Awards/Missions left unset - it
+    falls back to the award type's own default (`rm.prb.attachment_id`).
 
     This is backed by a PostgreSQL VIEW (`_auto = False`) rather than a
     real table, so it always reflects live data with no sync/duplication
@@ -98,6 +98,22 @@ class RmAcquisition(models.Model):
     note = fields.Char(string='Note', readonly=True)
     attachment_id = fields.Many2one('rm.attachment', string='Attachment', readonly=True)
 
+    # Pass-through display fields for the Ribbon Rack widget: it reads
+    # everything from rm.acquisition rows (not rm.prb directly) so that
+    # attachment_id above - this specific acquisition's device, falling
+    # back to rm.prb's default only when unset - is what the rack shows.
+    name = fields.Char(related='award_id.name', readonly=True)
+    sequence = fields.Float(related='award_id.sequence', readonly=True)
+    is_ribbon = fields.Boolean(related='award_id.is_ribbon', readonly=True)
+    is_medal = fields.Boolean(related='award_id.is_medal', readonly=True)
+    ribbon_image = fields.Binary(related='award_id.ribbon_image', readonly=True)
+    ribbon_list_price = fields.Float(
+        related='award_id.ribbon_id.ribbon_product_tmpl_id.list_price', readonly=True,
+        string='Ribbon Price')
+    attachment_list_price = fields.Float(
+        related='attachment_id.device_product_tmpl_id.list_price', readonly=True,
+        string='Attachment Price')
+
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute("""
@@ -109,7 +125,12 @@ class RmAcquisition(models.Model):
                     src.source AS source,
                     src.year AS year,
                     src.note AS note,
-                    src.attachment_id AS attachment_id
+                    -- Fall back to the award type's own default
+                    -- attachment (rm_prb.attachment_id) whenever this
+                    -- specific acquisition didn't record its own -
+                    -- covers Personal Awards/Missions left blank, and
+                    -- Seniority/Batch which never have a per-instance one.
+                    COALESCE(src.attachment_id, award_prb.attachment_id) AS attachment_id
                 FROM (
 
                     -- Personal Awards (individually entered).
@@ -184,6 +205,8 @@ class RmAcquisition(models.Model):
                       AND rp.service_confirmation_date < prb.starting_date
 
                 ) src
+                JOIN rm_prb award_prb
+                    ON award_prb.id = src.award_id
                 -- Deduct anything excluded for that person/decoration pair,
                 -- across ALL four sources at once. Exclusions are keyed on
                 -- rm.decoration, so match through the PRB's medal/ribbon.

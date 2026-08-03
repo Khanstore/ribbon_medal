@@ -9,7 +9,7 @@ const RACK_COLUMNS = 4;
 /**
  * Ribbon Rack widget.
  *
- * Displays the many2many `obtained_awards_ids` of a res.person as a
+ * Displays the many2many `rack_ledger_ids` of a res.person as a
  * military-style "ribbon rack": a grid of RACK_COLUMNS columns where
  * decorations are ordered by descending `sequence` (highest sequence =
  * highest precedence).
@@ -80,24 +80,31 @@ export class RibbonRackField extends Component {
         // ribbon's product image, never fall back to the medal's.
         // ribbon_image itself is still fetched (see relatedFields below)
         // just to know whether one exists; the actual <img> src is
-        // served straight from the rm.prb record via Odoo's image
-        // controller, which serves whatever format was actually
+        // served straight from the rm.acquisition record via Odoo's
+        // image controller (ribbon_image is a related pass-through of
+        // rm.prb's own), which serves whatever format was actually
         // uploaded (a hand-built base64 data URI hardcoded to PNG can
         // fail to render if the source image is JPEG/GIF/etc).
         if (!cell.data.ribbon_image) {
             return false;
         }
-        return `/web/image/rm.prb/${cell.resId}/ribbon_image`;
+        return `/web/image/rm.acquisition/${cell.resId}/ribbon_image`;
     }
 
     getDeviceImageUrl(cell) {
         // Small device/attachment badge (e.g. a repeat-award numeral or
-        // club) worn on top of the ribbon - sourced from this PRB's own
-        // attachment_id, same served-by-Odoo approach as getImageUrl.
-        if (!cell || !cell.data.device_image) {
+        // club) worn on top of the ribbon - sourced from THIS
+        // acquisition's own attachment_id (the specific device this
+        // person received at this acquisition), not rm.prb's static
+        // attachment_id. Many2one relatedFields come through as
+        // [id, display_name].
+        if (!cell || !cell.data.attachment_id) {
             return false;
         }
-        return `/web/image/rm.prb/${cell.resId}/device_image`;
+        const attachmentId = Array.isArray(cell.data.attachment_id)
+            ? cell.data.attachment_id[0]
+            : cell.data.attachment_id;
+        return `/web/image/rm.attachment/${attachmentId}/image`;
     }
 }
 
@@ -110,7 +117,7 @@ export const ribbonRackField = {
         { name: "is_ribbon", type: "boolean" },
         { name: "is_medal", type: "boolean" },
         { name: "ribbon_image", type: "binary" },
-        { name: "device_image", type: "binary" },
+        { name: "attachment_id", type: "many2one" },
     ],
 };
 

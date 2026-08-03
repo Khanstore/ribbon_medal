@@ -31,6 +31,12 @@ class RmSetOrder(models.Model):
         default=lambda self: self._default_product_id(),
         help='The finished "Ribbon Rack" product this order manufactures.')
     quantity = fields.Float(string='Default Quantity', default=1.0, required=True)
+    unit_price = fields.Float(
+        string='Unit Price', compute='_compute_unit_price',
+        help="This person's rack_total_price: sum of each acquired "
+             "ribbon's list price plus each acquisition's attachment "
+             'device list price (when set).')
+    total_price = fields.Float(string='Estimated Total Price', compute='_compute_unit_price')
     bom_id = fields.Many2one(
         'mrp.bom', string='Bill of Materials', readonly=True, copy=False,
         help="This person's specific ribbon combination, built the first "
@@ -53,6 +59,11 @@ class RmSetOrder(models.Model):
     def _compute_mrp_production_count(self):
         for order in self:
             order.mrp_production_count = len(order.mrp_production_ids)
+
+    def _compute_unit_price(self):
+        for order in self:
+            order.unit_price = order.person_id.rack_total_price
+            order.total_price = order.unit_price * (order.quantity or 0.0)
 
     def _get_size_l_variant(self, product_tmpl):
         """Return the Size=L product.product variant of `product_tmpl`."""

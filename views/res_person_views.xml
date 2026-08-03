@@ -65,19 +65,21 @@
                     </group>
                     <notebook>
                         <page string="Decorations" name="decorations">
-                            <div class="mb-2">
+                            <div class="mb-2 d-flex align-items-center">
                                 <button name="action_generate_ribbon_rack" type="object"
                                         string="Generate Ribbon Rack" class="btn-primary"/>
+                                <span class="ms-3">
+                                    Estimated Price:
+                                    <field name="rack_total_price" readonly="1" class="oe_inline"/>
+                                </span>
                             </div>
-                            <field name="obtained_awards_ids" widget="ribbon_rack" nolabel="1">
+                            <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
                                 <list>
                                     <field name="name"/>
                                     <field name="sequence"/>
                                     <field name="is_ribbon"/>
                                     <field name="is_medal"/>
                                     <field name="ribbon_image"/>
-                                    <field name="medal_image"/>
-                                    <field name="device_image"/>
                                     <field name="attachment_id"/>
                                 </list>
                             </field>
@@ -86,6 +88,7 @@
                             <field name="personal_award_ledger_ids" nolabel="1">
                                 <list>
                                     <field name="award_id"/>
+                                    <field name="attachment_id"/>
                                     <field name="note"/>
                                 </list>
                             </field>
@@ -95,6 +98,7 @@
                                    >
                                 <list >
                                     <field name="award_id"/>
+                                    <field name="attachment_id"/>
                                     <field name="note"/>
                                 </list>
                             </field>
@@ -104,6 +108,7 @@
                                    options="{'create': false, 'delete': false, 'edit': false}">
                                 <list create="false" delete="false" edit="false">
                                     <field name="award_id"/>
+                                    <field name="attachment_id"/>
                                     <field name="note"/>
                                 </list>
                             </field>
@@ -119,6 +124,7 @@
                                     <field name="award_id"/>
                                     <field name="source"/>
                                     <field name="year"/>
+                                    <field name="attachment_id"/>
                                     <field name="note"/>
                                 </list>
                             </field>

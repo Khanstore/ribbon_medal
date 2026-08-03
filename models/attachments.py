@@ -55,8 +55,14 @@ class ribbonAttachments(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        if 'active' in vals:
-            self._sync_device_product()
+        # Always reconcile rather than gating on 'active' being in vals -
+        # some archive/unarchive UI paths (toggle_active, list-view bulk
+        # archive, etc.) don't reliably surface 'active' as an explicit
+        # key here. _sync_single_product() is idempotent (a no-op when
+        # the product's state already matches), so calling it
+        # unconditionally is safe and guarantees correctness regardless
+        # of how `active` actually got changed.
+        self._sync_device_product()
         return res
 
     def action_view_device_product(self):
