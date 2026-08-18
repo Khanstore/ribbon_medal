@@ -19,6 +19,7 @@
     }
 
     .o_ribbon_rack_cell {
+        position: relative;
         width: 72px;
         height: 26px;
         display: flex;
@@ -34,9 +35,22 @@
     }
 
     .o_ribbon_rack_img {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        z-index: 1;
+    }
+
+    // When a second .o_ribbon_rack_img follows the first in the same
+    // cell, it's the attachment/device image - stack it on top of the
+    // ribbon image beneath it. Its own transparent background (if the
+    // uploaded image has one) then lets the ribbon show through around
+    // the device graphic, composing the two into a single look.
+    .o_ribbon_rack_img + .o_ribbon_rack_img {
+        z-index: 2;
     }
 
     .o_ribbon_rack_placeholder {

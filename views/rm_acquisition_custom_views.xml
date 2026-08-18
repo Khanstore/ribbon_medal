@@ -10,6 +10,7 @@
                 <field name="award_id"/>
                 <field name="source"/>
                 <field name="year"/>
+                <field name="attachment_id"/>
                 <field name="note"/>
             </list>
         </field>
@@ -27,6 +28,7 @@
                         <field name="source"/>
                         <field name="sequence"/>
                         <field name="year"/>
+                        <field name="attachment_id"/>
                         <field name="note"/>
                     </group>
                 </sheet>

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
+from odoo.osv import expression
 from datetime import date, datetime
 
 
@@ -45,6 +47,25 @@ class ResPerson(models.Model):
         help='Mirrors the seniority_level of the selected rank; used to '
              "restrict Current Workplace choices to units whose chief's "
              'rank is senior enough.')
+
+    @api.model
+    def _name_search(self, name='', domain=None, operator='ilike', limit=None, order=None):
+        """Extend the default (name-only) search used by every Many2one
+        field/search widget for this model - e.g. the "Selected Person"
+        field on the Order Ribbon Rack wizard - to also match on ID
+        Number, Phone, Mobile, and Email, not just Name."""
+        domain = list(domain or [])
+        if name:
+            name_domain = ['|', '|', '|', '|',
+                            ('name', operator, name),
+                            ('id_number', operator, name),
+                            ('phone', operator, name),
+                            ('mobile', operator, name),
+                            ('email', operator, name)]
+            domain = expression.AND([domain, name_domain])
+            return self._search(domain, limit=limit, order=order)
+        return super()._name_search(name=name, domain=domain, operator=operator, limit=limit, order=order)
+
     current_workplace = fields.Many2one(
         'rm.unit', string='Current Workplace', ondelete='restrict',
         domain="[('level', '>=', rank_seniority_level)]",
@@ -56,7 +77,17 @@ class ResPerson(models.Model):
 
     obtained_awards_ids = fields.Many2many(
         'rm.prb', string='Obtained Awards', compute='_compute_obtained_awards_ids')
+    rack_ledger_ids = fields.Many2many(
+        'rm.acquisition', string='Ribbon Rack Ledger', compute='_compute_rack_ledger_ids',
+        help='Same acquisitions as obtained_awards_ids, but keeping each '
+             "row's own attachment_id (the specific device received at "
+             'that acquisition) for the Ribbon Rack widget to display.')
     award_count = fields.Integer(compute='_compute_award_count')
+    rack_total_price = fields.Float(
+        string='Ribbon Rack Price', compute='_compute_rack_total_price',
+        help='Sum of each acquired ribbon product\'s list price, plus '
+             "each acquisition's attachment device product's list price "
+             '(when one is set).')
     force_id = fields.Many2one(
         'rm.forces', string='Force', related='rank_id.force_id', store=True, readonly=True)
     name_eng = fields.Char(string='Name (English)', help='Nameplate spelling in English.')
@@ -134,6 +165,25 @@ class ResPerson(models.Model):
             acquisitions = Acquisition.search([('person_id', '=', person.id)])
             person.obtained_awards_ids = acquisitions.mapped('award_id')
 
+    def _compute_rack_ledger_ids(self):
+        # Same underlying data as obtained_awards_ids, but keeps the full
+        # rm.acquisition rows (not just the distinct award_id set) - the
+        # Ribbon Rack widget needs this so it can show each acquisition's
+        # OWN attachment_id (the specific device this person received),
+        # rather than rm.prb's static, award-type-level attachment.
+        Acquisition = self.env['rm.acquisition']
+        for person in self:
+            person.rack_ledger_ids = Acquisition.search([('person_id', '=', person.id)])
+
+    def _compute_rack_total_price(self):
+        Acquisition = self.env['rm.acquisition']
+        for person in self:
+            acquisitions = Acquisition.search([('person_id', '=', person.id)])
+            person.rack_total_price = (
+                sum(acquisitions.mapped('ribbon_list_price'))
+                + sum(acquisitions.mapped('attachment_list_price'))
+            )
+
     @api.onchange('id_number')
     def extract_years_from_id_number(self):
         for record in self:
@@ -161,10 +211,11 @@ class ResPerson(models.Model):
                 record.service_confirmation_date  = False
 
     def get_sorted_awards(self):
-        """Return obtained awards sorted for Ribbon Rack display: highest
-        seniority_sequence first (destined for the bottom-right position)."""
+        """Return obtained awards sorted for Ribbon Rack display: lowest
+        `sequence` first (highest precedence, destined for the
+        bottom-right position)."""
         self.ensure_one()
-        return self.obtained_awards_ids.sorted(key=lambda decoration: decoration.seniority_sequence, reverse=True)
+        return self.obtained_awards_ids.sorted(key=lambda decoration: decoration.sequence)
 
     def action_view_awards(self):
         """Smart-button action: open this person's consolidated Acquisition
@@ -177,6 +228,155 @@ class ResPerson(models.Model):
             'res_model': 'rm.acquisition',
             'view_mode': 'list',
             'domain': [('person_id', '=', self.id)],
+        }
+
+    def action_generate_ribbon_rack(self):
+        """Find or create this person's rm.set.order, then open the wizard
+        to pick a quantity and generate the Manufacturing Order. This is
+        the manual/direct path - always builds a fresh generic Ribbon
+        Rack from raw materials, ignoring any Rack/Line stock. See
+        action_issue_ribbon_rack for the stock-aware cascade."""
+        self.ensure_one()
+        SetOrder = self.env['rm.set.order']
+        order = SetOrder.search([('person_id', '=', self.id)], limit=1)
+        if not order:
+            order = SetOrder.create({'person_id': self.id})
+        return order.action_open_mo_wizard()
+
+    RACK_COLUMNS = 4
+
+    def _get_rack_rows(self):
+        """Split this person's acquired ribbons into rows, mirroring the
+        Ribbon Rack widget's own layout exactly (see the `rows` getter in
+        static/src/js/ribbon_rack.js): sorted by descending `sequence`
+        (highest precedence first), split into a top partial row (the
+        remainder) then full rows of RACK_COLUMNS, each already
+        left-to-right. Returns a list of rm.prb recordsets, top row
+        first - these are exactly the "Lines" a Rack is made of."""
+        self.ensure_one()
+        acquisitions = self.env['rm.acquisition'].search([('person_id', '=', self.id)])
+        sorted_acquisitions = acquisitions.sorted(key=lambda a: a.sequence, reverse=True)
+        awards = sorted_acquisitions.mapped('award_id')
+        count = len(awards)
+        if not count:
+            return []
+        ascending = awards[::-1]
+        remainder = count % self.RACK_COLUMNS
+        top_row_size = remainder or self.RACK_COLUMNS
+        rows = [ascending[:top_row_size]]
+        i = top_row_size
+        while i < count:
+            rows.append(ascending[i:i + self.RACK_COLUMNS])
+            i += self.RACK_COLUMNS
+        return rows
+
+    def action_issue_ribbon_rack(self):
+        """UI button: run the cascade and show a notification describing
+        what happened. See _issue_ribbon_rack_unit() for the underlying
+        logic and its return value, used programmatically elsewhere
+        (e.g. by sale.order.action_confirm())."""
+        self.ensure_one()
+        unit, message = self._issue_ribbon_rack_unit()
+        return self._issue_notification(message)
+
+    def _issue_ribbon_rack_unit(self):
+        """Full stock-aware resolution cascade for handing this person a
+        Ribbon Rack:
+
+        1. Exact-match unreserved Rack Product stock already assembled
+           for this exact combination of rows -> hand it straight over,
+           nothing else happens.
+        2. Otherwise, resolve each row (Line) independently: exact Line
+           stock -> trim-substitute from a longer in-stock Line (fully
+           consuming it) -> create a brand new Line and manufacture it
+           from raw materials.
+        3. Assemble/manufacture exactly one unit of the (now identified,
+           and if new, permanently identity-locked) Rack Product,
+           reserved for this person - assembling rows into a rack is a
+           real step even when every row came straight from stock, so
+           this only skips entirely when step 1 already found a
+           fully pre-built rack.
+
+        Returns (rm.rack.unit, message) - the resulting/handed-over unit
+        (already delivered in the step-1 case, still reserved/pending
+        delivery otherwise) and a human-readable description of what
+        happened.
+        """
+        self.ensure_one()
+        RackLine = self.env['rm.rack.line']
+        RackProduct = self.env['rm.rack.product']
+        rows = self._get_rack_rows()
+        if not rows:
+            raise UserError(_(
+                '%s has no acquisitions on the Acquisition Ledger to build a ribbon rack for.'
+            ) % self.display_name)
+
+        # Step 1: is there already a Rack Product for this EXACT
+        # combination of already-known Lines, with unreserved stock?
+        exact_line_ids = []
+        for row in rows:
+            key = RackLine._key_for_award_ids(row.ids)
+            line = RackLine.search([('identity_key', '=', key)], limit=1)
+            if not line:
+                exact_line_ids = None
+                break
+            exact_line_ids.append(line.id)
+
+        if exact_line_ids:
+            rack_key = RackProduct._key_for_line_ids(exact_line_ids)
+            rack = RackProduct.search([('identity_key', '=', rack_key)], limit=1)
+            if rack:
+                available_unit = self.env['rm.rack.unit'].search([
+                    ('rack_id', '=', rack.id),
+                    ('state', '=', 'in_stock'),
+                    ('reserved_person_id', '=', False),
+                ], limit=1)
+                if available_unit:
+                    available_unit.action_deliver(self.id)
+                    rack.record_usage()
+                    return available_unit, _(
+                        'Handed over an existing Rack Product #%(id)s from stock (%(identity)s).'
+                    ) % {'id': rack.id, 'identity': rack.display_identity}
+
+        # Step 2: resolve each row independently.
+        resolved_line_ids = []
+        for row in rows:
+            award_ids = row.ids
+            match_line, match_unit = RackLine.find_best_stock_match(award_ids)
+            exact_line = RackLine.get_or_create(award_ids)
+            if match_line and match_unit:
+                match_unit.write({
+                    'state': 'consumed',
+                    'consumed_note': _('Used for %s') % self.display_name,
+                })
+            else:
+                new_unit = exact_line.manufacture_unit()
+                new_unit.write({
+                    'state': 'consumed',
+                    'consumed_note': _('Used for %s') % self.display_name,
+                })
+            exact_line.record_usage()
+            resolved_line_ids.append(exact_line.id)
+
+        # Step 3: assemble/manufacture the rack itself, reserved for this person.
+        rack = RackProduct.get_or_create(resolved_line_ids)
+        new_rack_unit = rack.manufacture_unit(reserved_person_id=self.id)
+        rack.record_usage()
+        return new_rack_unit, _(
+            'No ready-made rack matched exactly - assembled and reserved a new '
+            'unit of Rack Product #%(id)s for %(name)s.'
+        ) % {'id': rack.id, 'name': self.display_name}
+
+    def _issue_notification(self, message):
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Ribbon Rack Issued'),
+                'message': message,
+                'type': 'success',
+                'sticky': True,
+            },
         }
 
     def action_copy_ledger_to_custom(self):

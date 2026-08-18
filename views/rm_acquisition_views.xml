@@ -12,6 +12,7 @@
                        decoration-success="source == 'mission'"
                        decoration-warning="source == 'seniority'"/>
                 <field name="year" optional="show"/>
+                <field name="attachment_id" optional="show"/>
                 <field name="note" optional="show"/>
             </list>
         </field>

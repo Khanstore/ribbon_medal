@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Generic mounting bar/frame component used on every rack,
+             regardless of which decorations are on it. -->
+        <record id="product_ribbon_kathi" model="product.template">
+            <field name="name">Ribbon Kathi (Mounting Bar)</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="False"/>
+            <field name="purchase_ok" eval="True"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Finished product manufactured for a person's ribbon rack. One
+             generic product is used for every person - what differs per
+             person is the dynamically-built mrp.bom linked from their
+             rm.set.order, not the product itself. -->
+        <record id="product_ribbon_rack" model="product.template">
+            <field name="name">Ribbon Rack</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="False"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <record id="seq_rm_set_order" model="ir.sequence">
+            <field name="name">Ribbon Rack Set Order</field>
+            <field name="code">rm.set.order</field>
+            <field name="prefix">RACK/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

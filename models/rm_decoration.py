@@ -5,6 +5,7 @@ from odoo.exceptions import ValidationError
 
 class RmDecoration(models.Model):
     _name = 'rm.decoration'
+    _inherit = ['rm.product.sync.mixin']
     _description = 'Decoration (Ribbon / Medal)'
     _order = 'decoration_name'
     _rec_name = 'decoration_name'
@@ -58,76 +59,27 @@ class RmDecoration(models.Model):
             if tmpl:
                 tmpl.sudo().image_1920 = record.medal_image
 
-    def _get_size_attribute_and_values(self):
-        """Return the shared 'Size' product.attribute and its S/L values,
-        used on every auto-created ribbon/medal product. Falls back to
-        finding-or-creating them if the module's data record is missing
-        (e.g. deleted manually), instead of failing outright."""
-        attribute = self.env.ref(
-            'ribbon_medal.product_attribute_size', raise_if_not_found=False)
-        if not attribute:
-            attribute = self.env['product.attribute'].search(
-                [('name', '=', 'Size')], limit=1)
-            if not attribute:
-                attribute = self.env['product.attribute'].create({
-                    'name': 'Size',
-                    'create_variant': 'always',
-                })
-        values = attribute.value_ids.filtered(lambda v: v.name in ('S', 'L'))
-        missing = [name for name in ('S', 'L') if name not in values.mapped('name')]
-        if missing:
-            values |= self.env['product.attribute.value'].create([
-                {'name': name, 'attribute_id': attribute.id} for name in missing
-            ])
-        return attribute, values
-
-    def _prepare_award_product_vals(self, label):
-        self.ensure_one()
-        attribute, values = self._get_size_attribute_and_values()
-        vals = {
-            'name': f'{self.decoration_name} - {label}',
-            'type': 'consu',
-            'sale_ok': True,
-            'purchase_ok': False,
-            'attribute_line_ids': [(0, 0, {
-                'attribute_id': attribute.id,
-                'value_ids': [(6, 0, values.ids)],
-            })],
-        }
-        # 'tracking' only exists when the stock module happens to be
-        # installed (we don't depend on it - installing this module
-        # shouldn't also pull in the Inventory app). When it is present,
-        # it's NOT NULL with no DB-level default, so set it explicitly.
-        if 'tracking' in self.env['product.template']._fields:
-            vals['tracking'] = 'none'
-        return vals
-
     def _sync_award_product(self, flag_field, tmpl_field, label, initial_image=None):
         """Create/reactivate or archive the product.template linked via
-        `tmpl_field` to match the current value of `flag_field`. Runs as
-        sudo so editing a decoration doesn't require product-module
-        access rights. `initial_image` (keyed by record id) carries an
-        image passed in the SAME create()/write() call that set the
-        flag - the image field can't supply it via its own inverse yet,
-        since the product doesn't exist until this method creates it."""
-        Product = self.env['product.template'].sudo()
+        `tmpl_field` to match the current value of `flag_field`.
+        `initial_image` (keyed by record id) carries an image passed in
+        the SAME create()/write() call that set the flag - the image
+        field can't supply it via its own inverse yet, since the product
+        doesn't exist until this method creates it. New Ribbon products
+        use Meter as their Unit of Measure (ribbon material is bought
+        and consumed by length); new Medal products use Unit (a discrete
+        countable item) - this only applies at creation time, not
+        retroactively to a product that already exists."""
         initial_image = initial_image or {}
+        uom = self.env.ref(
+            'uom.product_uom_meter' if label == 'Ribbon' else 'uom.product_uom_unit',
+            raise_if_not_found=False)
         for record in self:
-            tmpl = record[tmpl_field]
-            if record[flag_field]:
-                if tmpl:
-                    if not tmpl.active:
-                        tmpl.sudo().active = True
-                else:
-                    vals = record._prepare_award_product_vals(label)
-                    image = initial_image.get(record.id)
-                    if image:
-                        vals['image_1920'] = image
-                    new_tmpl = Product.create(vals)
-                    record.sudo().write({tmpl_field: new_tmpl.id})
-            else:
-                if tmpl and tmpl.active:
-                    tmpl.sudo().active = False
+            record._sync_single_product(
+                record[flag_field], tmpl_field,
+                f'{record.decoration_name} - {label}',
+                initial_image.get(record.id),
+                uom_id=uom.id if uom else None)
 
     @api.model_create_multi
     def create(self, vals_list):

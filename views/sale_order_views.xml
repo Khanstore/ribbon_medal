@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_inherit_ribbon_medal" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.ribbon.medal</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="%(action_rm_rack_unit_pending)d" type="action"
+                        class="oe_stat_button" icon="fa-truck"
+                        invisible="not rack_unit_id or rack_unit_id_state == 'delivered'">
+                    <div class="o_form_field o_stat_info">
+                        <span class="o_stat_text">Awaiting Delivery</span>
+                    </div>
+                </button>
+                <button name="action_open_rack_unit" type="object"
+                        class="oe_stat_button" icon="fa-flask"
+                        invisible="not rack_unit_id">
+                    <div class="o_form_field o_stat_info">
+                        <span class="o_stat_text">Rack Unit</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="person_id"/>
+                <field name="rack_unit_id" invisible="1"/>
+                <field name="rack_unit_id_state" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

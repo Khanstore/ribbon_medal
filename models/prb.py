@@ -6,7 +6,7 @@ from odoo.exceptions import ValidationError
 class RmPRB(models.Model):
     _name = 'rm.prb'
     _description = 'PRB of decorations'
-    _order = 'seniority_sequence desc, name'
+    _order = 'sequence, name'
 
     name = fields.Char(required=True, string='PRB Name')
     medal_id = fields.Many2one('rm.decoration', string='Medal')
@@ -22,6 +22,8 @@ class RmPRB(models.Model):
         string='Ribbon Image', compute='_compute_award_images', inverse='_inverse_ribbon_image')
     medal_image = fields.Binary(
         string='Medal Image', compute='_compute_award_images', inverse='_inverse_medal_image')
+    device_image = fields.Binary(
+        string='Device Image', compute='_compute_award_images', inverse='_inverse_device_image')
     mission_name = fields.Char(string='Mission Name')
     active = fields.Boolean(default=True)
 
@@ -33,6 +35,7 @@ class RmPRB(models.Model):
         for record in self:
             record.ribbon_image = record.sudo().ribbon_id.ribbon_product_tmpl_id.image_1920
             record.medal_image = record.sudo().medal_id.medal_product_tmpl_id.image_1920
+            record.device_image = record.sudo().attachment_id.device_product_tmpl_id.image_1920
 
     def _inverse_ribbon_image(self):
         for record in self:
@@ -45,6 +48,12 @@ class RmPRB(models.Model):
             tmpl = record.sudo().medal_id.medal_product_tmpl_id
             if tmpl:
                 tmpl.sudo().image_1920 = record.medal_image
+
+    def _inverse_device_image(self):
+        for record in self:
+            tmpl = record.sudo().attachment_id.device_product_tmpl_id
+            if tmpl:
+                tmpl.sudo().image_1920 = record.device_image
 
     def copy(self, default=None):
         # 1. Initialize the default dictionary if it's not provided

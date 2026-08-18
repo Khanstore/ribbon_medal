@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rm_set_order_list" model="ir.ui.view">
+        <field name="name">rm.set.order.list</field>
+        <field name="model">rm.set.order</field>
+        <field name="arch" type="xml">
+            <list string="Ribbon Rack Set Orders">
+                <field name="name"/>
+                <field name="person_id"/>
+                <field name="product_id"/>
+                <field name="bom_id"/>
+                <field name="total_price"/>
+                <field name="mrp_production_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rm_set_order_form" model="ir.ui.view">
+        <field name="name">rm.set.order.form</field>
+        <field name="model">rm.set.order</field>
+        <field name="arch" type="xml">
+            <form string="Ribbon Rack Set Order">
+                <header>
+                    <button name="action_open_mo_wizard" type="object"
+                            string="Generate Manufacturing Order" class="btn-primary"/>
+                    <button name="action_rebuild_bom" type="object"
+                            string="Rebuild BOM from Ledger"
+                            invisible="not bom_id" class="btn-secondary"/>
+                    <button name="action_prepare_selection_lines" type="object"
+                            string="Prepare Cell Selections" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_mrp_productions" type="object"
+                                class="oe_stat_button" icon="fa-flask"
+                                invisible="mrp_production_count == 0">
+                            <field name="mrp_production_count" widget="statinfo"
+                                   string="Manufacturing Orders"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="person_id"/>
+                            <field name="product_id"/>
+                            <field name="template_id"/>
+                            <field name="quantity"/>
+                        </group>
+                        <group>
+                            <field name="bom_id" readonly="1"/>
+                            <field name="unit_price" readonly="1"/>
+                            <field name="total_price" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Per-Cell Component Selections" name="selection_lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="award_id"/>
+                                    <field name="category_id"/>
+                                    <field name="product_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rm_set_order_search" model="ir.ui.view">
+        <field name="name">rm.set.order.search</field>
+        <field name="model">rm.set.order</field>
+        <field name="arch" type="xml">
+            <search string="Search Ribbon Rack Set Orders">
+                <field name="name"/>
+                <field name="person_id"/>
+                <group expand="0" string="Group By">
+                    <filter name="groupby_person" string="Person"
+                            context="{'group_by': 'person_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rm_set_order" model="ir.actions.act_window">
+        <field name="name">Ribbon Rack Set Orders</field>
+        <field name="res_model">rm.set.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Ribbon Rack manufacturing order for a person
+            </p>
+        </field>
+    </record>
+
+    <record id="view_rm_set_order_mo_wizard_form" model="ir.ui.view">
+        <field name="name">rm.set.order.mo.wizard.form</field>
+        <field name="model">rm.set.order.mo.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Manufacturing Order">
+                <group>
+                    <field name="order_id" invisible="1"/>
+                    <field name="quantity"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object"
+                            string="Generate" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

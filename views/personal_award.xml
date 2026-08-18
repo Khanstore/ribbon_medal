@@ -8,6 +8,7 @@
                 <field name="award_id"/>
                 <field name="person_id"/>
                 <field name="award_year"/>
+                <field name="attachment_id" optional="show"/>
                 <field name="add_to_ribbon"/>
                 <field name="add_to_big_medal"/>
                 <field name="add_to_mini_medal"/>
@@ -26,6 +27,7 @@
                         <field name="award_id"/>
                         <field name="person_id"/>
                         <field name="award_year"/>
+                        <field name="attachment_id"/>
                         <field name="add_to_ribbon"/>
                         <field name="add_to_big_medal"/>
                         <field name="add_to_mini_medal"/>

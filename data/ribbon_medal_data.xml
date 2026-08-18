@@ -1,23 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="1">
-    <record id="rule_batch" model="rm.rules.category">
-        <field name="name">batch</field>
-        <field name="details">Awarded to all personnel of a given training/service batch.</field>
-    </record>
-    <record id="rule_missions" model="rm.rules.category">
-        <field name="name">missions</field>
-        <field name="details">Awarded for participation in, or completion of, a specific mission or deployment.</field>
-    </record>
-    <record id="rule_special" model="rm.rules.category">
-        <field name="name">special</field>
-        <field name="details">Awarded on a discretionary/special basis, outside the standard acquisition rules.</field>
-    </record>
-    <record id="rule_seniority" model="rm.rules.category">
-        <field name="name">seniority</field>
-        <field name="details">Awarded automatically based on years of service or rank seniority.</field>
-    </record>
-    <record id="force_police" model="rm.forces">
+<odoo noupdate="0">
+    <record id="ribbon_medal.force_police" model="rm.forces">
         <field name="name">Police</field>
-        <field  name="description">Bangladesh Police</field>
+        <field name="description">national civil law enforcing agency</field>
     </record>
 </odoo>

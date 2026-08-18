@@ -1,114 +1,114 @@
-"id","sequence","service_age","force_id/id","rule_category_id/id","name","ribbon_id/id","medal_id/id","mission_name","is_medal","is_ribbon"
-"ribbon_medal_prb_jesthata_1",9003,10,"ribbon_medal.force_police","rule_category_seniority","Seniority1","ribbon_medal_decoration_jesthata_1","ribbon_medal_decoration_jesthata_1","Jesthata 1",1,1
-"ribbon_medal_prb_jesthata_2",9002,20,"ribbon_medal.force_police","rule_category_seniority","seniority2","ribbon_medal_decoration_jesthata_2","ribbon_medal_decoration_jesthata_2","Jesthata 2",1,1
-"ribbon_medal_prb_jesthata_3",9001,27,"ribbon_medal.force_police","rule_category_seniority","Seniority3","ribbon_medal_decoration_jesthata_3","ribbon_medal_decoration_jesthata_3","Jesthata 3",1,1
-"ribbon_medal_prb_1991_election",6006,0,"ribbon_medal.force_police","rule_category_batch","Election1991","ribbon_medal_decoration_1991_election","ribbon_medal_decoration_1991_election","1991 Election",1,1
-"ribbon_medal_prb_2001_election",6004,0,"ribbon_medal.force_police","rule_category_batch","Election2001","ribbon_medal_decoration_2001_election","ribbon_medal_decoration_2001_election","2001 Election",1,1
-"ribbon_medal_prb_1996_election",6005,0,"ribbon_medal.force_police","rule_category_batch","Election1996","ribbon_medal_decoration_1996_election","ribbon_medal_decoration_1996_election","1996 Election",1,1
-"ribbon_medal_prb_shadhinata",7000,1,"ribbon_medal.force_police","rule_category_seniority","Shadhinota","ribbon_medal_decoration_shadhinata","ribbon_medal_decoration_shadhinata","Shadhinata",1,1
-"ribbon_medal_prb_bpm_sheba",1002,0,"ribbon_medal.force_police","rule_category_special","BPM (sheba)","ribbon_medal_decoration_bpm_sheba","ribbon_medal_decoration_bpm_sheba","BPM sheba",1,1
-"ribbon_medal_prb_bpm",1001,0,"ribbon_medal.force_police","rule_category_special","BPM","ribbon_medal_decoration_bpm","ribbon_medal_decoration_bpm","BPM",1,1
-"ribbon_medal_prb_ppm_sheba",2002,0,"ribbon_medal.force_police","rule_category_special","PPM (Sheba)","ribbon_medal_decoration_ppm_sheba","ribbon_medal_decoration_ppm_sheba","PPM Sheba",1,1
-"ribbon_medal_prb_ig-a",7501,0,"ribbon_medal.force_police","rule_category_special","IG Badge A","ribbon_medal_decoration_ig-a","ribbon_medal_decoration_ig-a","IG-A",1,1
-"ribbon_medal_prb_ig-b",7502,0,"ribbon_medal.force_police","rule_category_special","IG Badge B","ribbon_medal_decoration_ig-b","ribbon_medal_decoration_ig-b","IG-B",1,1
-"ribbon_medal_prb_ig-c",7503,0,"ribbon_medal.force_police","rule_category_special","IG Badge C","ribbon_medal_decoration_ig-c","ribbon_medal_decoration_ig-c","IG-C",1,1
-"ribbon_medal_prb_ig-d",7504,0,"ribbon_medal.force_police","rule_category_special","IG Badge D","ribbon_medal_decoration_ig-d","ribbon_medal_decoration_ig-d","IG-D",1,1
-"ribbon_medal_prb_ig-e",7506,0,"ribbon_medal.force_police","rule_category_special","IG Badge E","ribbon_medal_decoration_ig-e","ribbon_medal_decoration_ig-e","IG-E",1,1
-"ribbon_medal_prb_ig-f",7505,0,"ribbon_medal.force_police","rule_category_special","IG Badge F","ribbon_medal_decoration_ig-f","ribbon_medal_decoration_ig-f","IG-F",1,1
-"ribbon_medal_prb_ppm",2001,0,"ribbon_medal.force_police","rule_category_special","PPM","ribbon_medal_decoration_ppm","ribbon_medal_decoration_ppm","PPM",1,1
-"ribbon_medal_prb_rajat_jayanti",8000,1,"ribbon_medal.force_police","rule_category_seniority","Rajat Jayanti","ribbon_medal_decoration_rajat_jayanti","ribbon_medal_decoration_rajat_jayanti","Rajat Jayanti",1,1
-"ribbon_medal_prb_plabon_1988",5000,0,"ribbon_medal.force_police","rule_category_special","Plabon 1988","ribbon_medal_decoration_plabon_1988","ribbon_medal_decoration_plabon_1988","Plabon 1988",1,1
-"ribbon_medal_prb_bijoy_padak__1971",3004,0,"ribbon_medal.force_police","rule_category_special","Bijoy Padak  1971","ribbon_medal_decoration_bijoy_padak__1971","ribbon_medal_decoration_bijoy_padak__1971","Bijoy Padak  1971",1,1
-"ribbon_medal_prb_shongbidhan",3005,0,"ribbon_medal.force_police","rule_category_special","Shongbidhan","ribbon_medal_decoration_shongbidhan","ribbon_medal_decoration_shongbidhan","Shongbidhan",1,1
-"ribbon_medal_prb_nirapotta",4000,0,"ribbon_medal.force_police","rule_category_special","Nirapotta","ribbon_medal_decoration_nirapotta","ribbon_medal_decoration_nirapotta","Nirapotta",1,1
-"ribbon_medal_prb_unmih",10002,0,"ribbon_medal.force_police","rule_category_missions","Haiti","ribbon_medal_decoration_unmih","ribbon_medal_decoration_unmih","UNMIH",1,1
-"ribbon_medal_prb_rono_taroka",3001,0,"ribbon_medal.force_police","rule_category_special","Rono taroka","ribbon_medal_decoration_rono_taroka","ribbon_medal_decoration_rono_taroka","Rono taroka",1,1
-"ribbon_medal_prb_mukti_taroka",3003,0,"ribbon_medal.force_police","rule_category_special","mukti Taroka","ribbon_medal_decoration_mukti_taroka","ribbon_medal_decoration_mukti_taroka","mukti Taroka",1,1
-"ribbon_medal_prb_sarada",6900,0,"ribbon_medal.force_police","rule_category_special","sarada","ribbon_medal_decoration_sarada","ribbon_medal_decoration_sarada","sarada",1,1
-"ribbon_medal_prb_unmik",10002,0,"ribbon_medal.force_police","rule_category_missions","kosovo","ribbon_medal_decoration_unmik","ribbon_medal_decoration_unmik","UNMIK",1,1
-"ribbon_medal_prb_monua",10002,0,"ribbon_medal.force_police","rule_category_missions","Angola","ribbon_medal_decoration_monua","ribbon_medal_decoration_monua","MONUA",1,1
-"ribbon_medal_prb_unmibh",10002,0,"ribbon_medal.force_police","rule_category_missions","Bosnia Harjegovina","ribbon_medal_decoration_unmibh","ribbon_medal_decoration_unmibh","UNMIBH",1,1
-"ribbon_medal_prb_unamic",10002,0,"ribbon_medal.force_police","rule_category_missions","Cambodia 91-92","ribbon_medal_decoration_unamic","ribbon_medal_decoration_unamic","UNAMIC",1,1
-"ribbon_medal_prb_untac",10002,0,"ribbon_medal.force_police","rule_category_missions","Cambodia 92-93","ribbon_medal_decoration_untac","ribbon_medal_decoration_untac","UNTAC",1,1
-"ribbon_medal_prb_monusco",10002,0,"ribbon_medal.force_police","rule_category_missions","Congo","ribbon_medal_decoration_monusco","ribbon_medal_decoration_monusco","MONUSCO",1,1
-"ribbon_medal_prb_uncro",10002,0,"ribbon_medal.force_police","rule_category_missions","Croatia","ribbon_medal_decoration_uncro","ribbon_medal_decoration_uncro","UNCRO",1,1
-"ribbon_medal_prb_unamid",10002,0,"ribbon_medal.force_police","rule_category_missions","Darfur","ribbon_medal_decoration_unamid","ribbon_medal_decoration_unamid","UNAMID",1,1
-"ribbon_medal_prb_onusal",10002,0,"ribbon_medal.force_police","rule_category_missions","El Salvador","ribbon_medal_decoration_onusal","ribbon_medal_decoration_onusal","ONUSAL",1,1
-"ribbon_medal_prb_unmee",10002,0,"ribbon_medal.force_police","rule_category_missions","Eritria","ribbon_medal_decoration_unmee","ribbon_medal_decoration_unmee","UNMEE",1,1
-"ribbon_medal_prb_unmee",10002,0,"ribbon_medal.force_police","rule_category_missions","Ethiopia","ribbon_medal_decoration_unmee","ribbon_medal_decoration_unmee","UNMEE",1,1
-"ribbon_medal_prb_unomig",10002,0,"ribbon_medal.force_police","rule_category_missions","Georzia","ribbon_medal_decoration_unomig","ribbon_medal_decoration_unomig","UNOMIG",1,1
-"ribbon_medal_prb_mingua",10002,0,"ribbon_medal.force_police","rule_category_missions","Guatemala","ribbon_medal_decoration_mingua","ribbon_medal_decoration_mingua","MINGUA",1,1
-"ribbon_medal_prb_minustah",10002,0,"ribbon_medal.force_police","rule_category_missions","Haiti","ribbon_medal_decoration_minustah","ribbon_medal_decoration_minustah","MINUSTAH",1,1
-"ribbon_medal_prb_unimog",10002,0,"ribbon_medal.force_police","rule_category_missions","Iran Irak","ribbon_medal_decoration_unimog","ribbon_medal_decoration_unimog","UNIMOG",1,1
-"ribbon_medal_prb_unimog",10002,0,"ribbon_medal.force_police","rule_category_missions","Irak Iran","ribbon_medal_decoration_unimog","ribbon_medal_decoration_unimog","UNIMOG",1,1
-"ribbon_medal_prb_unikom",10002,0,"ribbon_medal.force_police","rule_category_missions","Kuwait","ribbon_medal_decoration_unikom","ribbon_medal_decoration_unikom","UNIKOM",1,1
-"ribbon_medal_prb_unifil",10002,0,"ribbon_medal.force_police","rule_category_missions","Lebanon","ribbon_medal_decoration_unifil","ribbon_medal_decoration_unifil","UNIFIL",1,1
-"ribbon_medal_prb_unomil",10002,0,"ribbon_medal.force_police","rule_category_missions","Liberia","ribbon_medal_decoration_unomil","ribbon_medal_decoration_unomil","UNOMIL",1,1
-"ribbon_medal_prb_onumoz",10002,0,"ribbon_medal.force_police","rule_category_missions","Mozambik","ribbon_medal_decoration_onumoz","ribbon_medal_decoration_onumoz","ONUMOZ",1,1
-"ribbon_medal_prb_untag",10002,0,"ribbon_medal.force_police","rule_category_missions","Namibia","ribbon_medal_decoration_untag","ribbon_medal_decoration_untag","UNTAG",1,1
-"ribbon_medal_prb_unamir",10002,0,"ribbon_medal.force_police","rule_category_missions","Ruanda","ribbon_medal_decoration_unamir","ribbon_medal_decoration_unamir","UNAMIR",1,1
-"ribbon_medal_prb_unomsil",10002,0,"ribbon_medal.force_police","rule_category_missions","Sieralion","ribbon_medal_decoration_unomsil","ribbon_medal_decoration_unomsil","UNOMSIL",1,1
-"ribbon_medal_prb_unosom_ii",10002,0,"ribbon_medal.force_police","rule_category_missions","Somalia","ribbon_medal_decoration_unosom_ii","ribbon_medal_decoration_unosom_ii","UNOSOM II",1,1
-"ribbon_medal_prb_unmis",10002,0,"ribbon_medal.force_police","rule_category_missions","Sudan","ribbon_medal_decoration_unmis","ribbon_medal_decoration_unmis","UNMIS",1,1
-"ribbon_medal_prb_unmot",10002,0,"ribbon_medal.force_police","rule_category_missions","Tajikistan","ribbon_medal_decoration_unmot","ribbon_medal_decoration_unmot","UNMOT",1,1
-"ribbon_medal_prb_unmit",10002,0,"ribbon_medal.force_police","rule_category_missions","East Timore","ribbon_medal_decoration_unmit","ribbon_medal_decoration_unmit","UNMIT",1,1
-"ribbon_medal_prb_untaet",10002,0,"ribbon_medal.force_police","rule_category_missions","East Timore","ribbon_medal_decoration_untaet","ribbon_medal_decoration_untaet","UNTAET",1,1
-"ribbon_medal_prb_unomur",10002,0,"ribbon_medal.force_police","rule_category_missions","Uganda","ribbon_medal_decoration_unomur","ribbon_medal_decoration_unomur","UNOMUR",1,1
-"ribbon_medal_prb_minurso",10002,0,"ribbon_medal.force_police","rule_category_missions","west Shahara","ribbon_medal_decoration_minurso","ribbon_medal_decoration_minurso","MINURSO",1,1
-"ribbon_medal_prb_untaes",10002,0,"ribbon_medal.force_police","rule_category_missions","Yugoslavia","ribbon_medal_decoration_untaes","ribbon_medal_decoration_untaes","UNTAES",1,1
-"ribbon_medal_prb_unoci",10002,0,"ribbon_medal.force_police","rule_category_missions","Ivoricoast","ribbon_medal_decoration_unoci","ribbon_medal_decoration_unoci","UNOCI",1,1
-"ribbon_medal_prb_untaes",10002,0,"ribbon_medal.force_police","rule_category_missions","Croatia","ribbon_medal_decoration_untaes","ribbon_medal_decoration_untaes","UNTAES",1,1
-"ribbon_medal_prb_unmop",10002,0,"ribbon_medal.force_police","rule_category_missions","Croatia","ribbon_medal_decoration_unmop","ribbon_medal_decoration_unmop","UNMOP",1,1
-"ribbon_medal_prb_unomur",10002,0,"ribbon_medal.force_police","rule_category_missions","Rwanda","ribbon_medal_decoration_unomur","ribbon_medal_decoration_unomur","UNOMUR",1,1
-"ribbon_medal_prb_minusma",10002,0,"ribbon_medal.force_police","rule_category_missions","Mali","ribbon_medal_decoration_minusma","ribbon_medal_decoration_minusma","MINUSMA",1,1
-"ribbon_medal_prb_unimir",10002,0,"ribbon_medal.force_police","rule_category_missions","Rwanda","ribbon_medal_decoration_unimir","ribbon_medal_decoration_unimir","UNIMIR",1,1
-"ribbon_medal_prb_unsmih",10002,0,"ribbon_medal.force_police","rule_category_missions","Haiti","ribbon_medal_decoration_unsmih","ribbon_medal_decoration_unsmih","UNSMIH",1,1
-"ribbon_medal_prb_untmih",10002,0,"ribbon_medal.force_police","rule_category_missions","Haiti","ribbon_medal_decoration_untmih","ribbon_medal_decoration_untmih","UNTMIH",1,1
-"ribbon_medal_prb_miponuh",10002,0,"ribbon_medal.force_police","rule_category_missions","Haiti","ribbon_medal_decoration_miponuh","ribbon_medal_decoration_miponuh","MIPONUH",1,1
-"ribbon_medal_prb_micah",10002,0,"ribbon_medal.force_police","rule_category_missions","Haiti","ribbon_medal_decoration_micah","ribbon_medal_decoration_micah","MICAH",1,1
-"ribbon_medal_prb_unhq",10002,0,"ribbon_medal.force_police","rule_category_missions","UN Head Quarter","ribbon_medal_decoration_unhq","ribbon_medal_decoration_unhq","UNHQ",1,1
-"ribbon_medal_prb_unmiss",10002,0,"ribbon_medal.force_police","rule_category_missions","South Sudan","ribbon_medal_decoration_unmiss","ribbon_medal_decoration_unmiss","UNMISS",1,1
-"ribbon_medal_prb_unisfa",10002,0,"ribbon_medal.force_police","rule_category_missions","Sudan","ribbon_medal_decoration_unisfa","ribbon_medal_decoration_unisfa","UNISFA",1,1
-"ribbon_medal_prb_unmil",10002,0,"ribbon_medal.force_police","rule_category_missions","Liberia","ribbon_medal_decoration_unmil","ribbon_medal_decoration_unmil","UNMIL",1,1
-"ribbon_medal_prb_unamet",10002,0,"ribbon_medal.force_police","rule_category_missions","East Timore","ribbon_medal_decoration_unamet","ribbon_medal_decoration_unamet","UNAMET",1,1
-"ribbon_medal_prb_unmiset",10002,0,"ribbon_medal.force_police","rule_category_missions","East Timore","ribbon_medal_decoration_unmiset","ribbon_medal_decoration_unmiset","UNMISET",1,1
-"ribbon_medal_prb_president_ansar_medal_shahashikata",2002,0,"ribbon_medal.force_police","rule_category_special","PAM Shahashikata","ribbon_medal_decoration_president_ansar_medal_shahashikata","ribbon_medal_decoration_president_ansar_medal_shahashikata","President Ansar Medal Shahashikata",1,1
-"ribbon_medal_prb_samor_padak",3002,0,"ribbon_medal.force_police","rule_category_special","Samor Padak","ribbon_medal_decoration_samor_padak","ribbon_medal_decoration_samor_padak","Samor Padak",1,1
-"ribbon_medal_prb_monuc",10002,0,"ribbon_medal.force_police","rule_category_missions","Congo","ribbon_medal_decoration_monuc","ribbon_medal_decoration_monuc","MONUC",1,1
-"ribbon_medal_prb_president_timore_medal",10000,0,"ribbon_medal.force_police","rule_category_missions","Timore Leste Soliderity Medal","ribbon_medal_decoration_president_timore_medal","ribbon_medal_decoration_president_timore_medal","President Timore Medal",1,1
-"ribbon_medal_prb_unprofor",10002,0,"ribbon_medal.force_police","rule_category_missions","Yougoslavia","ribbon_medal_decoration_unprofor","ribbon_medal_decoration_unprofor","UNPROFOR",1,1
-"ribbon_medal_prb_afghanistan",10002,0,"ribbon_medal.force_police","rule_category_missions","Afganistan","ribbon_medal_decoration_afghanistan","ribbon_medal_decoration_afghanistan","Afghanistan",1,1
-"ribbon_medal_prb_dabanal",4002,0,"ribbon_medal.force_police","rule_category_special","Dabanal","ribbon_medal_decoration_dabanal","ribbon_medal_decoration_dabanal","Dabanal",1,1
-"ribbon_medal_prb_uttaran",4001,0,"ribbon_medal.force_police","rule_category_special","Uttaran","ribbon_medal_decoration_uttaran","ribbon_medal_decoration_uttaran","Uttaran",1,1
-"ribbon_medal_prb_98_plabon",5001,0,"ribbon_medal.force_police","rule_category_batch","Plabon 1998","ribbon_medal_decoration_98_plabon","ribbon_medal_decoration_98_plabon","98 plabon",1,1
-"ribbon_medal_prb_91_ghurnijhar",4099,0,"ribbon_medal.force_police","rule_category_batch","Cyclone 91","ribbon_medal_decoration_91_ghurnijhar","ribbon_medal_decoration_91_ghurnijhar","91 Ghurnijhar",1,1
-"ribbon_medal_prb_police_staff_college",6901,0,"ribbon_medal.force_police","rule_category_special","PSC","ribbon_medal_decoration_police_staff_college","ribbon_medal_decoration_police_staff_college","Police Staff College",1,1
-"ribbon_medal_prb_50_years_of_east_bengal",8010,1,"ribbon_medal.force_police","rule_category_seniority","Golden Jubilee","ribbon_medal_decoration_50_years_of_east_bengal","ribbon_medal_decoration_50_years_of_east_bengal","50 Years of East Bengal",1,1
-"ribbon_medal_prb_bgb_service_medal",8010,1,"ribbon_medal.force_police","rule_category_seniority","BGB Medal","ribbon_medal_decoration_bgb_service_medal","ribbon_medal_decoration_bgb_service_medal","BGB Service Medal",1,1
-"ribbon_medal_prb_200_years_of_bgb",8011,0,"ribbon_medal.force_police","rule_category_batch","200 Years Of BGB","ribbon_medal_decoration_200_years_of_bgb","ribbon_medal_decoration_200_years_of_bgb","200 Years of Bgb",1,1
-"ribbon_medal_prb_bgb_punargathan",8012,1,"ribbon_medal.force_police","rule_category_batch","Punargthan BGB","ribbon_medal_decoration_bgb_punargathan","ribbon_medal_decoration_bgb_punargathan","BGB Punargathan",1,1
-"ribbon_medal_prb_shimanto",8000,0,"ribbon_medal.force_police","rule_category_special","Shimanto","ribbon_medal_decoration_shimanto","ribbon_medal_decoration_shimanto","Shimanto",1,1
-"ribbon_medal_prb_pvm_seba",1001,0,"ribbon_medal.force_police","rule_category_special","President VDP Medal Seba","ribbon_medal_decoration_pvm_seba","ribbon_medal_decoration_pvm_seba","PVM_Seba",1,1
-"ribbon_medal_prb_minujusth",10002,0,"ribbon_medal.force_police","rule_category_special","Minujusth","ribbon_medal_decoration_minujusth","ribbon_medal_decoration_minujusth","Minujusth",1,1
-"ribbon_medal_prb_unssm",10002,0,"ribbon_medal.force_police","rule_category_missions","United Nations Special Service Mission","ribbon_medal_decoration_unssm","ribbon_medal_decoration_unssm","UNSSM",1,1
-"ribbon_medal_prb_medal_of_merit",10002,0,"ribbon_medal.force_police","rule_category_special","Medal Of Merit","ribbon_medal_decoration_medal_of_merit","ribbon_medal_decoration_medal_of_merit","Medal Of Merit",1,1
-"ribbon_medal_prb_bar_to_the_medal_of_merit",10002,0,"ribbon_medal.force_police","rule_category_special","BMM","ribbon_medal_decoration_bar_to_the_medal_of_merit","ribbon_medal_decoration_bar_to_the_medal_of_merit","Bar To The Medal Of Merit",1,1
-"ribbon_medal_prb_chief_national_comisioner",10002,0,"ribbon_medal.force_police","rule_category_special","CNC","ribbon_medal_decoration_chief_national_comisioner","ribbon_medal_decoration_chief_national_comisioner","Chief National Comisioner",1,1
-"ribbon_medal_prb_shavapati",10002,0,"ribbon_medal.force_police","rule_category_special","Shavapati","ribbon_medal_decoration_shavapati","ribbon_medal_decoration_shavapati","Shavapati",1,1
-"ribbon_medal_prb_dankon_march",10002,0,"ribbon_medal.force_police","rule_category_missions","Dankon March","ribbon_medal_decoration_dankon_march","ribbon_medal_decoration_dankon_march","Dankon March",1,1
-"ribbon_medal_prb_bangladesh_ansar_vdp_medal_shashikata",1001,0,"ribbon_medal.force_police","rule_category_special","BVM Shahshikata","ribbon_medal_decoration_bangladesh_ansar_vdp_medal_shashikata","ribbon_medal_decoration_bangladesh_ansar_vdp_medal_shashikata","Bangladesh Ansar Vdp Medal Shashikata",1,1
-"ribbon_medal_prb_unmha",10002,0,"ribbon_medal.force_police","rule_category_missions","United Nations Mission to Support the Hudaydah Agreement in Yemen","ribbon_medal_decoration_unmha","ribbon_medal_decoration_unmha","UNMHA",1,1
-"ribbon_medal_prb_2008_election",6003,0,"ribbon_medal.force_police","rule_category_special","Election2008","ribbon_medal_decoration_2008_election","ribbon_medal_decoration_2008_election","2008 Election",1,1
-"ribbon_medal_prb_2014_election",6002,0,"ribbon_medal.force_police","rule_category_special","Election2014","ribbon_medal_decoration_2014_election","ribbon_medal_decoration_2014_election","2014 Election",1,1
-"ribbon_medal_prb_2018_election",6001,0,"ribbon_medal.force_police","rule_category_special","Election2018","ribbon_medal_decoration_2018_election","ribbon_medal_decoration_2018_election","2018 Election",1,1
-"ribbon_medal_prb_norcon_march",10001,0,"ribbon_medal.force_police","rule_category_special","Norcon March","ribbon_medal_decoration_norcon_march","ribbon_medal_decoration_norcon_march","Norcon March",1,1
-"ribbon_medal_prb_bangabandhu_award",1500,0,"ribbon_medal.force_police","rule_category_special","Bangabandhu Award","ribbon_medal_decoration_bangabandhu_award","ribbon_medal_decoration_bangabandhu_award","Bangabandhu Award",1,1
-"ribbon_medal_prb_janma_shata_barshiki",5500,0,"ribbon_medal.force_police","rule_category_special","Bangabandhu Janma Shatabarshiki","ribbon_medal_decoration_janma_shata_barshiki","ribbon_medal_decoration_janma_shata_barshiki","Janma Shata Barshiki",1,1
-"ribbon_medal_prb_shadhinata_100",7001,0,"ribbon_medal.force_police","rule_category_special","Golden Jubilee Of Independence","ribbon_medal_decoration_shadhinata_100","ribbon_medal_decoration_shadhinata_100","Shadhinata 100",1,1
-"ribbon_medal_prb_president_ansar_medal_sheba",2002,0,"ribbon_medal.force_police","rule_category_special","PAM Sheba","ribbon_medal_decoration_president_ansar_medal_sheba","ribbon_medal_decoration_president_ansar_medal_sheba","President Ansar Medal Sheba",1,1
-"ribbon_medal_prb_president_ansar_medal_gallantry",2002,0,"ribbon_medal.force_police","rule_category_special","PAM Gallantry","ribbon_medal_decoration_president_ansar_medal_gallantry","ribbon_medal_decoration_president_ansar_medal_gallantry","President Ansar Medal Gallantry",1,1
-"ribbon_medal_prb_2024_election",6000,0,"ribbon_medal.force_police","rule_category_special","Election2024","ribbon_medal_decoration_2024_election","ribbon_medal_decoration_2024_election","2024 Election",1,1
-"ribbon_medal_prb_bam_galantry",0,0,"ribbon_medal.force_police","rule_category_special","Bangladesh Ansar Medal Gallantry","ribbon_medal_decoration_bam_galantry","ribbon_medal_decoration_bam_galantry","BAM Galantry",1,1
-"ribbon_medal_prb_minusca",10002,0,"ribbon_medal.force_police","rule_category_missions","Central African republic","ribbon_medal_decoration_minusca","ribbon_medal_decoration_minusca","MINUSCA",1,1
-"ribbon_medal_prb_unsmil",10002,0,"ribbon_medal.force_police","rule_category_missions","Libia","ribbon_medal_decoration_unsmil","ribbon_medal_decoration_unsmil","UNSMIL",1,1
-"ribbon_medal_prb_unficyp",10002,0,"ribbon_medal.force_police","rule_category_missions","Cyprus","ribbon_medal_decoration_unficyp","ribbon_medal_decoration_unficyp","UNFICYP",1,1
+id,sequence,service_age,force_id/id,rule_category_id/id,name,ribbon_id/id,medal_id/id,mission_name,is_medal,is_ribbon,starting_date
+ribbon_medal_prb_jesthata_1,9003,10,ribbon_medal.force_police,rule_category_seniority,Seniority1,ribbon_medal_decoration_jesthata_1,ribbon_medal_decoration_jesthata_1,Jesthata 1,1,1,
+ribbon_medal_prb_jesthata_2,9002,20,ribbon_medal.force_police,rule_category_seniority,seniority2,ribbon_medal_decoration_jesthata_2,ribbon_medal_decoration_jesthata_2,Jesthata 2,1,1,
+ribbon_medal_prb_jesthata_3,9001,27,ribbon_medal.force_police,rule_category_seniority,Seniority3,ribbon_medal_decoration_jesthata_3,ribbon_medal_decoration_jesthata_3,Jesthata 3,1,1,
+ribbon_medal_prb_1991_election,6006,0,ribbon_medal.force_police,rule_category_batch,Election1991,ribbon_medal_decoration_1991_election,ribbon_medal_decoration_1991_election,1991 Election,1,1,1991-02-27
+ribbon_medal_prb_2001_election,6004,0,ribbon_medal.force_police,rule_category_batch,Election2001,ribbon_medal_decoration_2001_election,ribbon_medal_decoration_2001_election,2001 Election,1,1,2001-1-1
+ribbon_medal_prb_1996_election,6005,0,ribbon_medal.force_police,rule_category_batch,Election1996,ribbon_medal_decoration_1996_election,ribbon_medal_decoration_1996_election,1996 Election,1,1,1996-1-1
+ribbon_medal_prb_shadhinata,7000,1,ribbon_medal.force_police,rule_category_seniority,Shadhinota,ribbon_medal_decoration_shadhinata,ribbon_medal_decoration_shadhinata,Shadhinata,1,1,
+ribbon_medal_prb_bpm_sheba,1002,0,ribbon_medal.force_police,rule_category_special,BPM (sheba),ribbon_medal_decoration_bpm_sheba,ribbon_medal_decoration_bpm_sheba,BPM sheba,1,1,
+ribbon_medal_prb_bpm,1001,0,ribbon_medal.force_police,rule_category_special,BPM,ribbon_medal_decoration_bpm,ribbon_medal_decoration_bpm,BPM,1,1,
+ribbon_medal_prb_ppm_sheba,2002,0,ribbon_medal.force_police,rule_category_special,PPM (Sheba),ribbon_medal_decoration_ppm_sheba,ribbon_medal_decoration_ppm_sheba,PPM Sheba,1,1,
+ribbon_medal_prb_ig-a,7501,0,ribbon_medal.force_police,rule_category_special,IG Badge A,ribbon_medal_decoration_ig-a,ribbon_medal_decoration_ig-a,IG-A,1,1,
+ribbon_medal_prb_ig-b,7502,0,ribbon_medal.force_police,rule_category_special,IG Badge B,ribbon_medal_decoration_ig-b,ribbon_medal_decoration_ig-b,IG-B,1,1,
+ribbon_medal_prb_ig-c,7503,0,ribbon_medal.force_police,rule_category_special,IG Badge C,ribbon_medal_decoration_ig-c,ribbon_medal_decoration_ig-c,IG-C,1,1,
+ribbon_medal_prb_ig-d,7504,0,ribbon_medal.force_police,rule_category_special,IG Badge D,ribbon_medal_decoration_ig-d,ribbon_medal_decoration_ig-d,IG-D,1,1,
+ribbon_medal_prb_ig-e,7506,0,ribbon_medal.force_police,rule_category_special,IG Badge E,ribbon_medal_decoration_ig-e,ribbon_medal_decoration_ig-e,IG-E,1,1,
+ribbon_medal_prb_ig-f,7505,0,ribbon_medal.force_police,rule_category_special,IG Badge F,ribbon_medal_decoration_ig-f,ribbon_medal_decoration_ig-f,IG-F,1,1,
+ribbon_medal_prb_ppm,2001,0,ribbon_medal.force_police,rule_category_special,PPM,ribbon_medal_decoration_ppm,ribbon_medal_decoration_ppm,PPM,1,1,
+ribbon_medal_prb_rajat_jayanti,8000,1,ribbon_medal.force_police,rule_category_seniority,Rajat Jayanti,ribbon_medal_decoration_rajat_jayanti,ribbon_medal_decoration_rajat_jayanti,Rajat Jayanti,1,1,
+ribbon_medal_prb_plabon_1988,5000,0,ribbon_medal.force_army,rule_category_special,Plabon 1988,ribbon_medal_decoration_plabon_1988,ribbon_medal_decoration_plabon_1988,Plabon 1988,1,1,
+ribbon_medal_prb_bijoy_padak__1971,3004,0,ribbon_medal.force_police,rule_category_special,Bijoy Padak  1971,ribbon_medal_decoration_bijoy_padak__1971,ribbon_medal_decoration_bijoy_padak__1971,Bijoy Padak  1971,1,1,
+ribbon_medal_prb_shongbidhan,3005,0,ribbon_medal.force_police,rule_category_special,Shongbidhan,ribbon_medal_decoration_shongbidhan,ribbon_medal_decoration_shongbidhan,Shongbidhan,1,1,
+ribbon_medal_prb_nirapotta,4000,0,ribbon_medal.force_police,rule_category_special,Nirapotta,ribbon_medal_decoration_nirapotta,ribbon_medal_decoration_nirapotta,Nirapotta,1,1,
+ribbon_medal_prb_unmih,10002,0,ribbon_medal.force_police,rule_category_missions,Haiti,ribbon_medal_decoration_unmih,ribbon_medal_decoration_unmih,UNMIH,1,1,
+ribbon_medal_prb_rono_taroka,3001,0,ribbon_medal.force_police,rule_category_special,Rono taroka,ribbon_medal_decoration_rono_taroka,ribbon_medal_decoration_rono_taroka,Rono taroka,1,1,
+ribbon_medal_prb_mukti_taroka,3003,0,ribbon_medal.force_police,rule_category_special,mukti Taroka,ribbon_medal_decoration_mukti_taroka,ribbon_medal_decoration_mukti_taroka,mukti Taroka,1,1,
+ribbon_medal_prb_sarada,6900,0,ribbon_medal.force_police,rule_category_special,sarada,ribbon_medal_decoration_sarada,ribbon_medal_decoration_sarada,sarada,1,1,
+ribbon_medal_prb_unmik,10002,0,ribbon_medal.force_police,rule_category_missions,kosovo,ribbon_medal_decoration_unmik,ribbon_medal_decoration_unmik,UNMIK,1,1,
+ribbon_medal_prb_monua,10002,0,ribbon_medal.force_police,rule_category_missions,Angola,ribbon_medal_decoration_monua,ribbon_medal_decoration_monua,MONUA,1,1,
+ribbon_medal_prb_unmibh,10002,0,ribbon_medal.force_police,rule_category_missions,Bosnia Harjegovina,ribbon_medal_decoration_unmibh,ribbon_medal_decoration_unmibh,UNMIBH,1,1,
+ribbon_medal_prb_unamic,10002,0,ribbon_medal.force_police,rule_category_missions,Cambodia 91-92,ribbon_medal_decoration_unamic,ribbon_medal_decoration_unamic,UNAMIC,1,1,
+ribbon_medal_prb_untac,10002,0,ribbon_medal.force_police,rule_category_missions,Cambodia 92-93,ribbon_medal_decoration_untac,ribbon_medal_decoration_untac,UNTAC,1,1,
+ribbon_medal_prb_monusco,10002,0,ribbon_medal.force_police,rule_category_missions,Congo,ribbon_medal_decoration_monusco,ribbon_medal_decoration_monusco,MONUSCO,1,1,
+ribbon_medal_prb_uncro,10002,0,ribbon_medal.force_police,rule_category_missions,Croatia,ribbon_medal_decoration_uncro,ribbon_medal_decoration_uncro,UNCRO,1,1,
+ribbon_medal_prb_unamid,10002,0,ribbon_medal.force_police,rule_category_missions,Darfur,ribbon_medal_decoration_unamid,ribbon_medal_decoration_unamid,UNAMID,1,1,
+ribbon_medal_prb_onusal,10002,0,ribbon_medal.force_police,rule_category_missions,El Salvador,ribbon_medal_decoration_onusal,ribbon_medal_decoration_onusal,ONUSAL,1,1,
+ribbon_medal_prb_unmee,10002,0,ribbon_medal.force_police,rule_category_missions,Eritria,ribbon_medal_decoration_unmee,ribbon_medal_decoration_unmee,UNMEE,1,1,
+ribbon_medal_prb_unmee,10002,0,ribbon_medal.force_police,rule_category_missions,Ethiopia,ribbon_medal_decoration_unmee,ribbon_medal_decoration_unmee,UNMEE,1,1,
+ribbon_medal_prb_unomig,10002,0,ribbon_medal.force_police,rule_category_missions,Georzia,ribbon_medal_decoration_unomig,ribbon_medal_decoration_unomig,UNOMIG,1,1,
+ribbon_medal_prb_mingua,10002,0,ribbon_medal.force_police,rule_category_missions,Guatemala,ribbon_medal_decoration_mingua,ribbon_medal_decoration_mingua,MINGUA,1,1,
+ribbon_medal_prb_minustah,10002,0,ribbon_medal.force_police,rule_category_missions,Haiti,ribbon_medal_decoration_minustah,ribbon_medal_decoration_minustah,MINUSTAH,1,1,
+ribbon_medal_prb_unimog,10002,0,ribbon_medal.force_police,rule_category_missions,Iran Irak,ribbon_medal_decoration_unimog,ribbon_medal_decoration_unimog,UNIMOG,1,1,
+ribbon_medal_prb_unimog,10002,0,ribbon_medal.force_police,rule_category_missions,Irak Iran,ribbon_medal_decoration_unimog,ribbon_medal_decoration_unimog,UNIMOG,1,1,
+ribbon_medal_prb_unikom,10002,0,ribbon_medal.force_police,rule_category_missions,Kuwait,ribbon_medal_decoration_unikom,ribbon_medal_decoration_unikom,UNIKOM,1,1,
+ribbon_medal_prb_unifil,10002,0,ribbon_medal.force_police,rule_category_missions,Lebanon,ribbon_medal_decoration_unifil,ribbon_medal_decoration_unifil,UNIFIL,1,1,
+ribbon_medal_prb_unomil,10002,0,ribbon_medal.force_police,rule_category_missions,Liberia,ribbon_medal_decoration_unomil,ribbon_medal_decoration_unomil,UNOMIL,1,1,
+ribbon_medal_prb_onumoz,10002,0,ribbon_medal.force_police,rule_category_missions,Mozambik,ribbon_medal_decoration_onumoz,ribbon_medal_decoration_onumoz,ONUMOZ,1,1,
+ribbon_medal_prb_untag,10002,0,ribbon_medal.force_police,rule_category_missions,Namibia,ribbon_medal_decoration_untag,ribbon_medal_decoration_untag,UNTAG,1,1,
+ribbon_medal_prb_unamir,10002,0,ribbon_medal.force_police,rule_category_missions,Ruanda,ribbon_medal_decoration_unamir,ribbon_medal_decoration_unamir,UNAMIR,1,1,
+ribbon_medal_prb_unomsil,10002,0,ribbon_medal.force_police,rule_category_missions,Sieralion,ribbon_medal_decoration_unomsil,ribbon_medal_decoration_unomsil,UNOMSIL,1,1,
+ribbon_medal_prb_unosom_ii,10002,0,ribbon_medal.force_police,rule_category_missions,Somalia,ribbon_medal_decoration_unosom_ii,ribbon_medal_decoration_unosom_ii,UNOSOM II,1,1,
+ribbon_medal_prb_unmis,10002,0,ribbon_medal.force_police,rule_category_missions,Sudan,ribbon_medal_decoration_unmis,ribbon_medal_decoration_unmis,UNMIS,1,1,
+ribbon_medal_prb_unmot,10002,0,ribbon_medal.force_police,rule_category_missions,Tajikistan,ribbon_medal_decoration_unmot,ribbon_medal_decoration_unmot,UNMOT,1,1,
+ribbon_medal_prb_unmit,10002,0,ribbon_medal.force_police,rule_category_missions,East Timore,ribbon_medal_decoration_unmit,ribbon_medal_decoration_unmit,UNMIT,1,1,
+ribbon_medal_prb_untaet,10002,0,ribbon_medal.force_police,rule_category_missions,East Timore,ribbon_medal_decoration_untaet,ribbon_medal_decoration_untaet,UNTAET,1,1,
+ribbon_medal_prb_unomur,10002,0,ribbon_medal.force_police,rule_category_missions,Uganda,ribbon_medal_decoration_unomur,ribbon_medal_decoration_unomur,UNOMUR,1,1,
+ribbon_medal_prb_minurso,10002,0,ribbon_medal.force_police,rule_category_missions,west Shahara,ribbon_medal_decoration_minurso,ribbon_medal_decoration_minurso,MINURSO,1,1,
+ribbon_medal_prb_untaes,10002,0,ribbon_medal.force_police,rule_category_missions,Yugoslavia,ribbon_medal_decoration_untaes,ribbon_medal_decoration_untaes,UNTAES,1,1,
+ribbon_medal_prb_unoci,10002,0,ribbon_medal.force_police,rule_category_missions,Ivoricoast,ribbon_medal_decoration_unoci,ribbon_medal_decoration_unoci,UNOCI,1,1,
+ribbon_medal_prb_untaes,10002,0,ribbon_medal.force_police,rule_category_missions,Croatia,ribbon_medal_decoration_untaes,ribbon_medal_decoration_untaes,UNTAES,1,1,
+ribbon_medal_prb_unmop,10002,0,ribbon_medal.force_police,rule_category_missions,Croatia,ribbon_medal_decoration_unmop,ribbon_medal_decoration_unmop,UNMOP,1,1,
+ribbon_medal_prb_unomur,10002,0,ribbon_medal.force_police,rule_category_missions,Rwanda,ribbon_medal_decoration_unomur,ribbon_medal_decoration_unomur,UNOMUR,1,1,
+ribbon_medal_prb_minusma,10002,0,ribbon_medal.force_police,rule_category_missions,Mali,ribbon_medal_decoration_minusma,ribbon_medal_decoration_minusma,MINUSMA,1,1,
+ribbon_medal_prb_unimir,10002,0,ribbon_medal.force_police,rule_category_missions,Rwanda,ribbon_medal_decoration_unimir,ribbon_medal_decoration_unimir,UNIMIR,1,1,
+ribbon_medal_prb_unsmih,10002,0,ribbon_medal.force_police,rule_category_missions,Haiti,ribbon_medal_decoration_unsmih,ribbon_medal_decoration_unsmih,UNSMIH,1,1,
+ribbon_medal_prb_untmih,10002,0,ribbon_medal.force_police,rule_category_missions,Haiti,ribbon_medal_decoration_untmih,ribbon_medal_decoration_untmih,UNTMIH,1,1,
+ribbon_medal_prb_miponuh,10002,0,ribbon_medal.force_police,rule_category_missions,Haiti,ribbon_medal_decoration_miponuh,ribbon_medal_decoration_miponuh,MIPONUH,1,1,
+ribbon_medal_prb_micah,10002,0,ribbon_medal.force_police,rule_category_missions,Haiti,ribbon_medal_decoration_micah,ribbon_medal_decoration_micah,MICAH,1,1,
+ribbon_medal_prb_unhq,10002,0,ribbon_medal.force_police,rule_category_missions,UN Head Quarter,ribbon_medal_decoration_unhq,ribbon_medal_decoration_unhq,UNHQ,1,1,
+ribbon_medal_prb_unmiss,10002,0,ribbon_medal.force_police,rule_category_missions,South Sudan,ribbon_medal_decoration_unmiss,ribbon_medal_decoration_unmiss,UNMISS,1,1,
+ribbon_medal_prb_unisfa,10002,0,ribbon_medal.force_police,rule_category_missions,Sudan,ribbon_medal_decoration_unisfa,ribbon_medal_decoration_unisfa,UNISFA,1,1,
+ribbon_medal_prb_unmil,10002,0,ribbon_medal.force_police,rule_category_missions,Liberia,ribbon_medal_decoration_unmil,ribbon_medal_decoration_unmil,UNMIL,1,1,
+ribbon_medal_prb_unamet,10002,0,ribbon_medal.force_police,rule_category_missions,East Timore,ribbon_medal_decoration_unamet,ribbon_medal_decoration_unamet,UNAMET,1,1,
+ribbon_medal_prb_unmiset,10002,0,ribbon_medal.force_police,rule_category_missions,East Timore,ribbon_medal_decoration_unmiset,ribbon_medal_decoration_unmiset,UNMISET,1,1,
+ribbon_medal_prb_president_ansar_medal_shahashikata,2002,0,ribbon_medal.force_ansar,rule_category_special,PAM Shahashikata,ribbon_medal_decoration_president_ansar_medal_shahashikata,ribbon_medal_decoration_president_ansar_medal_shahashikata,President Ansar Medal Shahashikata,1,1,
+ribbon_medal_prb_samor_padak,3002,0,ribbon_medal.force_police,rule_category_special,Samor Padak,ribbon_medal_decoration_samor_padak,ribbon_medal_decoration_samor_padak,Samor Padak,1,1,
+ribbon_medal_prb_monuc,10002,0,ribbon_medal.force_police,rule_category_missions,Congo,ribbon_medal_decoration_monuc,ribbon_medal_decoration_monuc,MONUC,1,1,
+ribbon_medal_prb_president_timore_medal,10000,0,ribbon_medal.force_police,rule_category_missions,Timore Leste Soliderity Medal,ribbon_medal_decoration_president_timore_medal,ribbon_medal_decoration_president_timore_medal,President Timore Medal,1,1,
+ribbon_medal_prb_unprofor,10002,0,ribbon_medal.force_police,rule_category_missions,Yougoslavia,ribbon_medal_decoration_unprofor,ribbon_medal_decoration_unprofor,UNPROFOR,1,1,
+ribbon_medal_prb_afghanistan,10002,0,ribbon_medal.force_police,rule_category_missions,Afganistan,ribbon_medal_decoration_afghanistan,ribbon_medal_decoration_afghanistan,Afghanistan,1,1,
+ribbon_medal_prb_dabanal,4002,0,ribbon_medal.force_army,rule_category_special,Dabanal,ribbon_medal_decoration_dabanal,ribbon_medal_decoration_dabanal,Dabanal,1,1,
+ribbon_medal_prb_uttaran,4001,0,ribbon_medal.force_army,rule_category_special,Uttaran,ribbon_medal_decoration_uttaran,ribbon_medal_decoration_uttaran,Uttaran,1,1,
+ribbon_medal_prb_98_plabon,5001,0,ribbon_medal.force_army,rule_category_batch,Plabon 1998,ribbon_medal_decoration_98_plabon,ribbon_medal_decoration_98_plabon,98 plabon,1,1,
+ribbon_medal_prb_91_ghurnijhar,4099,0,ribbon_medal.force_army,rule_category_batch,Cyclone 91,ribbon_medal_decoration_91_ghurnijhar,ribbon_medal_decoration_91_ghurnijhar,91 Ghurnijhar,1,1,
+ribbon_medal_prb_police_staff_college,6901,0,ribbon_medal.force_police,rule_category_special,PSC,ribbon_medal_decoration_police_staff_college,ribbon_medal_decoration_police_staff_college,Police Staff College,1,1,
+ribbon_medal_prb_50_years_of_east_bengal,8010,1,ribbon_medal.force_bgb,rule_category_seniority,Golden Jubilee,ribbon_medal_decoration_50_years_of_east_bengal,ribbon_medal_decoration_50_years_of_east_bengal,50 Years of East Bengal,1,1,
+ribbon_medal_prb_bgb_service_medal,8010,1,ribbon_medal.force_bgb,rule_category_seniority,BGB Medal,ribbon_medal_decoration_bgb_service_medal,ribbon_medal_decoration_bgb_service_medal,BGB Service Medal,1,1,
+ribbon_medal_prb_200_years_of_bgb,8011,0,ribbon_medal.force_bgb,rule_category_batch,200 Years Of BGB,ribbon_medal_decoration_200_years_of_bgb,ribbon_medal_decoration_200_years_of_bgb,200 Years of Bgb,1,1,
+ribbon_medal_prb_bgb_punargathan,8012,1,ribbon_medal.force_bgb,rule_category_batch,Punargthan BGB,ribbon_medal_decoration_bgb_punargathan,ribbon_medal_decoration_bgb_punargathan,BGB Punargathan,1,1,
+ribbon_medal_prb_shimanto,8000,0,ribbon_medal.force_bgb,rule_category_special,Shimanto,ribbon_medal_decoration_shimanto,ribbon_medal_decoration_shimanto,Shimanto,1,1,
+ribbon_medal_prb_pvm_seba,1001,0,ribbon_medal.force_ansar,rule_category_special,President VDP Medal Seba,ribbon_medal_decoration_pvm_seba,ribbon_medal_decoration_pvm_seba,PVM_Seba,1,1,
+ribbon_medal_prb_minujusth,10002,0,ribbon_medal.force_police,rule_category_special,Minujusth,ribbon_medal_decoration_minujusth,ribbon_medal_decoration_minujusth,Minujusth,1,1,
+ribbon_medal_prb_unssm,10002,0,ribbon_medal.force_police,rule_category_missions,United Nations Special Service Mission,ribbon_medal_decoration_unssm,ribbon_medal_decoration_unssm,UNSSM,1,1,
+ribbon_medal_prb_medal_of_merit,10002,0,ribbon_medal.force_army,rule_category_special,Medal Of Merit,ribbon_medal_decoration_medal_of_merit,ribbon_medal_decoration_medal_of_merit,Medal Of Merit,1,1,
+ribbon_medal_prb_bar_to_the_medal_of_merit,10002,0,ribbon_medal.force_army,rule_category_special,BMM,ribbon_medal_decoration_bar_to_the_medal_of_merit,ribbon_medal_decoration_bar_to_the_medal_of_merit,Bar To The Medal Of Merit,1,1,
+ribbon_medal_prb_chief_national_comisioner,10002,0,ribbon_medal.force_scouts,rule_category_special,CNC,ribbon_medal_decoration_chief_national_comisioner,ribbon_medal_decoration_chief_national_comisioner,Chief National Comisioner,1,1,
+ribbon_medal_prb_shavapati,10002,0,ribbon_medal.force_scouts,rule_category_special,Shavapati,ribbon_medal_decoration_shavapati,ribbon_medal_decoration_shavapati,Shavapati,1,1,
+ribbon_medal_prb_dankon_march,10002,0,ribbon_medal.force_police,rule_category_missions,Dankon March,ribbon_medal_decoration_dankon_march,ribbon_medal_decoration_dankon_march,Dankon March,1,1,
+ribbon_medal_prb_bangladesh_ansar_vdp_medal_shashikata,1001,0,ribbon_medal.force_ansar,rule_category_special,BVM Shahshikata,ribbon_medal_decoration_bangladesh_ansar_vdp_medal_shashikata,ribbon_medal_decoration_bangladesh_ansar_vdp_medal_shashikata,Bangladesh Ansar Vdp Medal Shashikata,1,1,
+ribbon_medal_prb_unmha,10002,0,ribbon_medal.force_police,rule_category_missions,United Nations Mission to Support the Hudaydah Agreement in Yemen,ribbon_medal_decoration_unmha,ribbon_medal_decoration_unmha,UNMHA,1,1,
+ribbon_medal_prb_2008_election,6003,0,ribbon_medal.force_police,rule_category_batch,Election2008,ribbon_medal_decoration_2008_election,ribbon_medal_decoration_2008_election,2008 Election,1,1,2008-1-1
+ribbon_medal_prb_2014_election,6002,0,ribbon_medal.force_police,rule_category_batch,Election2014,ribbon_medal_decoration_2014_election,ribbon_medal_decoration_2014_election,2014 Election,1,1,2014-1-1
+ribbon_medal_prb_2018_election,6001,0,ribbon_medal.force_police,rule_category_batch,Election2018,ribbon_medal_decoration_2018_election,ribbon_medal_decoration_2018_election,2018 Election,1,1,2018-1-1
+ribbon_medal_prb_norcon_march,10001,0,ribbon_medal.force_police,rule_category_special,Norcon March,ribbon_medal_decoration_norcon_march,ribbon_medal_decoration_norcon_march,Norcon March,1,1,
+ribbon_medal_prb_bangabandhu_award,1500,0,ribbon_medal.force_police,rule_category_special,Bangabandhu Award,ribbon_medal_decoration_bangabandhu_award,ribbon_medal_decoration_bangabandhu_award,Bangabandhu Award,1,1,
+ribbon_medal_prb_janma_shata_barshiki,5500,0,ribbon_medal.force_police,rule_category_special,Bangabandhu Janma Shatabarshiki,ribbon_medal_decoration_janma_shata_barshiki,ribbon_medal_decoration_janma_shata_barshiki,Janma Shata Barshiki,1,1,
+ribbon_medal_prb_shadhinata_100,7001,0,ribbon_medal.force_army,rule_category_special,Golden Jubilee Of Independence,ribbon_medal_decoration_shadhinata_100,ribbon_medal_decoration_shadhinata_100,Shadhinata 100,1,1,
+ribbon_medal_prb_president_ansar_medal_sheba,2002,0,ribbon_medal.force_ansar,rule_category_special,PAM Sheba,ribbon_medal_decoration_president_ansar_medal_sheba,ribbon_medal_decoration_president_ansar_medal_sheba,President Ansar Medal Sheba,1,1,
+ribbon_medal_prb_president_ansar_medal_gallantry,2002,0,ribbon_medal.force_ansar,rule_category_special,PAM Gallantry,ribbon_medal_decoration_president_ansar_medal_gallantry,ribbon_medal_decoration_president_ansar_medal_gallantry,President Ansar Medal Gallantry,1,1,
+ribbon_medal_prb_2024_election,6000,0,ribbon_medal.force_police,rule_category_batch,Election2024,ribbon_medal_decoration_2024_election,ribbon_medal_decoration_2024_election,2024 Election,1,1,2024-1-1
+ribbon_medal_prb_bam_galantry,0,0,ribbon_medal.force_ansar,rule_category_special,Bangladesh Ansar Medal Gallantry,ribbon_medal_decoration_bam_galantry,ribbon_medal_decoration_bam_galantry,BAM Galantry,1,1,
+ribbon_medal_prb_minusca,10002,0,ribbon_medal.force_police,rule_category_missions,Central African republic,ribbon_medal_decoration_minusca,ribbon_medal_decoration_minusca,MINUSCA,1,1,
+ribbon_medal_prb_unsmil,10002,0,ribbon_medal.force_police,rule_category_missions,Libia,ribbon_medal_decoration_unsmil,ribbon_medal_decoration_unsmil,UNSMIL,1,1,
+ribbon_medal_prb_unficyp,10002,0,ribbon_medal.force_police,rule_category_missions,Cyprus,ribbon_medal_decoration_unficyp,ribbon_medal_decoration_unficyp,UNFICYP,1,1,

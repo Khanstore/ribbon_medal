@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rm_rack_product_list" model="ir.ui.view">
+        <field name="name">rm.rack.product.list</field>
+        <field name="model">rm.rack.product</field>
+        <field name="arch" type="xml">
+            <list string="Rack Products">
+                <field name="name"/>
+                <field name="display_identity"/>
+                <field name="stock_count"/>
+                <field name="available_stock_count"/>
+                <field name="use_count"/>
+                <field name="last_used_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rm_rack_product_form" model="ir.ui.view">
+        <field name="name">rm.rack.product.form</field>
+        <field name="model">rm.rack.product</field>
+        <field name="arch" type="xml">
+            <form string="Rack Product">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Alias"/>
+                        <h1><field name="name" placeholder="Optional friendly name"/></h1>
+                        <h3 class="text-muted"><field name="display_identity" readonly="1"/></h3>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="identity_key" readonly="1"/>
+                            <field name="product_tmpl_id" readonly="1"/>
+                            <field name="bom_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="stock_count" readonly="1"/>
+                            <field name="available_stock_count" readonly="1"/>
+                            <field name="use_count" readonly="1"/>
+                            <field name="last_used_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Rows" name="rows">
+                            <field name="rack_line_ids" readonly="1">
+                                <list>
+                                    <field name="sequence"/>
+                                    <field name="line_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Stock Units" name="units">
+                            <field name="unit_ids">
+                                <list>
+                                    <field name="state"/>
+                                    <field name="reserved_person_id"/>
+                                    <field name="delivered_to_person_id"/>
+                                    <field name="delivery_date"/>
+                                    <field name="mrp_production_id"/>
+                                    <field name="mo_state"/>
+                                    <button name="action_deliver" type="object"
+                                            string="Mark as Delivered" class="btn-primary"
+                                            invisible="state != 'in_stock'"/>
+                                    <button name="action_release_reservation" type="object"
+                                            string="Release Reservation" class="btn-secondary"
+                                            invisible="state != 'in_stock' or not reserved_person_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rm_rack_product" model="ir.actions.act_window">
+        <field name="name">Rack Products</field>
+        <field name="res_model">rm.rack.product</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Rack Products appear here automatically as new full-rack
+                combinations get built
+            </p>
+        </field>
+    </record>
+
+    <!-- Pending Deliveries: every reserved-but-not-yet-delivered Rack
+         unit, across all Rack Products, in one place. -->
+    <record id="view_rm_rack_unit_pending_list" model="ir.ui.view">
+        <field name="name">rm.rack.unit.pending.list</field>
+        <field name="model">rm.rack.unit</field>
+        <field name="arch" type="xml">
+            <list string="Pending Deliveries" create="false">
+                <field name="rack_id"/>
+                <field name="reserved_person_id"/>
+                <field name="mrp_production_id"/>
+                <field name="mo_state"/>
+                <button name="action_deliver" type="object"
+                        string="Mark as Delivered" class="btn-primary"/>
+                <button name="action_release_reservation" type="object"
+                        string="Release Reservation" class="btn-secondary"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_rm_rack_unit_pending" model="ir.actions.act_window">
+        <field name="name">Pending Deliveries</field>
+        <field name="res_model">rm.rack.unit</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'in_stock'), ('reserved_person_id', '!=', False)]</field>
+        <field name="view_id" ref="view_rm_rack_unit_pending_list"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Nothing waiting on delivery right now
+            </p>
+        </field>
+    </record>
+</odoo>

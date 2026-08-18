@@ -28,6 +28,7 @@ class RmAcquisitionCustom(models.Model):
     sequence = fields.Integer(string='Sequence', default=10)
     year = fields.Integer(string='Year')
     note = fields.Char(string='Note')
+    attachment_id = fields.Many2one('rm.attachment', string='Attachment')
 
     def copy_from_ledger(self, person):
         """Snapshot `person`'s current rm.acquisition rows into this
@@ -51,6 +52,7 @@ class RmAcquisitionCustom(models.Model):
                 'source': row.source,
                 'year': row.year,
                 'note': row.note,
+                'attachment_id': row.attachment_id.id,
                 'sequence': next_sequence,
             })
             next_sequence += 10

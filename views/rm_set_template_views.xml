@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Component Categories -->
+    <record id="view_rm_component_category_list" model="ir.ui.view">
+        <field name="name">rm.component.category.list</field>
+        <field name="model">rm.component.category</field>
+        <field name="arch" type="xml">
+            <list string="Component Categories" editable="bottom">
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_rm_component_category" model="ir.actions.act_window">
+        <field name="name">Component Categories</field>
+        <field name="res_model">rm.component.category</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- Set Templates -->
+    <record id="view_rm_set_template_list" model="ir.ui.view">
+        <field name="name">rm.set.template.list</field>
+        <field name="model">rm.set.template</field>
+        <field name="arch" type="xml">
+            <list string="Set Templates">
+                <field name="name"/>
+                <field name="category"/>
+                <field name="active" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rm_set_template_form" model="ir.ui.view">
+        <field name="name">rm.set.template.form</field>
+        <field name="model">rm.set.template</field>
+        <field name="arch" type="xml">
+            <form string="Set Template">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <field name="category"/>
+                        <field name="active"/>
+                    </group>
+                    <field name="description" placeholder="Instructions / description..."/>
+                    <notebook>
+                        <page string="Component Rules" name="component_rules">
+                            <field name="component_rule_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="category_id"/>
+                                    <field name="scope"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"/>
+                                    <field name="is_user_selected"/>
+                                    <field name="default_product_id"
+                                           invisible="is_user_selected"
+                                           required="not is_user_selected"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rm_set_template" model="ir.actions.act_window">
+        <field name="name">Set Templates</field>
+        <field name="res_model">rm.set.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

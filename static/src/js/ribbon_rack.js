@@ -9,15 +9,15 @@ const RACK_COLUMNS = 4;
 /**
  * Ribbon Rack widget.
  *
- * Displays the many2many `obtained_awards_ids` of a res.person as a
+ * Displays the many2many `rack_ledger_ids` of a res.person as a
  * military-style "ribbon rack": a grid of RACK_COLUMNS columns where
- * decorations are ordered by ascending `sequence` (lowest sequence =
- * highest precedence, matching Odoo's usual "sequence" convention).
+ * decorations are ordered by descending `sequence` (highest sequence =
+ * highest precedence).
  *
- * Filling pattern: the decoration with the lowest sequence is placed in
+ * Filling pattern: the decoration with the highest sequence is placed in
  * the bottom-right cell of the rack; subsequent decorations are placed
  * moving right-to-left along the bottom row, then continuing on the row
- * above, until the decoration with the highest sequence ends up as far
+ * above, until the decoration with the lowest sequence ends up as far
  * toward the top-left as the rack requires. Rows are rendered one below
  * another (bottom row = highest precedence, full RACK_COLUMNS row; rows
  * above hold the remaining, lower-precedence decorations). Unlike a fixed
@@ -30,7 +30,8 @@ export class RibbonRackField extends Component {
     static props = { ...standardFieldProps };
 
     /**
-     * @returns {Array} records sorted by ascending sequence
+     * @returns {Array} records sorted by descending sequence (highest
+     * sequence = highest precedence, first in the array).
      */
     get sortedAwards() {
         const value = this.props.record.data[this.props.name];
@@ -38,13 +39,13 @@ export class RibbonRackField extends Component {
         return [...records].sort((a, b) => {
             const seqA = a.data.sequence || 0;
             const seqB = b.data.sequence || 0;
-            return seqA - seqB;
+            return seqB - seqA;
         });
     }
 
     /**
      * @returns {Array<Array>} array of rows, top row first. Each row is a
-     * left-to-right array of items (descending precedence within the row,
+     * left-to-right array of items (ascending precedence within the row,
      * highest precedence on the right) with no blank placeholders - the
      * topmost row simply has fewer cells when count isn't a multiple of
      * RACK_COLUMNS, and is centered via CSS instead of padded.
@@ -55,17 +56,17 @@ export class RibbonRackField extends Component {
         if (!count) {
             return [];
         }
-        // Descending precedence (index 0 = lowest precedence overall), so
+        // Ascending precedence (index 0 = lowest precedence overall), so
         // slicing from the start naturally builds rows top (lowest
         // precedence) to bottom (highest precedence), each already in
         // left-to-right order.
-        const descending = [...items].reverse();
+        const ascending = [...items].reverse();
         const remainder = count % RACK_COLUMNS;
         const topRowSize = remainder === 0 ? RACK_COLUMNS : remainder;
 
-        const rows = [descending.slice(0, topRowSize)];
-        for (let i = topRowSize; i < descending.length; i += RACK_COLUMNS) {
-            rows.push(descending.slice(i, i + RACK_COLUMNS));
+        const rows = [ascending.slice(0, topRowSize)];
+        for (let i = topRowSize; i < ascending.length; i += RACK_COLUMNS) {
+            rows.push(ascending.slice(i, i + RACK_COLUMNS));
         }
         return rows;
     }
@@ -74,12 +75,36 @@ export class RibbonRackField extends Component {
         if (!cell) {
             return false;
         }
-        const data = cell.data;
-        const image = data.ribbon_image || data.medal_image;
-        if (!image) {
+        // Deliberately ribbon_image only (not medal_image) - this is
+        // specifically the Ribbon Rack, so it should always show the
+        // ribbon's product image, never fall back to the medal's.
+        // ribbon_image itself is still fetched (see relatedFields below)
+        // just to know whether one exists; the actual <img> src is
+        // served straight from the rm.acquisition record via Odoo's
+        // image controller (ribbon_image is a related pass-through of
+        // rm.prb's own), which serves whatever format was actually
+        // uploaded (a hand-built base64 data URI hardcoded to PNG can
+        // fail to render if the source image is JPEG/GIF/etc).
+        if (!cell.data.ribbon_image) {
             return false;
         }
-        return `data:image/png;base64,${image}`;
+        return `/web/image/rm.acquisition/${cell.resId}/ribbon_image`;
+    }
+
+    getDeviceImageUrl(cell) {
+        // Small device/attachment badge (e.g. a repeat-award numeral or
+        // club) worn on top of the ribbon - sourced from THIS
+        // acquisition's own attachment_id (the specific device this
+        // person received at this acquisition), not rm.prb's static
+        // attachment_id. Many2one relatedFields come through as
+        // [id, display_name].
+        if (!cell || !cell.data.attachment_id) {
+            return false;
+        }
+        const attachmentId = Array.isArray(cell.data.attachment_id)
+            ? cell.data.attachment_id[0]
+            : cell.data.attachment_id;
+        return `/web/image/rm.attachment/${attachmentId}/image`;
     }
 }
 
@@ -92,7 +117,7 @@ export const ribbonRackField = {
         { name: "is_ribbon", type: "boolean" },
         { name: "is_medal", type: "boolean" },
         { name: "ribbon_image", type: "binary" },
-        { name: "medal_image", type: "binary" },
+        { name: "attachment_id", type: "many2one" },
     ],
 };
 

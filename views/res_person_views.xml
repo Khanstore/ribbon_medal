@@ -34,45 +34,53 @@
                     <field name="image_1920" widget="image" class="oe_avatar"
                            options="{'preview_image': 'image_128'}"/>
                     <div class="oe_title">
-                        <label for="name" string="Full Name"/>
-                        <h1><field name="name" placeholder="e.g. Md. Rahim Uddin"/></h1>
-                        <h3>
+                        <h1><field name="name" placeholder="Full Name, e.g. Md. Rahim Uddin"/></h1>
+                        <h3 class="text-muted mt-1">
                             <field name="rank_id" placeholder="Rank" class="oe_inline"/>
-                            <span invisible="not rank_id"> · </span>
+                            <span invisible="not rank_id or not force_id"> · </span>
                             <field name="force_id" readonly="1" class="oe_inline" placeholder="Force"/>
                         </h3>
                     </div>
                     <group>
-                        <group string="Service Information">
+                        <group string="Service Information" col="4">
                             <field name="id_number"/>
                             <field name="current_workplace"/>
                             <field name="bcs_batch"/>
                             <field name="service_confirmation_date"/>
                             <field name="service_age" readonly="1"/>
-                            <field name="birth_date"/>
-                            <field name="age" readonly="1"/>
                             <field name="retirement_date"/>
                             <field name="is_retired" readonly="1"/>
                         </group>
-                        <group string="Nameplate">
+                        <group string="Personal &amp; Contact" col="4">
                             <field name="name_eng"/>
                             <field name="name_bng"/>
-                        </group>
-                        <group string="Contact">
+                            <field name="birth_date"/>
+                            <field name="age" readonly="1"/>
                             <field name="email" widget="email"/>
                             <field name="phone" widget="phone"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Decorations" name="decorations">
-                            <field name="obtained_awards_ids" widget="ribbon_rack" nolabel="1">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <button name="action_issue_ribbon_rack" type="object"
+                                        string="Issue Ribbon Rack" class="btn-primary"
+                                        help="Stock-aware: reuses an existing Rack if an exact match is available, otherwise assembles from existing/new Lines and reserves a fresh unit for this person."/>
+                                <button name="action_generate_ribbon_rack" type="object"
+                                        string="Build Fresh (Manual)" class="btn-secondary"
+                                        help="Always builds a brand-new generic Ribbon Rack from raw materials, ignoring Rack/Line stock."/>
+                                <span class="badge text-bg-secondary fs-6">
+                                    Estimated Price: <field name="rack_total_price" readonly="1" class="oe_inline"/>
+                                </span>
+                            </div>
+                            <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
                                 <list>
                                     <field name="name"/>
                                     <field name="sequence"/>
                                     <field name="is_ribbon"/>
                                     <field name="is_medal"/>
                                     <field name="ribbon_image"/>
-                                    <field name="medal_image"/>
+                                    <field name="attachment_id"/>
                                 </list>
                             </field>
                         </page>
@@ -80,6 +88,7 @@
                             <field name="personal_award_ledger_ids" nolabel="1">
                                 <list>
                                     <field name="award_id"/>
+                                    <field name="attachment_id"/>
                                     <field name="note"/>
                                 </list>
                             </field>
@@ -89,6 +98,7 @@
                                    >
                                 <list >
                                     <field name="award_id"/>
+                                    <field name="attachment_id"/>
                                     <field name="note"/>
                                 </list>
                             </field>
@@ -98,12 +108,13 @@
                                    options="{'create': false, 'delete': false, 'edit': false}">
                                 <list create="false" delete="false" edit="false">
                                     <field name="award_id"/>
+                                    <field name="attachment_id"/>
                                     <field name="note"/>
                                 </list>
                             </field>
                         </page>
                         <page string="Customised" name="customised_ledger">
-                            <div class="mb-2">
+                            <div class="mb-3">
                                 <button name="action_copy_ledger_to_custom" type="object"
                                         string="Copy from Ledger" class="btn-secondary"/>
                             </div>
@@ -113,6 +124,7 @@
                                     <field name="award_id"/>
                                     <field name="source"/>
                                     <field name="year"/>
+                                    <field name="attachment_id"/>
                                     <field name="note"/>
                                 </list>
                             </field>

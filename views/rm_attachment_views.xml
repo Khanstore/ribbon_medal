@@ -18,6 +18,15 @@
         <field name="arch" type="xml">
             <form string="Attachment">
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_device_product" type="object"
+                                class="oe_stat_button" icon="fa-tag"
+                                invisible="not device_product_tmpl_id">
+                            <div class="o_form_field o_stat_info">
+                                <span class="o_stat_text">Device Product</span>
+                            </div>
+                        </button>
+                    </div>
                     <field name="image" widget="image" class="oe_avatar"/>
                     <div class="oe_title">
                         <label for="name"/>
@@ -26,6 +35,7 @@
                     <group>
                         <field name="force_id"/>
                         <field name="active" invisible="1"/>
+                        <field name="device_product_tmpl_id" invisible="1"/>
                     </group>
                 </sheet>
             </form>
