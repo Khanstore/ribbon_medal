@@ -41,12 +41,21 @@ class ResPerson(models.Model):
 
     id_number = fields.Char(string='ID Number', index=True)
     rank_id = fields.Many2one('rm.ranks', string='Rank', ondelete='restrict')
+
+    # Compute rank seniority level on the fly instead of storing it
+    # This avoids registry issues during module loading
     rank_seniority_level = fields.Integer(
-        string='Rank Seniority Level', related='rank_id.seniority_level',
-        store=True, readonly=True,
+        string='Rank Seniority Level',
+        compute='_compute_rank_seniority_level',
+        store=False,
         help='Mirrors the seniority_level of the selected rank; used to '
              "restrict Current Workplace choices to units whose chief's "
              'rank is senior enough.')
+
+    @api.depends('rank_id.seniority_level')
+    def _compute_rank_seniority_level(self):
+        for person in self:
+            person.rank_seniority_level = person.rank_id.seniority_level or 0
 
     @api.model
     def _name_search(self, name='', domain=None, operator='ilike', limit=None, order=None):
@@ -57,11 +66,11 @@ class ResPerson(models.Model):
         domain = list(domain or [])
         if name:
             name_domain = ['|', '|', '|', '|',
-                            ('name', operator, name),
-                            ('id_number', operator, name),
-                            ('phone', operator, name),
-                            ('mobile', operator, name),
-                            ('email', operator, name)]
+                           ('name', operator, name),
+                           ('id_number', operator, name),
+                           ('phone', operator, name),
+                           ('mobile', operator, name),
+                           ('email', operator, name)]
             domain = expression.AND([domain, name_domain])
             return self._search(domain, limit=limit, order=order)
         return super()._name_search(name=name, domain=domain, operator=operator, limit=limit, order=order)
@@ -72,7 +81,7 @@ class ResPerson(models.Model):
         help='Restricted to units whose chief has a seniority level at or '
              "above this person's own rank, so personnel cannot be posted "
              "somewhere their rank outranks the unit's chief.")
-    bcs_batch = fields.Many2one('rm.bcs.batch',string='BCS Batch')
+    bcs_batch = fields.Many2one('rm.bcs.batch', string='BCS Batch')
     service_confirmation_date = fields.Date(string='Service Confirmation Date')
 
     obtained_awards_ids = fields.Many2many(
@@ -104,13 +113,13 @@ class ResPerson(models.Model):
     # it's just a filtered search(), not a real foreign key.
     personal_award_ledger_ids = fields.One2many(
         'rm.personal.awards', 'person_id', string='Personal Awards',
-        )
+    )
     service_ledger_ids = fields.One2many(
         'rm.acquisition', 'person_id', string='Service',
         domain=[('source', '=', 'batch')])
     mission_ledger_ids = fields.One2many(
         'rm.mission.posting', 'person_id', string='Mision'
-        )
+    )
     seniority_ledger_ids = fields.One2many(
         'rm.acquisition', 'person_id', string='Seniority',
         domain=[('source', '=', 'seniority')])
@@ -123,7 +132,7 @@ class ResPerson(models.Model):
         for person in self:
             if person.birth_date:
                 person.age = today.year - person.birth_date.year - (
-                    (today.month, today.day) < (person.birth_date.month, person.birth_date.day))
+                        (today.month, today.day) < (person.birth_date.month, person.birth_date.day))
             else:
                 person.age = 0
 
@@ -133,7 +142,8 @@ class ResPerson(models.Model):
         for person in self:
             if person.service_confirmation_date:
                 person.service_age = today.year - person.service_confirmation_date.year - (
-                    (today.month, today.day) < (person.service_confirmation_date.month, person.service_confirmation_date.day))
+                        (today.month, today.day) < (person.service_confirmation_date.month,
+                                                    person.service_confirmation_date.day))
             else:
                 person.service_age = 0
 
@@ -180,8 +190,8 @@ class ResPerson(models.Model):
         for person in self:
             acquisitions = Acquisition.search([('person_id', '=', person.id)])
             person.rack_total_price = (
-                sum(acquisitions.mapped('ribbon_list_price'))
-                + sum(acquisitions.mapped('attachment_list_price'))
+                    sum(acquisitions.mapped('ribbon_list_price'))
+                    + sum(acquisitions.mapped('attachment_list_price'))
             )
 
     @api.onchange('id_number')
@@ -200,15 +210,15 @@ class ResPerson(models.Model):
                 birth_year_val = int(birth_yr_str)
                 joining_year_val = int(joining_yr_str)
                 birth_year = (2000 + birth_year_val) if (0 <= birth_year_val <= current_yr) else (1900 + birth_year_val)
-                joinng_year = (2000 + joining_year_val) if (0 <= joining_year_val <= current_yr) else (1900 + joining_year_val)
-
+                joinng_year = (2000 + joining_year_val) if (0 <= joining_year_val <= current_yr) else (
+                            1900 + joining_year_val)
 
                 # Set birth_date to Jan 1st of that year
                 record.birth_date = date(birth_year, 1, 1)
                 record.service_confirmation_date = date(joinng_year, 1, 1)
             else:
                 record.birth_date = False
-                record.service_confirmation_date  = False
+                record.service_confirmation_date = False
 
     def get_sorted_awards(self):
         """Return obtained awards sorted for Ribbon Rack display: lowest
@@ -280,27 +290,14 @@ class ResPerson(models.Model):
         return self._issue_notification(message)
 
     def _issue_ribbon_rack_unit(self):
-        """Full stock-aware resolution cascade for handing this person a
-        Ribbon Rack:
+        """Full stock-aware resolution cascade for handing this person a Ribbon Rack:
 
-        1. Exact-match unreserved Rack Product stock already assembled
-           for this exact combination of rows -> hand it straight over,
-           nothing else happens.
-        2. Otherwise, resolve each row (Line) independently: exact Line
-           stock -> trim-substitute from a longer in-stock Line (fully
-           consuming it) -> create a brand new Line and manufacture it
-           from raw materials.
-        3. Assemble/manufacture exactly one unit of the (now identified,
-           and if new, permanently identity-locked) Rack Product,
-           reserved for this person - assembling rows into a rack is a
-           real step even when every row came straight from stock, so
-           this only skips entirely when step 1 already found a
-           fully pre-built rack.
-
-        Returns (rm.rack.unit, message) - the resulting/handed-over unit
-        (already delivered in the step-1 case, still reserved/pending
-        delivery otherwise) and a human-readable description of what
-        happened.
+        1. If a complete Rack is in stock (actual product stock) → allocate it, no MOs created.
+        2. If no complete Rack in stock:
+           a. For each Line (row), check actual product stock quantity
+           b. If stock < needed, manufacture ONLY the shortage
+           c. If stock >= needed, use stock (no MO)
+           d. Always manufacture the Rack assembly (unless a complete rack was found)
         """
         self.ensure_one()
         RackLine = self.env['rm.rack.line']
@@ -311,8 +308,7 @@ class ResPerson(models.Model):
                 '%s has no acquisitions on the Acquisition Ledger to build a ribbon rack for.'
             ) % self.display_name)
 
-        # Step 1: is there already a Rack Product for this EXACT
-        # combination of already-known Lines, with unreserved stock?
+        # Step 1: Check for complete rack in stock (actual product stock)
         exact_line_ids = []
         for row in rows:
             key = RackLine._key_for_award_ids(row.ids)
@@ -326,46 +322,101 @@ class ResPerson(models.Model):
             rack_key = RackProduct._key_for_line_ids(exact_line_ids)
             rack = RackProduct.search([('identity_key', '=', rack_key)], limit=1)
             if rack:
-                available_unit = self.env['rm.rack.unit'].search([
-                    ('rack_id', '=', rack.id),
-                    ('state', '=', 'in_stock'),
-                    ('reserved_person_id', '=', False),
-                ], limit=1)
-                if available_unit:
-                    available_unit.action_deliver(self.id)
-                    rack.record_usage()
-                    return available_unit, _(
-                        'Handed over an existing Rack Product #%(id)s from stock (%(identity)s).'
-                    ) % {'id': rack.id, 'identity': rack.display_identity}
+                # Check actual product stock for this rack
+                rack._ensure_product()  # Ensure product exists before checking stock
+                available_quantity = rack.get_available_stock_quantity()
+                if available_quantity >= 1:
+                    # Complete rack found in stock - just allocate it
+                    available_unit = rack.get_stock_units(1)
+                    if available_unit:
+                        available_unit.action_deliver(self.id)
+                        rack.record_usage()
+                        return available_unit, _(
+                            'Handed over an existing Rack Product #%(id)s from stock (%(identity)s). '
+                            'No manufacturing orders were created.'
+                        ) % {'id': rack.id, 'identity': rack.display_identity}
 
-        # Step 2: resolve each row independently.
+        # Step 2: No complete rack in stock - resolve each line with quantity awareness
         resolved_line_ids = []
+        total_lines_manufactured = 0
+
         for row in rows:
             award_ids = row.ids
-            match_line, match_unit = RackLine.find_best_stock_match(award_ids)
             exact_line = RackLine.get_or_create(award_ids)
-            if match_line and match_unit:
-                match_unit.write({
-                    'state': 'consumed',
-                    'consumed_note': _('Used for %s') % self.display_name,
-                })
+
+            # Ensure the line has a product
+            exact_line._ensure_product()
+
+            # Check how many units we need (1 for each row/line)
+            needed = 1
+
+            # Get available stock for this exact line (actual product stock)
+            available_quantity = exact_line.get_available_stock_quantity()
+
+            if available_quantity >= needed:
+                # We have enough stock - use it
+                exact_line.consume_stock_units(needed, self.display_name)
             else:
-                new_unit = exact_line.manufacture_unit()
-                new_unit.write({
-                    'state': 'consumed',
-                    'consumed_note': _('Used for %s') % self.display_name,
-                })
+                # Not enough stock - use what we have and manufacture the rest
+                if available_quantity > 0:
+                    # Use existing stock first
+                    exact_line.consume_stock_units(int(available_quantity), self.display_name)
+
+                # Manufacture the shortage
+                shortage = needed - int(available_quantity)
+                if shortage > 0:
+                    new_units = exact_line.manufacture_units(shortage)
+                    for unit in new_units:
+                        unit.write({
+                            'state': 'consumed',
+                            'consumed_note': _('Used for %s') % self.display_name,
+                        })
+                    total_lines_manufactured += shortage
+
             exact_line.record_usage()
             resolved_line_ids.append(exact_line.id)
 
-        # Step 3: assemble/manufacture the rack itself, reserved for this person.
+        # Step 3: Assemble the rack
         rack = RackProduct.get_or_create(resolved_line_ids)
+
+        # Ensure rack has a product
+        rack._ensure_product()
+
+        # Check if we have a rack in stock (actual product stock)
+        available_rack_quantity = rack.get_available_stock_quantity()
+        if available_rack_quantity >= 1:
+            # Found a rack in stock - allocate it
+            available_unit = rack.get_stock_units(1)
+            if available_unit:
+                available_unit.action_deliver(self.id)
+                rack.record_usage()
+
+                if total_lines_manufactured == 0:
+                    return available_unit, _(
+                        'Used existing lines from stock and allocated an existing Rack Product #%(id)s from stock. '
+                        'No manufacturing orders were created.'
+                    ) % {'id': rack.id}
+                else:
+                    return available_unit, _(
+                        'Manufactured %(count)d line unit(s) and allocated an existing Rack Product #%(id)s from stock.'
+                    ) % {'count': total_lines_manufactured, 'id': rack.id}
+
+        # No rack in stock - manufacture it
         new_rack_unit = rack.manufacture_unit(reserved_person_id=self.id)
         rack.record_usage()
-        return new_rack_unit, _(
-            'No ready-made rack matched exactly - assembled and reserved a new '
-            'unit of Rack Product #%(id)s for %(name)s.'
-        ) % {'id': rack.id, 'name': self.display_name}
+
+        # Build a detailed message
+        if total_lines_manufactured == 0:
+            # All lines came from stock, but no complete rack existed
+            return new_rack_unit, _(
+                'Used all required lines from stock and manufactured a new Rack Product #%(id)s for %(name)s. '
+                'Only the rack assembly MO was created (no line MOs).'
+            ) % {'id': rack.id, 'name': self.display_name}
+        else:
+            return new_rack_unit, _(
+                'Manufactured %(count)d line unit(s) (shortage from stock) and assembled a new Rack Product #%(id)s for %(name)s. '
+                'Created MOs for %(count)d line(s) and the rack assembly.'
+            ) % {'count': total_lines_manufactured, 'id': rack.id, 'name': self.display_name}
 
     def _issue_notification(self, message):
         return {

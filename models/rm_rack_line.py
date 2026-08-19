@@ -53,9 +53,20 @@ class RmRackLine(models.Model):
                 line.item_ids.sorted('sequence').mapped('award_id.name'))
 
     def _compute_stock_count(self):
+        """Compute the actual product stock quantity for this line."""
         for line in self:
-            line.stock_count = self.env['rm.rack.line.unit'].search_count(
-                [('line_id', '=', line.id), ('state', '=', 'in_stock')])
+            if not line.product_tmpl_id:
+                line.stock_count = 0
+                continue
+
+            # Get the Size L variant
+            product = line._get_size_l_variant()
+            if not product:
+                line.stock_count = 0
+                continue
+
+            # Get actual stock from product
+            line.stock_count = int(product.qty_available)
 
     @api.model
     def _key_for_award_ids(self, award_ids):
@@ -151,13 +162,74 @@ class RmRackLine(models.Model):
         self.write({'bom_id': bom.id, 'bom_incomplete': incomplete})
         return bom
 
-    def _get_size_l_variant(self, product_tmpl):
+    def _get_size_l_variant(self, product_tmpl=None):
+        """Return the Size=L product.product variant of `product_tmpl`.
+        If product_tmpl is None, use this line's own product_tmpl_id."""
+        if product_tmpl is None:
+            product_tmpl = self.product_tmpl_id
         if not product_tmpl:
             return self.env['product.product']
         return product_tmpl.product_variant_ids.filtered(
             lambda p: 'L' in p.product_template_attribute_value_ids.mapped(
                 'product_attribute_value_id.name')
         )[:1]
+
+    def get_available_stock_quantity(self):
+        """Return the actual available stock quantity of this line's product.
+        Checks the product's stock availability in all warehouses/locations."""
+        self.ensure_one()
+        if not self.product_tmpl_id:
+            return 0.0
+
+        # Get the product variant (Size L)
+        product = self._get_size_l_variant()
+        if not product:
+            return 0.0
+
+        # Get available stock (this uses Odoo's stock.quant or stock.move line)
+        return product.qty_available
+
+    def get_stock_units(self, quantity):
+        """Get actual stock units (rm.rack.line.unit records) for this line.
+        Returns the specified quantity of in-stock units, or fewer if not enough."""
+        self.ensure_one()
+        # First check if we have enough actual product stock
+        available_qty = self.get_available_stock_quantity()
+        if available_qty < quantity:
+            # We don't have enough physical stock, return what's available
+            quantity = int(available_qty)
+
+        if quantity <= 0:
+            return self.env['rm.rack.line.unit']
+
+        # Get the line units that are in stock
+        return self.env['rm.rack.line.unit'].search([
+            ('line_id', '=', self.id),
+            ('state', '=', 'in_stock')
+        ], limit=int(quantity))
+
+    def consume_stock_units(self, quantity, person_name):
+        """Consume `quantity` units from stock for this line.
+        Returns the number of units actually consumed."""
+        self.ensure_one()
+        units = self.get_stock_units(quantity)
+        consumed = 0
+        for unit in units:
+            unit.write({
+                'state': 'consumed',
+                'consumed_note': _('Used for %s') % person_name,
+            })
+            consumed += 1
+        return consumed
+
+    def manufacture_units(self, quantity):
+        """Manufacture `quantity` units of this line. Returns list of created units."""
+        self.ensure_one()
+        created_units = self.env['rm.rack.line.unit']
+        for _ in range(int(quantity)):
+            unit = self.manufacture_unit()
+            created_units |= unit
+        return created_units
 
     def record_usage(self):
         for line in self:

@@ -80,7 +80,7 @@ class RmRackProduct(models.Model):
         return self.create({
             'identity_key': key,
             'rack_line_ids': [(0, 0, {'sequence': idx, 'line_id': lid})
-                               for idx, lid in enumerate(line_ids)],
+                              for idx, lid in enumerate(line_ids)],
         })
 
     def _ensure_product(self):
@@ -140,6 +140,50 @@ class RmRackProduct(models.Model):
         })
         self.bom_id = bom.id
         return bom
+
+    def get_available_stock_quantity(self):
+        """Return the actual available stock quantity of this rack's product.
+        Checks the product's stock availability in all warehouses/locations."""
+        self.ensure_one()
+        if not self.product_tmpl_id:
+            return 0.0
+
+        # Get the product variant
+        product = self.product_tmpl_id.product_variant_id
+        if not product:
+            return 0.0
+
+        # Get available stock
+        return product.qty_available
+
+    def get_stock_units(self, quantity):
+        """Get actual stock units (rm.rack.unit records) for this rack.
+        Returns the specified quantity of in-stock units, or fewer if not enough."""
+        self.ensure_one()
+        # First check if we have enough actual product stock
+        available_qty = self.get_available_stock_quantity()
+        if available_qty < quantity:
+            # We don't have enough physical stock, return what's available
+            quantity = int(available_qty)
+
+        if quantity <= 0:
+            return self.env['rm.rack.unit']
+
+        # Get the rack units that are in stock and not reserved
+        return self.env['rm.rack.unit'].search([
+            ('rack_id', '=', self.id),
+            ('state', '=', 'in_stock'),
+            ('reserved_person_id', '=', False)
+        ], limit=int(quantity))
+
+    def manufacture_units(self, quantity, reserved_person_id=False):
+        """Manufacture `quantity` units of this rack. Returns list of created units."""
+        self.ensure_one()
+        created_units = self.env['rm.rack.unit']
+        for _ in range(int(quantity)):
+            unit = self.manufacture_unit(reserved_person_id=reserved_person_id)
+            created_units |= unit
+        return created_units
 
     def record_usage(self):
         for rack in self:
