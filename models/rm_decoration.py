@@ -65,13 +65,21 @@ class RmDecoration(models.Model):
         `initial_image` (keyed by record id) carries an image passed in
         the SAME create()/write() call that set the flag - the image
         field can't supply it via its own inverse yet, since the product
-        doesn't exist until this method creates it."""
+        doesn't exist until this method creates it. New Ribbon products
+        use Meter as their Unit of Measure (ribbon material is bought
+        and consumed by length); new Medal products use Unit (a discrete
+        countable item) - this only applies at creation time, not
+        retroactively to a product that already exists."""
         initial_image = initial_image or {}
+        uom = self.env.ref(
+            'uom.product_uom_meter' if label == 'Ribbon' else 'uom.product_uom_unit',
+            raise_if_not_found=False)
         for record in self:
             record._sync_single_product(
                 record[flag_field], tmpl_field,
                 f'{record.decoration_name} - {label}',
-                initial_image.get(record.id))
+                initial_image.get(record.id),
+                uom_id=uom.id if uom else None)
 
     @api.model_create_multi
     def create(self, vals_list):

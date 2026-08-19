@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Component Categories -->
+        <record id="component_category_ribbon" model="rm.component.category">
+            <field name="code">RIBBON</field>
+            <field name="name">Ribbon Material</field>
+        </record>
+        <record id="component_category_gum" model="rm.component.category">
+            <field name="code">GUM</field>
+            <field name="name">Gum / Adhesive</field>
+        </record>
+        <record id="component_category_backing" model="rm.component.category">
+            <field name="code">BACKING</field>
+            <field name="name">Backing Material</field>
+        </record>
+        <record id="component_category_fastener" model="rm.component.category">
+            <field name="code">FASTENER</field>
+            <field name="name">Fastener (e.g. Safety Pin)</field>
+        </record>
+        <record id="component_category_packaging" model="rm.component.category">
+            <field name="code">PACKAGING</field>
+            <field name="name">Packaging</field>
+        </record>
+        <record id="component_category_attachment" model="rm.component.category">
+            <field name="code">ATTACHMENT</field>
+            <field name="name">Attachment / Device</field>
+        </record>
+
+        <!-- Placeholder fixed products for the non-varying categories.
+             Ribbon Kathi (the FASTENER default here) already exists,
+             created earlier in rm_manufacturing_data.xml. -->
+        <record id="product_set_gum" model="product.template">
+            <field name="name">Gum / Adhesive Portion</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="False"/>
+            <field name="purchase_ok" eval="True"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_set_packaging_box" model="product.template">
+            <field name="name">Packaging Box</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="False"/>
+            <field name="purchase_ok" eval="True"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Example template matching the "Standard 3-Wide Ribbon Rack"
+             rule set: ribbon + gum + backing per cell, one attachment
+             per cell that has one, one safety pin and one packaging box
+             per rack, regardless of how many cells. -->
+        <record id="set_template_ribbon_rack" model="rm.set.template">
+            <field name="name">Generic Ribbon Rack Template</field>
+            <field name="category">ribbon_rack</field>
+            <field name="description">Ribbon + gum + backing per cell. One attachment per cell that has one. One safety pin and one packaging box per rack.</field>
+        </record>
+
+        <record id="template_component_ribbon" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_ribbon_rack"/>
+            <field name="category_id" ref="component_category_ribbon"/>
+            <field name="scope">per_cell</field>
+            <field name="quantity">4.00</field>
+            <field name="uom_id" ref="uom.product_uom_cm"/>
+            <field name="is_user_selected" eval="True"/>
+        </record>
+        <record id="template_component_gum" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_ribbon_rack"/>
+            <field name="category_id" ref="component_category_gum"/>
+            <field name="default_product_id" ref="product_set_gum"/>
+            <field name="scope">per_cell</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="False"/>
+        </record>
+        <record id="template_component_backing" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_ribbon_rack"/>
+            <field name="category_id" ref="component_category_backing"/>
+            <field name="scope">per_cell</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="True"/>
+        </record>
+        <record id="template_component_fastener" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_ribbon_rack"/>
+            <field name="category_id" ref="component_category_fastener"/>
+            <field name="default_product_id" ref="ribbon_medal.product_ribbon_kathi"/>
+            <field name="scope">per_rack</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="False"/>
+        </record>
+        <record id="template_component_packaging" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_ribbon_rack"/>
+            <field name="category_id" ref="component_category_packaging"/>
+            <field name="default_product_id" ref="product_set_packaging_box"/>
+            <field name="scope">per_rack</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="False"/>
+        </record>
+        <record id="template_component_attachment" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_ribbon_rack"/>
+            <field name="category_id" ref="component_category_attachment"/>
+            <field name="scope">per_attachment</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

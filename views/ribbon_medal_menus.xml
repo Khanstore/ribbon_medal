@@ -5,6 +5,9 @@
 
     <menuitem id="menu_ribbon_medal_personnel" name="Personnel"
               parent="menu_ribbon_medal_root" sequence="10"/>
+    <menuitem id="menu_rm_person_search_wizard" name="Order Ribbon Rack"
+              parent="menu_ribbon_medal_personnel" sequence="15"
+              action="action_rm_person_search_wizard"/>
     <menuitem id="menu_res_person" name="Personnel"
               parent="menu_ribbon_medal_personnel" sequence="10"
               action="action_res_person"/>
@@ -39,9 +42,21 @@
 
     <menuitem id="menu_ribbon_medal_manufacturing" name="Manufacturing"
               parent="menu_ribbon_medal_root" sequence="30"/>
+    <menuitem id="menu_rm_rack_unit_pending" name="Pending Deliveries"
+              parent="menu_ribbon_medal_manufacturing" sequence="5"
+              action="action_rm_rack_unit_pending"/>
     <menuitem id="menu_rm_set_order" name="Ribbon Rack Set Orders"
               parent="menu_ribbon_medal_manufacturing" sequence="10"
               action="action_rm_set_order"/>
+    <menuitem id="menu_rm_set_template" name="Set Templates"
+              parent="menu_ribbon_medal_manufacturing" sequence="20"
+              action="action_rm_set_template"/>
+    <menuitem id="menu_rm_rack_line" name="Rack Lines"
+              parent="menu_ribbon_medal_manufacturing" sequence="30"
+              action="action_rm_rack_line"/>
+    <menuitem id="menu_rm_rack_product" name="Rack Products"
+              parent="menu_ribbon_medal_manufacturing" sequence="40"
+              action="action_rm_rack_product"/>
 
     <menuitem id="menu_ribbon_medal_configuration" name="Configuration"
               parent="menu_ribbon_medal_root" sequence="90"
@@ -64,4 +79,7 @@
     <menuitem id="menu_rm_attachment" name="Attachments"
               parent="menu_ribbon_medal_configuration" sequence="60"
               action="action_rm_attachment"/>
+    <menuitem id="menu_rm_component_category" name="Component Categories"
+              parent="menu_ribbon_medal_configuration" sequence="70"
+              action="action_rm_component_category"/>
 </odoo>

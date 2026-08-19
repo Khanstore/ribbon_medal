@@ -16,8 +16,4 @@
         <field name="name">seniority</field>
         <field name="details">Awarded automatically based on years of service or rank seniority.</field>
     </record>
-    <record id="force_police" model="rm.forces">
-        <field name="name">Police</field>
-        <field  name="description">Bangladesh Police</field>
-    </record>
 </odoo>

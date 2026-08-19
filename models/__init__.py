@@ -15,4 +15,11 @@ from . import rm_excluded_award
 from . import rm_acquisition
 from . import rm_acquisition_custom
 from . import mrp_production
+from . import rm_component_category
+from . import rm_set_template
+from . import rm_set_order_line
 from . import rm_set_order
+from . import rm_rack_line
+from . import rm_rack_product
+from . import rm_person_search_wizard
+from . import sale_order
