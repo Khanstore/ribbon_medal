@@ -36,29 +36,32 @@ class RmProductSyncMixin(models.AbstractModel):
             ])
         return attribute, values
 
-    def _prepare_sync_product_vals(self, name, uom_id=None):
-        """Base vals for a new auto-managed product: sellable, non-stock,
-        with a Size S/L attribute line. Callers may add more keys (e.g.
-        image_1920) before creating. Pass uom_id to override the default
-        Unit of Measure (e.g. Meter for a ribbon-material product)."""
+    def _prepare_sync_product_vals(self, name, uom_id=None, size_variants='both'):
+        """Base vals for a new auto-managed product.
+        size_variants: 'both' (create S and L), 'l_only' (create only L), or 's_only' (create only S)"""
         attribute, values = self._get_size_attribute_and_values()
+
+        if size_variants == 'l_only':
+            value_ids = values.filtered(lambda v: v.name == 'L')
+        elif size_variants == 's_only':
+            value_ids = values.filtered(lambda v: v.name == 'S')
+        else:  # 'both'
+            value_ids = values
+
         vals = {
             'name': name,
-            'type': 'consu',
+            'type': 'consu',  # Changed from 'consu' to 'stock'
             'sale_ok': True,
             'purchase_ok': False,
+            'is_storable': True,
             'attribute_line_ids': [(0, 0, {
                 'attribute_id': attribute.id,
-                'value_ids': [(6, 0, values.ids)],
+                'value_ids': [(6, 0, value_ids.ids)],
             })],
         }
         if uom_id:
             vals['uom_id'] = uom_id
             vals['uom_po_id'] = uom_id
-        # 'tracking' only exists when the stock module happens to be
-        # installed (we don't depend on it - installing this module
-        # shouldn't also pull in the Inventory app). When it is present,
-        # it's NOT NULL with no DB-level default, so set it explicitly.
         if 'tracking' in self.env['product.template']._fields:
             vals['tracking'] = 'none'
         return vals
@@ -119,15 +122,10 @@ class RmProductSyncMixin(models.AbstractModel):
             'Could not create product "%s" - repeatedly hit new required fields (%s).'
         ) % (vals.get('name'), ', '.join(sorted(patched_fields))))
 
-    def _sync_single_product(self, active, tmpl_field, name, initial_image=None, uom_id=None):
+    def _sync_single_product(self, active, tmpl_field, name, initial_image=None, uom_id=None, size_variants='both'):
         """Create/reactivate or archive the product.template linked via
-        `tmpl_field` (on a singleton `self`) to match `active`. Runs as
-        sudo so this doesn't require product-module access rights.
-        `initial_image`, if given, seeds a brand-new product's image
-        (an image field's own inverse can't do this, since the product
-        doesn't exist yet at that point). `uom_id`, if given, only
-        applies when actually creating a new product - it's not applied
-        retroactively to one that already exists."""
+        `tmpl_field` on a singleton `self` to match `active`.
+        size_variants: 'both', 'l_only', or 's_only'"""
         self.ensure_one()
         tmpl = self[tmpl_field]
         if active:
@@ -135,14 +133,10 @@ class RmProductSyncMixin(models.AbstractModel):
                 if not tmpl.active:
                     tmpl.sudo().active = True
             else:
-                vals = self._prepare_sync_product_vals(name, uom_id=uom_id)
+                vals = self._prepare_sync_product_vals(name, uom_id=uom_id, size_variants=size_variants)
                 if initial_image:
                     vals['image_1920'] = initial_image
                 new_tmpl = self._create_product_resilient(vals)
-                # Note: _create_product_resilient() already flushes
-                # immediately after creating, so this template's variants
-                # (Size S/L) are fully materialized to the DB before a
-                # caller looping over many records moves to the next one.
                 self.sudo().write({tmpl_field: new_tmpl.id})
         else:
             if tmpl and tmpl.active:

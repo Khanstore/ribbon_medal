@@ -81,7 +81,10 @@ class RmRackLine(models.Model):
     def _ensure_product(self):
         self.ensure_one()
         if not self.product_tmpl_id:
-            vals = self._prepare_sync_product_vals(f'Rack Line: {self.display_identity}')
+            vals = self._prepare_sync_product_vals(
+                f'Rack Line: {self.display_identity}',
+                size_variants='l_only'  # Only create L variant
+            )
             tmpl = self._create_product_resilient(vals)
             self.product_tmpl_id = tmpl.id
 

@@ -24,13 +24,14 @@ Features
     'depends': ['base', 'sale', 'stock', 'mail','website_sale','purchase' ,'product', 'mrp'],
     'data': [
         'security/ribbon_medal_security.xml',
-        'data/rm.forces.csv',
         'security/ir.model.access.csv',
         'data/ribbon_medal_data.xml',
         'data/product_attribute_data.xml',
-        # 'data/rm_attachment_data.xml',
+        'data/rm.forces.csv',
+        'data/rm_attachment_data.xml',
         'data/rm.decoration.csv',
         'data/rm.rules.category.csv',
+
         'data/rm.prb.csv',
         # 'data/rm.ranks.csv',
         'data/ribbon_medal_ranks.xml',

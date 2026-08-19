@@ -17,7 +17,7 @@
         </record>
         <record id="component_category_fastener" model="rm.component.category">
             <field name="code">FASTENER</field>
-            <field name="name">Fastener (e.g. Safety Pin, Velcro)</field>
+            <field name="name">Fastener (e.g. Safety Pin)</field>
         </record>
         <record id="component_category_packaging" model="rm.component.category">
             <field name="code">PACKAGING</field>
@@ -31,14 +31,6 @@
         <!-- Placeholder fixed products for the non-varying categories.
              Ribbon Kathi (the FASTENER default here) already exists,
              created earlier in rm_manufacturing_data.xml. -->
-        <record id="product_rexcin_for_ribbon" model="product.template">
-            <field name="name">Rexcin For Ribbon</field>
-            <field name="type">consu</field>
-            <field name="sale_ok" eval="False"/>
-            <field name="purchase_ok" eval="True"/>
-            <field name="uom_id" ref="uom.product_uom_yeard"/>
-            <field name="uom_po_id" ref="uom.product_uom_yeard"/>
-        </record>
         <record id="product_set_gum" model="product.template">
             <field name="name">Gum / Adhesive Portion</field>
             <field name="type">consu</field>
@@ -46,6 +38,15 @@
             <field name="purchase_ok" eval="True"/>
             <field name="uom_id" ref="uom.product_uom_unit"/>
             <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_rexcin_for_ribbon" model="product.template">
+            <field name="name">Rexcin For Ribbon</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="False"/>
+            <field name="purchase_ok" eval="True"/>
+            <field name="is_storable" eval="True"/>
+            <field name="uom_id" ref="uom.product_uom_yeard"/>
+            <field name="uom_po_id" ref="uom.product_uom_yeard"/>
         </record>
         <record id="product_set_packaging_box" model="product.template">
             <field name="name">Packaging Box</field>
@@ -86,11 +87,10 @@
         <record id="template_component_backing" model="rm.set.template.component">
             <field name="template_id" ref="set_template_ribbon_rack"/>
             <field name="category_id" ref="component_category_backing"/>
-            <field name="scope">per_line</field>
-            <field name="quantity">.100</field>
-            <field name="uom_id" ref="uom.product_uom_cm"/>
-            <field name="default_product_id" ref="ribbon_medal.product_rexcin_for_ribbon"/>
-            <field name="is_user_selected" eval="False"/>
+            <field name="scope">per_cell</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="True"/>
         </record>
         <record id="template_component_fastener" model="rm.set.template.component">
             <field name="template_id" ref="set_template_ribbon_rack"/>

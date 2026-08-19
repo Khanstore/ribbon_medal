@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo >
+<odoo noupdate="1">
     <record id="attachment_2" model="rm.attachment">
         <field name="name">2</field>
         <field name="force_id" ref="ribbon_medal.force_police"/>

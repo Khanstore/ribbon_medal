@@ -86,7 +86,10 @@ class RmRackProduct(models.Model):
     def _ensure_product(self):
         self.ensure_one()
         if not self.product_tmpl_id:
-            vals = self._prepare_sync_product_vals(self.name or f'Rack #{self.id}')
+            vals = self._prepare_sync_product_vals(
+                self.name or f'Rack #{self.id}',
+                size_variants='l_only'  # Only create L variant
+            )
             tmpl = self._create_product_resilient(vals)
             self.product_tmpl_id = tmpl.id
 
