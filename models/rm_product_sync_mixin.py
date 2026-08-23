@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 
 from odoo import _, fields, models
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class RmProductSyncMixin(models.AbstractModel):
@@ -17,12 +20,25 @@ class RmProductSyncMixin(models.AbstractModel):
         """Return the shared 'Size' product.attribute and its S/L values,
         used on every auto-created product. Falls back to
         finding-or-creating them if the module's data record is missing
-        (e.g. deleted manually), instead of failing outright."""
+        (e.g. deleted manually), instead of failing outright. If more
+        than one 'Size' attribute exists (e.g. left over from an earlier
+        partial install), always resolves to the same one (lowest id)
+        deterministically instead of whatever `search()` happens to
+        return - resolving to a different row between syncs is what
+        makes Odoo treat a product's variant combination as changed and
+        delete/recreate its variants."""
         attribute = self.env.ref(
             'ribbon_medal.product_attribute_size', raise_if_not_found=False)
-        if not attribute:
-            attribute = self.env['product.attribute'].search(
-                [('name', '=', 'Size')], limit=1)
+        if not attribute or not attribute.exists():
+            candidates = self.env['product.attribute'].search(
+                [('name', '=', 'Size')], order='id asc')
+            if len(candidates) > 1:
+                _logger.warning(
+                    "Multiple 'Size' product.attribute records found (ids %s) - "
+                    "using the oldest (id %s) for every sync. Merge or remove "
+                    "the duplicates to avoid product variants being silently "
+                    "deleted and recreated.", candidates.ids, candidates[0].id)
+            attribute = candidates[:1]
             if not attribute:
                 attribute = self.env['product.attribute'].create({
                     'name': 'Size',
@@ -128,6 +144,15 @@ class RmProductSyncMixin(models.AbstractModel):
         size_variants: 'both', 'l_only', or 's_only'"""
         self.ensure_one()
         tmpl = self[tmpl_field]
+        if tmpl and not tmpl.exists():
+            # Stale reference - the linked template/variant is gone
+            # (e.g. deleted outside this mixin's control). Drop it and
+            # fall through to rebuild it below instead of crashing.
+            _logger.warning(
+                "%s.%s pointed at a %s that no longer exists (id %s) - "
+                "rebuilding it.", self._name, tmpl_field, tmpl._name, tmpl.id)
+            self.sudo().write({tmpl_field: False})
+            tmpl = self.env['product.template']
         if active:
             if tmpl:
                 if not tmpl.active:

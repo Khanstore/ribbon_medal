@@ -190,20 +190,35 @@ class RmRackProduct(models.Model):
             rack.write({'use_count': rack.use_count + 1, 'last_used_date': fields.Datetime.now()})
 
     def manufacture_unit(self, reserved_person_id=False):
-        """Create+confirm an MO for exactly 1 unit of this Rack, return
-        the resulting rm.rack.unit. Same MO-confirm-means-in_stock
-        simplification as rm.rack.line.manufacture_unit - see there."""
+        """Add 1 unit of demand for this Rack to manufacturing. If an MO
+        for this exact Rack's product/BOM is already pending (confirmed,
+        nothing consumed yet), the unit is folded into it - quantity and
+        origin merged onto the existing MO - rather than raising a new
+        one. Only when no pending MO exists is a new mrp.production
+        created+confirmed. Returns the resulting rm.rack.unit. Same
+        MO-confirm-means-in_stock simplification as
+        rm.rack.line.manufacture_unit - see there."""
         self.ensure_one()
         if not self.bom_id:
             self._build_bom()
-        production = self.env['mrp.production'].create({
-            'product_id': self.product_tmpl_id.product_variant_id.id,
-            'product_qty': 1.0,
-            'product_uom_id': self.product_tmpl_id.uom_id.id,
-            'bom_id': self.bom_id.id,
-            'origin': self.display_identity,
-        })
-        production.action_confirm()
+        product = self.product_tmpl_id.product_variant_id
+        Production = self.env['mrp.production']
+        pending = Production.search([
+            ('product_id', '=', product.id),
+            ('bom_id', '=', self.bom_id.id),
+            ('state', '=', 'confirmed'),
+        ], order='id', limit=1)
+        if pending:
+            production = pending.rm_add_quantity(1.0, extra_origin=self.display_identity)
+        else:
+            production = Production.create({
+                'product_id': product.id,
+                'product_qty': 1.0,
+                'product_uom_id': self.product_tmpl_id.uom_id.id,
+                'bom_id': self.bom_id.id,
+                'origin': self.display_identity,
+            })
+            production.action_confirm()
         return self.env['rm.rack.unit'].create({
             'rack_id': self.id,
             'state': 'in_stock',

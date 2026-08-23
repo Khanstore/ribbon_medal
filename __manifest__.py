@@ -1,6 +1,6 @@
 {
     'name': 'Ribbon Medal - Personnel Decorations',
-    'version': '18.0.1.0.65',
+    'version': '18.0.1.0.73',
     'category': 'Human Resources',
     'summary': 'Manage personnel records and their decorations (ribbons/medals) for military/police organizations',
     'description': """
@@ -56,6 +56,7 @@ Features
         'views/rm_forces_views.xml',
         'views/rm_set_template_views.xml',
         'views/rm_person_search_wizard_views.xml',
+        'views/rm_sale_line_person_wizard_views.xml',
         'views/rm_set_order_views.xml',
         'views/rm_rack_line_views.xml',
         'views/rm_rack_product_views.xml',

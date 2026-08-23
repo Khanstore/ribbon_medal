@@ -236,22 +236,37 @@ class RmRackLine(models.Model):
             line.write({'use_count': line.use_count + 1, 'last_used_date': fields.Datetime.now()})
 
     def manufacture_unit(self):
-        """Create+confirm an MO for exactly 1 unit of this Line, return
-        the resulting rm.rack.line.unit. Note: the unit is marked
-        in_stock as soon as the MO is CONFIRMED, not when it's actually
-        marked Done - this module tracks manufacturing intent/allocation,
-        not shop-floor completion timing. Check mrp_production_id.state
-        separately if that distinction matters."""
+        """Add 1 unit of demand for this Line to manufacturing. If an MO
+        for this exact Line's product/BOM is already pending (confirmed,
+        nothing consumed yet), the unit is folded into it - quantity and
+        origin merged onto the existing MO - rather than raising a new
+        one. Only when no pending MO exists is a new mrp.production
+        created+confirmed. Returns the resulting rm.rack.line.unit.
+        Note: the unit is marked in_stock as soon as its MO is
+        CONFIRMED, not when it's actually marked Done - this module
+        tracks manufacturing intent/allocation, not shop-floor
+        completion timing. Check mrp_production_id.state separately if
+        that distinction matters."""
         self.ensure_one()
         self._ensure_product_and_bom()
-        production = self.env['mrp.production'].create({
-            'product_id': self.product_tmpl_id.product_variant_id.id,
-            'product_qty': 1.0,
-            'product_uom_id': self.product_tmpl_id.uom_id.id,
-            'bom_id': self.bom_id.id,
-            'origin': self.display_identity,
-        })
-        production.action_confirm()
+        product = self.product_tmpl_id.product_variant_id
+        Production = self.env['mrp.production']
+        pending = Production.search([
+            ('product_id', '=', product.id),
+            ('bom_id', '=', self.bom_id.id),
+            ('state', '=', 'confirmed'),
+        ], order='id', limit=1)
+        if pending:
+            production = pending.rm_add_quantity(1.0, extra_origin=self.display_identity)
+        else:
+            production = Production.create({
+                'product_id': product.id,
+                'product_qty': 1.0,
+                'product_uom_id': self.product_tmpl_id.uom_id.id,
+                'bom_id': self.bom_id.id,
+                'origin': self.display_identity,
+            })
+            production.action_confirm()
         return self.env['rm.rack.line.unit'].create({
             'line_id': self.id,
             'state': 'in_stock',

@@ -9,12 +9,12 @@
 "ribbon_medal_decoration_bpm_sheba","BPM (sheba)","BPM sheba",1,1
 "ribbon_medal_decoration_bpm","BPM","BPM",1,1
 "ribbon_medal_decoration_ppm_sheba","PPM (Sheba)","PPM Sheba",1,1
-"ribbon_medal_decoration_ig-a","IG Badge A","IG-A",0,1
-"ribbon_medal_decoration_ig-b","IG Badge B","IG-B",0,1
-"ribbon_medal_decoration_ig-c","IG Badge C","IG-C",0,1
-"ribbon_medal_decoration_ig-d","IG Badge D","IG-D",0,1
-"ribbon_medal_decoration_ig-e","IG Badge E","IG-E",0,1
-"ribbon_medal_decoration_ig-f","IG Badge F","IG-F",0,1
+"ribbon_medal_decoration_ig-a","IG Badge A","IG-A",1,1
+"ribbon_medal_decoration_ig-b","IG Badge B","IG-B",1,1
+"ribbon_medal_decoration_ig-c","IG Badge C","IG-C",1,1
+"ribbon_medal_decoration_ig-d","IG Badge D","IG-D",1,1
+"ribbon_medal_decoration_ig-e","IG Badge E","IG-E",1,1
+"ribbon_medal_decoration_ig-f","IG Badge F","IG-F",1,1
 "ribbon_medal_decoration_ppm","PPM","PPM",1,1
 "ribbon_medal_decoration_rajat_jayanti","Rajat Jayanti","Rajat Jayanti",1,1
 "ribbon_medal_decoration_plabon_1988","Plabon 1988","Plabon 1988",1,1

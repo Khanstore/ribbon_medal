@@ -446,3 +446,21 @@ class ResPerson(models.Model):
             'domain': [('person_id', '=', self.id)],
             'context': {'default_person_id': self.id},
         }
+
+    def action_select_for_rack_wizard(self):
+        """Row button on rm.sale.line.person.wizard's result list -
+        writes this Person back onto whichever wizard opened it (passed
+        via context) and reopens that same wizard so the pick shows
+        immediately. UI glue only, not meant to be called elsewhere."""
+        self.ensure_one()
+        wizard_id = self.env.context.get('rack_wizard_id')
+        wizard = self.env['rm.sale.line.person.wizard'].browse(wizard_id) if wizard_id else None
+        if wizard and wizard.exists():
+            wizard.person_id = self.id
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'rm.sale.line.person.wizard',
+            'res_id': wizard_id,
+            'view_mode': 'form',
+            'target': 'new',
+        }
