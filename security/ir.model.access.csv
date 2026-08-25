@@ -46,3 +46,5 @@ access_rm_rack_unit_user,rm.rack.unit.user,model_rm_rack_unit,group_ribbon_medal
 access_rm_rack_unit_manager,rm.rack.unit.manager,model_rm_rack_unit,group_ribbon_medal_manager,1,1,1,1
 access_rm_person_search_wizard,rm.person.search.wizard,model_rm_person_search_wizard,group_ribbon_medal_user,1,1,1,1
 access_rm_sale_line_person_wizard,rm.sale.line.person.wizard,model_rm_sale_line_person_wizard,group_ribbon_medal_user,1,1,1,1
+access_rm_partner_to_person_wizard,rm.partner.to.person.wizard,model_rm_partner_to_person_wizard,group_ribbon_medal_user,1,1,1,1
+access_rm_partner_to_person_wizard_line,rm.partner.to.person.wizard.line,model_rm_partner_to_person_wizard_line,group_ribbon_medal_user,1,1,1,1

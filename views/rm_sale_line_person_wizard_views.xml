@@ -16,9 +16,9 @@
                     <field name="search_term"
                            placeholder="Search by name, ID, phone, mobile, email, rank, or unit..."/>
                 </group>
-                <field name="result_person_ids" nolabel="1"
+                <field name="result_person_ids" nolabel="1" readonly="1"
                        invisible="not search_term">
-                    <list limit="20">
+                    <list limit="20" create="false" delete="false">
                         <field name="name"/>
                         <field name="id_number"/>
                         <field name="rank_id"/>

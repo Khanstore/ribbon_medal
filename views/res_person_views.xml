@@ -73,16 +73,33 @@
                                     Estimated Price: <field name="rack_total_price" readonly="1" class="oe_inline"/>
                                 </span>
                             </div>
-                            <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
-                                <list>
-                                    <field name="name"/>
-                                    <field name="sequence"/>
-                                    <field name="is_ribbon"/>
-                                    <field name="is_medal"/>
-                                    <field name="ribbon_image"/>
-                                    <field name="attachment_id"/>
-                                </list>
-                            </field>
+                            <group>
+                                <group>
+                                    <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
+
+                                        <list>
+                                            <field name="name"/>
+                                            <field name="sequence"/>
+                                            <field name="is_ribbon"/>
+                                            <field name="is_medal"/>
+                                            <field name="ribbon_image"/>
+                                            <field name="attachment_id"/>
+                                        </list>
+                                    </field>
+                                </group>
+                                <group>
+                                    <field name="rack_ledger_ids" widget="medal_rack" nolabel="1">
+                                        <list>
+                                            <field name="name"/>
+                                            <field name="sequence"/>
+                                            <field name="is_ribbon"/>
+                                            <field name="is_medal"/>
+                                            <field name="medal_image"/>
+                                            <field name="attachment_id"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
                         </page>
                         <page string="Award" name="personal_awards">
                             <field name="personal_award_ledger_ids" nolabel="1">

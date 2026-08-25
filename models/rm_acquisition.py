@@ -107,6 +107,7 @@ class RmAcquisition(models.Model):
     is_ribbon = fields.Boolean(related='award_id.is_ribbon', readonly=True)
     is_medal = fields.Boolean(related='award_id.is_medal', readonly=True)
     ribbon_image = fields.Binary(related='award_id.ribbon_image', readonly=True)
+    medal_image = fields.Binary(related='award_id.medal_image', readonly=True)
     ribbon_list_price = fields.Float(
         related='award_id.ribbon_id.ribbon_product_tmpl_id.list_price', readonly=True,
         string='Ribbon Price')

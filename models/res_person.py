@@ -39,6 +39,23 @@ class ResPerson(models.Model):
         'res.partner', string='Related Partner', required=True,
         ondelete='cascade', auto_join=True, index=True)
 
+    _sql_constraints = [
+        ('partner_id_uniq', 'unique(partner_id)',
+         'A Personnel record already exists for this Contact - open that '
+         'one instead of creating another.'),
+    ]
+
+    def copy(self, default=None):
+        """Duplicating a Person must not point the copy at the same
+        Contact - that would collide with the uniqueness constraint
+        above. Give the copy its own duplicated Contact instead, the
+        same way res.users handles this for its own partner_id."""
+        self.ensure_one()
+        default = dict(default or {})
+        if 'partner_id' not in default:
+            default['partner_id'] = self.partner_id.copy().id
+        return super().copy(default)
+
     id_number = fields.Char(string='ID Number', index=True)
     rank_id = fields.Many2one('rm.ranks', string='Rank', ondelete='restrict')
 
