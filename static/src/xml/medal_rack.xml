@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<t t-name="ribbon_medal.MedalRackField">
+<div class="o_medal_rack">
+<div t-if="!row.length" class="o_medal_rack_empty_state text-muted"> No medals obtained yet. </div>
+<div t-else="" class="o_medal_rack_row">
+<t t-foreach="row" t-as="cell" t-key="cell_index">
+<<<<<<< HEAD
+<div class="o_medal_rack_cell o_medal_rack_filled" t-att-title="cell.name" t-att-style="getCellStyle(cell_index, row.length)">
+<img t-if="getImageUrl(cell)" t-att-src="getImageUrl(cell)" t-att-alt="cell.name" class="o_medal_rack_img"/>
+<div t-else="" class="o_medal_rack_placeholder">
+<span t-esc="cell.name"/>
+=======
+<div class="o_medal_rack_cell o_medal_rack_filled" t-att-title="cell.data.name" t-att-style="getCellStyle(cell_index, row.length)">
+<img t-if="getImageUrl(cell)" t-att-src="getImageUrl(cell)" t-att-alt="cell.data.name" class="o_medal_rack_img"/>
+<div t-else="" class="o_medal_rack_placeholder">
+<span t-esc="cell.data.name"/>
+>>>>>>> bb3a35d8c0f0303a5d80a0b497603fa7185d7356
+</div>
+<img t-if="getDeviceImageUrl(cell)" t-att-src="getDeviceImageUrl(cell)" alt="" class="o_medal_rack_img"/>
+</div>
+</t>
+</div>
+</div>
+</t>
+</templates>

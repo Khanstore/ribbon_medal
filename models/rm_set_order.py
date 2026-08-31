@@ -80,12 +80,7 @@ class RmSetOrder(models.Model):
 
     def _get_size_l_variant(self, product_tmpl):
         """Return the Size=L product.product variant of `product_tmpl`."""
-        if not product_tmpl:
-            return self.env['product.product']
-        return product_tmpl.product_variant_ids.filtered(
-            lambda p: 'L' in p.product_template_attribute_value_ids.mapped(
-                'product_attribute_value_id.name')
-        )[:1]
+        return self.env['rm.product.sync.mixin']._get_size_variant(product_tmpl, 'L')
 
     def action_prepare_selection_lines(self):
         """Create a blank rm.set.order.line for every (cell, category)

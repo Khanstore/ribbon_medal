@@ -46,7 +46,12 @@ class RmProductSyncMixin(models.AbstractModel):
             'name': name,
             'type': 'consu',
             'sale_ok': True,
+<<<<<<< Updated upstream
             'purchase_ok': False,
+=======
+            'purchase_ok': True,
+            'is_storable': True,
+>>>>>>> Stashed changes
             'attribute_line_ids': [(0, 0, {
                 'attribute_id': attribute.id,
                 'value_ids': [(6, 0, values.ids)],
@@ -62,6 +67,19 @@ class RmProductSyncMixin(models.AbstractModel):
         if 'tracking' in self.env['product.template']._fields:
             vals['tracking'] = 'none'
         return vals
+
+    def _get_size_variant(self, product_tmpl, size):
+        """Return the `size` ('S' or 'L') product.product variant of
+        `product_tmpl`. Shared by every model that needs a specific-size
+        variant of an auto-managed product (Rack Lines, Set Orders,
+        Medal Parts, Medal Racks) so the lookup logic lives in one
+        place instead of being duplicated per model."""
+        if not product_tmpl:
+            return self.env['product.product']
+        return product_tmpl.product_variant_ids.filtered(
+            lambda p: size in p.product_template_attribute_value_ids.mapped(
+                'product_attribute_value_id.name')
+        )[:1]
 
     def _zero_value_for_field(self, field):
         """A conservative, inoffensive default for a field we don't

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rm_partner_to_person_wizard_form" model="ir.ui.view">
+        <field name="name">rm.partner.to.person.wizard.form</field>
+        <field name="model">rm.partner.to.person.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Convert to Person">
+                <p>
+                    Each row below becomes a new Personnel record pointing
+                    at the <em>same</em> Contact - nothing about the
+                    Contact itself is duplicated or changed. Fill in ID
+                    Number and Rank where you have them; leave blank to
+                    fill in later on the Person record. Rows already
+                    ticked "Skip" are either already a Person or a
+                    Company, not an individual - review before unticking.
+                </p>
+                <field name="line_ids">
+                    <list editable="bottom" create="false">
+                        <field name="partner_id" readonly="1"/>
+                        <field name="is_company" column_invisible="1"/>
+                        <field name="existing_person_id" readonly="1"
+                               string="Already a Person?"/>
+                        <field name="id_number" readonly="skip"/>
+                        <field name="rank_id" readonly="skip"/>
+                        <field name="skip"/>
+                    </list>
+                </field>
+                <p>
+                    <field name="convertible_count" readonly="1" nolabel="1" class="oe_inline"/>
+                    will be converted,
+                    <field name="skipped_count" readonly="1" nolabel="1" class="oe_inline"/>
+                    skipped.
+                </p>
+                <footer>
+                    <button name="action_confirm" type="object"
+                            string="Convert" class="btn-primary"
+                            invisible="not convertible_count"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_convert_partner_to_person" model="ir.actions.act_window">
+        <field name="name">Convert to Person</field>
+        <field name="res_model">rm.partner.to.person.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">list,form</field>
+    </record>
+</odoo>

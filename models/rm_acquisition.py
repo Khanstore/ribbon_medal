@@ -97,6 +97,8 @@ class RmAcquisition(models.Model):
     year = fields.Integer(string='Year', readonly=True)
     note = fields.Char(string='Note', readonly=True)
     attachment_id = fields.Many2one('rm.attachment', string='Attachment', readonly=True)
+    add_to_big_medal = fields.Boolean(string='Tunic Medal', readonly=True)
+    add_to_mini_medal = fields.Boolean(string='Mini/Meskit Medal', readonly=True)
 
     # Pass-through display fields for the Ribbon Rack widget: it reads
     # everything from rm.acquisition rows (not rm.prb directly) so that
@@ -107,9 +109,13 @@ class RmAcquisition(models.Model):
     is_ribbon = fields.Boolean(related='award_id.is_ribbon', readonly=True)
     is_medal = fields.Boolean(related='award_id.is_medal', readonly=True)
     ribbon_image = fields.Binary(related='award_id.ribbon_image', readonly=True)
+    medal_image = fields.Binary(related='award_id.medal_image', readonly=True)
     ribbon_list_price = fields.Float(
         related='award_id.ribbon_id.ribbon_product_tmpl_id.list_price', readonly=True,
         string='Ribbon Price')
+    medal_list_price = fields.Float(
+        related='award_id.medal_id.medal_product_tmpl_id.list_price', readonly=True,
+        string='Medal Price')
     attachment_list_price = fields.Float(
         related='attachment_id.device_product_tmpl_id.list_price', readonly=True,
         string='Attachment Price')
@@ -130,7 +136,9 @@ class RmAcquisition(models.Model):
                     -- specific acquisition didn't record its own -
                     -- covers Personal Awards/Missions left blank, and
                     -- Seniority/Batch which never have a per-instance one.
-                    COALESCE(src.attachment_id, award_prb.attachment_id) AS attachment_id
+                    COALESCE(src.attachment_id, award_prb.attachment_id) AS attachment_id,
+                    src.add_to_big_medal AS add_to_big_medal,
+                    src.add_to_mini_medal AS add_to_mini_medal
                 FROM (
 
                     -- Personal Awards (individually entered).
@@ -140,7 +148,9 @@ class RmAcquisition(models.Model):
                         'personal' AS source,
                         pa.award_year AS year,
                         pa.note AS note,
-                        pa.attachment_id AS attachment_id
+                        pa.attachment_id AS attachment_id,
+                        COALESCE(pa.add_to_big_medal, TRUE) AS add_to_big_medal,
+                        COALESCE(pa.add_to_mini_medal, TRUE) AS add_to_mini_medal
                     FROM rm_personal_awards pa
                     WHERE pa.person_id IS NOT NULL
                       AND pa.award_id IS NOT NULL
@@ -155,7 +165,9 @@ class RmAcquisition(models.Model):
                         'mission' AS source,
                         mp.award_year AS year,
                         mp.note AS note,
-                        mp.attachment_id AS attachment_id
+                        mp.attachment_id AS attachment_id,
+                        COALESCE(mp.add_to_big_medal, TRUE) AS add_to_big_medal,
+                        COALESCE(mp.add_to_mini_medal, TRUE) AS add_to_mini_medal
                     FROM rm_mission_posting mp
                     WHERE mp.person_id IS NOT NULL
                       AND mp.mission_id IS NOT NULL
@@ -165,14 +177,18 @@ class RmAcquisition(models.Model):
 
                     -- Seniority (derived): PRB's required service_age
                     -- reached by the person's actual years of service,
-                    -- within their own force.
+                    -- within their own force. No per-instance row exists
+                    -- to hold add_to_big_medal/add_to_mini_medal, so
+                    -- both default TRUE (include on every Medal Rack).
                     SELECT
                         rp.id AS person_id,
                         prb.id AS award_id,
                         'seniority' AS source,
                         NULL::integer AS year,
                         NULL::varchar AS note,
-                        NULL::integer AS attachment_id
+                        NULL::integer AS attachment_id,
+                        TRUE AS add_to_big_medal,
+                        TRUE AS add_to_mini_medal
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'seniority'
@@ -186,14 +202,17 @@ class RmAcquisition(models.Model):
                     UNION ALL
 
                     -- Batch (derived): person's service_confirmation_date
-                    -- is before the PRB's starting_date, within their own force.
+                    -- is before the PRB's starting_date, within their own
+                    -- force. Same TRUE/TRUE default as Seniority above.
                     SELECT
                         rp.id AS person_id,
                         prb.id AS award_id,
                         'batch' AS source,
                         NULL::integer AS year,
                         NULL::varchar AS note,
-                        NULL::integer AS attachment_id
+                        NULL::integer AS attachment_id,
+                        TRUE AS add_to_big_medal,
+                        TRUE AS add_to_mini_medal
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'batch'
