@@ -53,9 +53,20 @@ class RmRackLine(models.Model):
                 line.item_ids.sorted('sequence').mapped('award_id.name'))
 
     def _compute_stock_count(self):
+        """Compute the actual product stock quantity for this line."""
         for line in self:
-            line.stock_count = self.env['rm.rack.line.unit'].search_count(
-                [('line_id', '=', line.id), ('state', '=', 'in_stock')])
+            if not line.product_tmpl_id:
+                line.stock_count = 0
+                continue
+
+            # Get the Size L variant
+            product = line._get_size_l_variant()
+            if not product:
+                line.stock_count = 0
+                continue
+
+            # Get actual stock from product
+            line.stock_count = int(product.qty_available)
 
     @api.model
     def _key_for_award_ids(self, award_ids):
@@ -81,7 +92,10 @@ class RmRackLine(models.Model):
     def _ensure_product(self):
         self.ensure_one()
         if not self.product_tmpl_id:
-            vals = self._prepare_sync_product_vals(f'Rack Line: {self.display_identity}')
+            vals = self._prepare_sync_product_vals(
+                f'Rack Line: {self.display_identity}',
+                size_variants='l_only'  # Only create L variant
+            )
             tmpl = self._create_product_resilient(vals)
             self.product_tmpl_id = tmpl.id
 
@@ -148,35 +162,106 @@ class RmRackLine(models.Model):
         self.write({'bom_id': bom.id, 'bom_incomplete': incomplete})
         return bom
 
-    def _get_size_l_variant(self, product_tmpl):
-        if not product_tmpl:
-            return self.env['product.product']
-        return product_tmpl.product_variant_ids.filtered(
-            lambda p: 'L' in p.product_template_attribute_value_ids.mapped(
-                'product_attribute_value_id.name')
-        )[:1]
+    def _get_size_l_variant(self, product_tmpl=None):
+        """Return the Size=L product.product variant of `product_tmpl`.
+        If product_tmpl is None, use this line's own product_tmpl_id."""
+        if product_tmpl is None:
+            product_tmpl = self.product_tmpl_id
+        return self._get_size_variant(product_tmpl, 'L')
+
+    def get_available_stock_quantity(self):
+        """Return the actual available stock quantity of this line's product.
+        Checks the product's stock availability in all warehouses/locations."""
+        self.ensure_one()
+        if not self.product_tmpl_id:
+            return 0.0
+
+        # Get the product variant (Size L)
+        product = self._get_size_l_variant()
+        if not product:
+            return 0.0
+
+        # Get available stock (this uses Odoo's stock.quant or stock.move line)
+        return product.qty_available
+
+    def get_stock_units(self, quantity):
+        """Get actual stock units (rm.rack.line.unit records) for this line.
+        Returns the specified quantity of in-stock units, or fewer if not enough."""
+        self.ensure_one()
+        # First check if we have enough actual product stock
+        available_qty = self.get_available_stock_quantity()
+        if available_qty < quantity:
+            # We don't have enough physical stock, return what's available
+            quantity = int(available_qty)
+
+        if quantity <= 0:
+            return self.env['rm.rack.line.unit']
+
+        # Get the line units that are in stock
+        return self.env['rm.rack.line.unit'].search([
+            ('line_id', '=', self.id),
+            ('state', '=', 'in_stock')
+        ], limit=int(quantity))
+
+    def consume_stock_units(self, quantity, person_name):
+        """Consume `quantity` units from stock for this line.
+        Returns the number of units actually consumed."""
+        self.ensure_one()
+        units = self.get_stock_units(quantity)
+        consumed = 0
+        for unit in units:
+            unit.write({
+                'state': 'consumed',
+                'consumed_note': _('Used for %s') % person_name,
+            })
+            consumed += 1
+        return consumed
+
+    def manufacture_units(self, quantity):
+        """Manufacture `quantity` units of this line. Returns list of created units."""
+        self.ensure_one()
+        created_units = self.env['rm.rack.line.unit']
+        for _ in range(int(quantity)):
+            unit = self.manufacture_unit()
+            created_units |= unit
+        return created_units
 
     def record_usage(self):
         for line in self:
             line.write({'use_count': line.use_count + 1, 'last_used_date': fields.Datetime.now()})
 
     def manufacture_unit(self):
-        """Create+confirm an MO for exactly 1 unit of this Line, return
-        the resulting rm.rack.line.unit. Note: the unit is marked
-        in_stock as soon as the MO is CONFIRMED, not when it's actually
-        marked Done - this module tracks manufacturing intent/allocation,
-        not shop-floor completion timing. Check mrp_production_id.state
-        separately if that distinction matters."""
+        """Add 1 unit of demand for this Line to manufacturing. If an MO
+        for this exact Line's product/BOM is already pending (confirmed,
+        nothing consumed yet), the unit is folded into it - quantity and
+        origin merged onto the existing MO - rather than raising a new
+        one. Only when no pending MO exists is a new mrp.production
+        created+confirmed. Returns the resulting rm.rack.line.unit.
+        Note: the unit is marked in_stock as soon as its MO is
+        CONFIRMED, not when it's actually marked Done - this module
+        tracks manufacturing intent/allocation, not shop-floor
+        completion timing. Check mrp_production_id.state separately if
+        that distinction matters."""
         self.ensure_one()
         self._ensure_product_and_bom()
-        production = self.env['mrp.production'].create({
-            'product_id': self.product_tmpl_id.product_variant_id.id,
-            'product_qty': 1.0,
-            'product_uom_id': self.product_tmpl_id.uom_id.id,
-            'bom_id': self.bom_id.id,
-            'origin': self.display_identity,
-        })
-        production.action_confirm()
+        product = self.product_tmpl_id.product_variant_id
+        Production = self.env['mrp.production']
+        pending = Production.search([
+            ('product_id', '=', product.id),
+            ('bom_id', '=', self.bom_id.id),
+            ('state', '=', 'confirmed'),
+        ], order='id', limit=1)
+        if pending:
+            production = pending.rm_add_quantity(1.0, extra_origin=self.display_identity)
+        else:
+            production = Production.create({
+                'product_id': product.id,
+                'product_qty': 1.0,
+                'product_uom_id': self.product_tmpl_id.uom_id.id,
+                'bom_id': self.bom_id.id,
+                'origin': self.display_identity,
+            })
+            production.action_confirm()
         return self.env['rm.rack.line.unit'].create({
             'line_id': self.id,
             'state': 'in_stock',

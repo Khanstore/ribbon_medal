@@ -73,16 +73,47 @@
                                     Estimated Price: <field name="rack_total_price" readonly="1" class="oe_inline"/>
                                 </span>
                             </div>
-                            <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
-                                <list>
-                                    <field name="name"/>
-                                    <field name="sequence"/>
-                                    <field name="is_ribbon"/>
-                                    <field name="is_medal"/>
-                                    <field name="ribbon_image"/>
-                                    <field name="attachment_id"/>
-                                </list>
-                            </field>
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <button name="action_issue_tunic_medal_rack" type="object"
+                                        string="Issue Tunic Medal Rack" class="btn-primary"
+                                        help="Stock-aware: reuses an existing Tunic Medal Rack if an exact match is available, otherwise assembles from existing/new Medal Parts and reserves a fresh unit for this person."/>
+                                <span class="badge text-bg-secondary fs-6">
+                                    Estimated Price: <field name="tunic_medal_rack_price" readonly="1" class="oe_inline"/>
+                                </span>
+                                <button name="action_issue_meskit_medal_rack" type="object"
+                                        string="Issue Meskit Medal Rack" class="btn-primary"
+                                        help="Stock-aware: reuses an existing Meskit Medal Rack if an exact match is available, otherwise assembles from existing/new Medal Parts and reserves a fresh unit for this person."/>
+                                <span class="badge text-bg-secondary fs-6">
+                                    Estimated Price: <field name="meskit_medal_rack_price" readonly="1" class="oe_inline"/>
+                                </span>
+                            </div>
+                            <group>
+                                <group>
+                                    <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
+
+                                        <list>
+                                            <field name="name"/>
+                                            <field name="sequence"/>
+                                            <field name="is_ribbon"/>
+                                            <field name="is_medal"/>
+                                            <field name="ribbon_image"/>
+                                            <field name="attachment_id"/>
+                                        </list>
+                                    </field>
+                                </group>
+                                <group>
+                                    <field name="rack_ledger_ids" widget="medal_rack" nolabel="1">
+                                        <list>
+                                            <field name="name"/>
+                                            <field name="sequence"/>
+                                            <field name="is_ribbon"/>
+                                            <field name="is_medal"/>
+                                            <field name="medal_image"/>
+                                            <field name="attachment_id"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
                         </page>
                         <page string="Award" name="personal_awards">
                             <field name="personal_award_ledger_ids" nolabel="1">

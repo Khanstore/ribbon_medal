@@ -57,6 +57,15 @@
     <menuitem id="menu_rm_rack_product" name="Rack Products"
               parent="menu_ribbon_medal_manufacturing" sequence="40"
               action="action_rm_rack_product"/>
+    <menuitem id="menu_rm_medal_rack_unit_pending" name="Pending Medal Rack Deliveries"
+              parent="menu_ribbon_medal_manufacturing" sequence="45"
+              action="action_rm_medal_rack_unit_pending"/>
+    <menuitem id="menu_rm_medal_part" name="Medal Parts"
+              parent="menu_ribbon_medal_manufacturing" sequence="50"
+              action="action_rm_medal_part"/>
+    <menuitem id="menu_rm_medal_rack" name="Medal Racks"
+              parent="menu_ribbon_medal_manufacturing" sequence="60"
+              action="action_rm_medal_rack"/>
 
     <menuitem id="menu_ribbon_medal_configuration" name="Configuration"
               parent="menu_ribbon_medal_root" sequence="90"

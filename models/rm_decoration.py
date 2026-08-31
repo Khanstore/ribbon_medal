@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class RmDecoration(models.Model):
@@ -75,11 +79,19 @@ class RmDecoration(models.Model):
             'uom.product_uom_meter' if label == 'Ribbon' else 'uom.product_uom_unit',
             raise_if_not_found=False)
         for record in self:
-            record._sync_single_product(
-                record[flag_field], tmpl_field,
-                f'{record.decoration_name} - {label}',
-                initial_image.get(record.id),
-                uom_id=uom.id if uom else None)
+            try:
+                with self.env.cr.savepoint():
+                    record._sync_single_product(
+                        record[flag_field], tmpl_field,
+                        f'{record.decoration_name} - {label}',
+                        initial_image.get(record.id),
+                        uom_id=uom.id if uom else None)
+            except Exception:
+                _logger.exception(
+                    "Failed to sync %s product for decoration %r (id %s) - "
+                    "skipping it so the rest of the data load can continue. "
+                    "Fix and re-sync it manually (toggle Is %s off/on).",
+                    label, record.decoration_name, record.id, label)
 
     @api.model_create_multi
     def create(self, vals_list):

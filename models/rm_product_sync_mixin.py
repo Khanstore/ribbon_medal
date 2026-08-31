@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 
 from odoo import _, fields, models
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class RmProductSyncMixin(models.AbstractModel):
@@ -17,12 +20,25 @@ class RmProductSyncMixin(models.AbstractModel):
         """Return the shared 'Size' product.attribute and its S/L values,
         used on every auto-created product. Falls back to
         finding-or-creating them if the module's data record is missing
-        (e.g. deleted manually), instead of failing outright."""
+        (e.g. deleted manually), instead of failing outright. If more
+        than one 'Size' attribute exists (e.g. left over from an earlier
+        partial install), always resolves to the same one (lowest id)
+        deterministically instead of whatever `search()` happens to
+        return - resolving to a different row between syncs is what
+        makes Odoo treat a product's variant combination as changed and
+        delete/recreate its variants."""
         attribute = self.env.ref(
             'ribbon_medal.product_attribute_size', raise_if_not_found=False)
-        if not attribute:
-            attribute = self.env['product.attribute'].search(
-                [('name', '=', 'Size')], limit=1)
+        if not attribute or not attribute.exists():
+            candidates = self.env['product.attribute'].search(
+                [('name', '=', 'Size')], order='id asc')
+            if len(candidates) > 1:
+                _logger.warning(
+                    "Multiple 'Size' product.attribute records found (ids %s) - "
+                    "using the oldest (id %s) for every sync. Merge or remove "
+                    "the duplicates to avoid product variants being silently "
+                    "deleted and recreated.", candidates.ids, candidates[0].id)
+            attribute = candidates[:1]
             if not attribute:
                 attribute = self.env['product.attribute'].create({
                     'name': 'Size',
@@ -36,32 +52,48 @@ class RmProductSyncMixin(models.AbstractModel):
             ])
         return attribute, values
 
-    def _prepare_sync_product_vals(self, name, uom_id=None):
-        """Base vals for a new auto-managed product: sellable, non-stock,
-        with a Size S/L attribute line. Callers may add more keys (e.g.
-        image_1920) before creating. Pass uom_id to override the default
-        Unit of Measure (e.g. Meter for a ribbon-material product)."""
+    def _prepare_sync_product_vals(self, name, uom_id=None, size_variants='both'):
+        """Base vals for a new auto-managed product.
+        size_variants: 'both' (create S and L), 'l_only' (create only L), or 's_only' (create only S)"""
         attribute, values = self._get_size_attribute_and_values()
+
+        if size_variants == 'l_only':
+            value_ids = values.filtered(lambda v: v.name == 'L')
+        elif size_variants == 's_only':
+            value_ids = values.filtered(lambda v: v.name == 'S')
+        else:  # 'both'
+            value_ids = values
+
         vals = {
             'name': name,
-            'type': 'consu',
+            'type': 'consu',  # Changed from 'consu' to 'stock'
             'sale_ok': True,
-            'purchase_ok': False,
+            'purchase_ok': True,
+            'is_storable': True,
             'attribute_line_ids': [(0, 0, {
                 'attribute_id': attribute.id,
-                'value_ids': [(6, 0, values.ids)],
+                'value_ids': [(6, 0, value_ids.ids)],
             })],
         }
         if uom_id:
             vals['uom_id'] = uom_id
             vals['uom_po_id'] = uom_id
-        # 'tracking' only exists when the stock module happens to be
-        # installed (we don't depend on it - installing this module
-        # shouldn't also pull in the Inventory app). When it is present,
-        # it's NOT NULL with no DB-level default, so set it explicitly.
         if 'tracking' in self.env['product.template']._fields:
             vals['tracking'] = 'none'
         return vals
+
+    def _get_size_variant(self, product_tmpl, size):
+        """Return the `size` ('S' or 'L') product.product variant of
+        `product_tmpl`. Shared by every model that needs a specific-size
+        variant of an auto-managed product (Rack Lines, Set Orders,
+        Medal Parts, Medal Racks) so the lookup logic lives in one
+        place instead of being duplicated per model."""
+        if not product_tmpl:
+            return self.env['product.product']
+        return product_tmpl.product_variant_ids.filtered(
+            lambda p: size in p.product_template_attribute_value_ids.mapped(
+                'product_attribute_value_id.name')
+        )[:1]
 
     def _zero_value_for_field(self, field):
         """A conservative, inoffensive default for a field we don't
@@ -119,30 +151,30 @@ class RmProductSyncMixin(models.AbstractModel):
             'Could not create product "%s" - repeatedly hit new required fields (%s).'
         ) % (vals.get('name'), ', '.join(sorted(patched_fields))))
 
-    def _sync_single_product(self, active, tmpl_field, name, initial_image=None, uom_id=None):
+    def _sync_single_product(self, active, tmpl_field, name, initial_image=None, uom_id=None, size_variants='both'):
         """Create/reactivate or archive the product.template linked via
-        `tmpl_field` (on a singleton `self`) to match `active`. Runs as
-        sudo so this doesn't require product-module access rights.
-        `initial_image`, if given, seeds a brand-new product's image
-        (an image field's own inverse can't do this, since the product
-        doesn't exist yet at that point). `uom_id`, if given, only
-        applies when actually creating a new product - it's not applied
-        retroactively to one that already exists."""
+        `tmpl_field` on a singleton `self` to match `active`.
+        size_variants: 'both', 'l_only', or 's_only'"""
         self.ensure_one()
         tmpl = self[tmpl_field]
+        if tmpl and not tmpl.exists():
+            # Stale reference - the linked template/variant is gone
+            # (e.g. deleted outside this mixin's control). Drop it and
+            # fall through to rebuild it below instead of crashing.
+            _logger.warning(
+                "%s.%s pointed at a %s that no longer exists (id %s) - "
+                "rebuilding it.", self._name, tmpl_field, tmpl._name, tmpl.id)
+            self.sudo().write({tmpl_field: False})
+            tmpl = self.env['product.template']
         if active:
             if tmpl:
                 if not tmpl.active:
                     tmpl.sudo().active = True
             else:
-                vals = self._prepare_sync_product_vals(name, uom_id=uom_id)
+                vals = self._prepare_sync_product_vals(name, uom_id=uom_id, size_variants=size_variants)
                 if initial_image:
                     vals['image_1920'] = initial_image
                 new_tmpl = self._create_product_resilient(vals)
-                # Note: _create_product_resilient() already flushes
-                # immediately after creating, so this template's variants
-                # (Size S/L) are fully materialized to the DB before a
-                # caller looping over many records moves to the next one.
                 self.sudo().write({tmpl_field: new_tmpl.id})
         else:
             if tmpl and tmpl.active:

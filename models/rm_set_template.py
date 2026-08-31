@@ -41,6 +41,7 @@ class RmSetTemplateComponent(models.Model):
              'varies and "User Picks Product" is checked.')
     scope = fields.Selection([
         ('per_cell', 'Per Cell'),
+        ('per_line', 'Per Line'),
         ('per_rack', 'Per Rack'),
         ('per_attachment', 'Per Attachment'),
     ], required=True, default='per_cell',

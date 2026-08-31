@@ -116,6 +116,8 @@ class RmPersonSearchWizard(models.TransientModel):
                 'product_id': rack_tmpl.product_variant_id.id,
                 'product_uom_qty': 1,
                 'price_unit': self.person_id.rack_total_price,
+                'person_id': self.person_id.id,
+                'name': _('%s\n(For: %s)') % (rack_tmpl.name, self.person_id.display_name),
             })],
         })
         return {

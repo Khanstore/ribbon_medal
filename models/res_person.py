@@ -39,14 +39,40 @@ class ResPerson(models.Model):
         'res.partner', string='Related Partner', required=True,
         ondelete='cascade', auto_join=True, index=True)
 
+    _sql_constraints = [
+        ('partner_id_uniq', 'unique(partner_id)',
+         'A Personnel record already exists for this Contact - open that '
+         'one instead of creating another.'),
+    ]
+
+    def copy(self, default=None):
+        """Duplicating a Person must not point the copy at the same
+        Contact - that would collide with the uniqueness constraint
+        above. Give the copy its own duplicated Contact instead, the
+        same way res.users handles this for its own partner_id."""
+        self.ensure_one()
+        default = dict(default or {})
+        if 'partner_id' not in default:
+            default['partner_id'] = self.partner_id.copy().id
+        return super().copy(default)
+
     id_number = fields.Char(string='ID Number', index=True)
     rank_id = fields.Many2one('rm.ranks', string='Rank', ondelete='restrict')
+
+    # Compute rank seniority level on the fly instead of storing it
+    # This avoids registry issues during module loading
     rank_seniority_level = fields.Integer(
-        string='Rank Seniority Level', related='rank_id.seniority_level',
-        store=True, readonly=True,
+        string='Rank Seniority Level',
+        compute='_compute_rank_seniority_level',
+        store=False,
         help='Mirrors the seniority_level of the selected rank; used to '
              "restrict Current Workplace choices to units whose chief's "
              'rank is senior enough.')
+
+    @api.depends('rank_id.seniority_level')
+    def _compute_rank_seniority_level(self):
+        for person in self:
+            person.rank_seniority_level = person.rank_id.seniority_level or 0
 
     @api.model
     def _name_search(self, name='', domain=None, operator='ilike', limit=None, order=None):
@@ -57,11 +83,11 @@ class ResPerson(models.Model):
         domain = list(domain or [])
         if name:
             name_domain = ['|', '|', '|', '|',
-                            ('name', operator, name),
-                            ('id_number', operator, name),
-                            ('phone', operator, name),
-                            ('mobile', operator, name),
-                            ('email', operator, name)]
+                           ('name', operator, name),
+                           ('id_number', operator, name),
+                           ('phone', operator, name),
+                           ('mobile', operator, name),
+                           ('email', operator, name)]
             domain = expression.AND([domain, name_domain])
             return self._search(domain, limit=limit, order=order)
         return super()._name_search(name=name, domain=domain, operator=operator, limit=limit, order=order)
@@ -72,7 +98,7 @@ class ResPerson(models.Model):
         help='Restricted to units whose chief has a seniority level at or '
              "above this person's own rank, so personnel cannot be posted "
              "somewhere their rank outranks the unit's chief.")
-    bcs_batch = fields.Many2one('rm.bcs.batch',string='BCS Batch')
+    bcs_batch = fields.Many2one('rm.bcs.batch', string='BCS Batch')
     service_confirmation_date = fields.Date(string='Service Confirmation Date')
 
     obtained_awards_ids = fields.Many2many(
@@ -88,6 +114,14 @@ class ResPerson(models.Model):
         help='Sum of each acquired ribbon product\'s list price, plus '
              "each acquisition's attachment device product's list price "
              '(when one is set).')
+    tunic_medal_rack_price = fields.Float(
+        string='Tunic Medal Rack Price', compute='_compute_medal_rack_prices',
+        help='Sum of the list price of every Medal + attachment device product '
+             "for this person's Tunic (large-size) medal-eligible acquisitions.")
+    meskit_medal_rack_price = fields.Float(
+        string='Meskit Medal Rack Price', compute='_compute_medal_rack_prices',
+        help='Sum of the list price of every Medal + attachment device product '
+             "for this person's Meskit (small-size) medal-eligible acquisitions.")
     force_id = fields.Many2one(
         'rm.forces', string='Force', related='rank_id.force_id', store=True, readonly=True)
     name_eng = fields.Char(string='Name (English)', help='Nameplate spelling in English.')
@@ -104,13 +138,13 @@ class ResPerson(models.Model):
     # it's just a filtered search(), not a real foreign key.
     personal_award_ledger_ids = fields.One2many(
         'rm.personal.awards', 'person_id', string='Personal Awards',
-        )
+    )
     service_ledger_ids = fields.One2many(
         'rm.acquisition', 'person_id', string='Service',
         domain=[('source', '=', 'batch')])
     mission_ledger_ids = fields.One2many(
         'rm.mission.posting', 'person_id', string='Mision'
-        )
+    )
     seniority_ledger_ids = fields.One2many(
         'rm.acquisition', 'person_id', string='Seniority',
         domain=[('source', '=', 'seniority')])
@@ -123,7 +157,7 @@ class ResPerson(models.Model):
         for person in self:
             if person.birth_date:
                 person.age = today.year - person.birth_date.year - (
-                    (today.month, today.day) < (person.birth_date.month, person.birth_date.day))
+                        (today.month, today.day) < (person.birth_date.month, person.birth_date.day))
             else:
                 person.age = 0
 
@@ -133,7 +167,8 @@ class ResPerson(models.Model):
         for person in self:
             if person.service_confirmation_date:
                 person.service_age = today.year - person.service_confirmation_date.year - (
-                    (today.month, today.day) < (person.service_confirmation_date.month, person.service_confirmation_date.day))
+                        (today.month, today.day) < (person.service_confirmation_date.month,
+                                                    person.service_confirmation_date.day))
             else:
                 person.service_age = 0
 
@@ -143,17 +178,39 @@ class ResPerson(models.Model):
         for person in self:
             person.is_retired = bool(person.retirement_date and person.retirement_date <= today)
 
+    # Every compute below derives from the consolidated Acquisition Ledger
+    # (rm.acquisition, a SQL view unioning Personal Awards + Missions +
+    # the Seniority/Batch rules derived from force_id/service_confirmation_date).
+    # The view itself can't be depended on directly, but the REAL fields that
+    # feed it can be - depending on those is what makes Odoo actually
+    # recompute (and the Ribbon/Medal Rack widgets refresh) whenever an
+    # award is added/removed/edited, instead of only after a full reload.
+    _LEDGER_DEPENDS = (
+        'personal_award_ledger_ids', 'personal_award_ledger_ids.award_id',
+        'personal_award_ledger_ids.active', 'personal_award_ledger_ids.attachment_id',
+        'personal_award_ledger_ids.add_to_ribbon', 'personal_award_ledger_ids.add_to_big_medal',
+        'personal_award_ledger_ids.add_to_mini_medal',
+        'mission_ledger_ids', 'mission_ledger_ids.mission_id',
+        'mission_ledger_ids.active', 'mission_ledger_ids.attachment_id',
+        'mission_ledger_ids.add_to_ribbon', 'mission_ledger_ids.add_to_big_medal',
+        'mission_ledger_ids.add_to_mini_medal',
+        'force_id', 'service_confirmation_date',
+    )
+
+    @api.depends(*_LEDGER_DEPENDS)
     def _compute_award_count(self):
         # Counts from the consolidated Acquisition Ledger (Personal Awards +
         # Missions + Seniority, minus Excluded) rather than just
         # obtained_awards_ids, since that ledger is the actual source of
-        # truth for "what has this person acquired" now. Not stored: it's
-        # backed by a SQL view (rm.acquisition), so compute dependencies
-        # can't track it - it's cheap enough to recompute on read.
+        # truth for "what has this person acquired" now. The ledger itself
+        # is a SQL view (rm.acquisition) so it's always re-queried fresh on
+        # read; @api.depends above is what tells Odoo WHEN that re-query is
+        # actually needed (see the class-level comment).
         Acquisition = self.env['rm.acquisition']
         for person in self:
             person.award_count = Acquisition.search_count([('person_id', '=', person.id)])
 
+    @api.depends(*_LEDGER_DEPENDS)
     def _compute_obtained_awards_ids(self):
         # Derived live from the Acquisition Ledger (same source as
         # award_count above), not a separately-maintained many2many - so
@@ -165,6 +222,7 @@ class ResPerson(models.Model):
             acquisitions = Acquisition.search([('person_id', '=', person.id)])
             person.obtained_awards_ids = acquisitions.mapped('award_id')
 
+    @api.depends(*_LEDGER_DEPENDS)
     def _compute_rack_ledger_ids(self):
         # Same underlying data as obtained_awards_ids, but keeps the full
         # rm.acquisition rows (not just the distinct award_id set) - the
@@ -175,14 +233,122 @@ class ResPerson(models.Model):
         for person in self:
             person.rack_ledger_ids = Acquisition.search([('person_id', '=', person.id)])
 
+    @api.depends(*_LEDGER_DEPENDS)
     def _compute_rack_total_price(self):
         Acquisition = self.env['rm.acquisition']
         for person in self:
             acquisitions = Acquisition.search([('person_id', '=', person.id)])
             person.rack_total_price = (
-                sum(acquisitions.mapped('ribbon_list_price'))
-                + sum(acquisitions.mapped('attachment_list_price'))
+                    sum(acquisitions.mapped('ribbon_list_price'))
+                    + sum(acquisitions.mapped('attachment_list_price'))
             )
+
+    @api.depends(*_LEDGER_DEPENDS)
+    def _compute_medal_rack_prices(self):
+        Acquisition = self.env['rm.acquisition']
+        for person in self:
+            medal_acquisitions = Acquisition.search([
+                ('person_id', '=', person.id), ('is_medal', '=', True),
+            ])
+            tunic = medal_acquisitions.filtered('add_to_big_medal')
+            meskit = medal_acquisitions.filtered('add_to_mini_medal')
+            person.tunic_medal_rack_price = (
+                    sum(tunic.mapped('medal_list_price')) + sum(tunic.mapped('attachment_list_price'))
+            )
+            person.meskit_medal_rack_price = (
+                    sum(meskit.mapped('medal_list_price')) + sum(meskit.mapped('attachment_list_price'))
+            )
+
+    @api.model
+    def get_rack_widget_context(self, person_id, force_id, prb_ids):
+        """RPC endpoint for the Ribbon/Medal Rack widgets' client-side
+        (JavaScript) INSTANT ledger computation - see
+        static/src/js/rack_ledger.js.
+
+        rm.acquisition is a read-only SQL VIEW, so it only ever
+        reflects committed data - editing the Award/Mission tabs on an
+        open, unsaved form has no effect on it until the record is
+        actually saved. To give instant feedback without a Save, the
+        JS widgets replicate rm.acquisition's own merge/filter logic
+        themselves, fed by the form's own live (possibly unsaved)
+        Personal Award / Mission rows. This method supplies the two
+        ingredients that can't be read off the open form at all:
+
+        - The Seniority/Batch `rm.prb` rules for `force_id` (these
+          aren't edited via any one2many on this form - they're
+          derived purely from force_id + service_confirmation_date).
+        - This person's currently active award exclusions, as
+          decoration ids (`rm.excluded.awards` isn't edited on this
+          form either).
+
+        Also returns the display/eligibility attributes for every
+        given `prb_ids` (the awards actually referenced by the
+        Personal Award / Mission rows on the open form right now), so
+        the widgets don't need a second RPC just to resolve those.
+
+        MAINTENANCE WARNING: kept in sync with rm.acquisition's SQL
+        view BY HAND - if that view's logic changes, this must change
+        too. See rm.acquisition's own docstring for the authoritative
+        rules being mirrored here.
+        """
+        Prb = self.env['rm.prb']
+        seniority_batch_rules = self.env['rm.prb']
+        if force_id:
+            seniority_batch_rules = Prb.search([
+                ('force_id', '=', force_id),
+                ('active', '=', True),
+                ('rule_category_id.name', 'in', ('seniority', 'batch')),
+            ])
+
+        requested = Prb.browse(prb_ids).exists() if prb_ids else Prb.browse()
+        all_prbs = requested | seniority_batch_rules
+
+        def _attrs(prb):
+            return {
+                'id': prb.id,
+                'name': prb.name,
+                'sequence': prb.sequence,
+                'is_ribbon': prb.is_ribbon,
+                'is_medal': prb.is_medal,
+                'has_ribbon_image': bool(prb.ribbon_id.ribbon_product_tmpl_id.image_1920),
+                'has_medal_image': bool(prb.medal_id.medal_product_tmpl_id.image_1920),
+                'ribbon_decoration_id': prb.ribbon_id.id or False,
+                'medal_decoration_id': prb.medal_id.id or False,
+                'default_attachment_id': prb.attachment_id.id or False,
+            }
+
+        prb_attrs = {prb.id: _attrs(prb) for prb in all_prbs}
+
+        seniority_rules = []
+        batch_rules = []
+        for prb in seniority_batch_rules:
+            category = prb.rule_category_id.name
+            if category == 'seniority':
+                if not prb.service_age:
+                    continue
+                row = dict(prb_attrs[prb.id])
+                row['service_age'] = prb.service_age
+                seniority_rules.append(row)
+            elif category == 'batch':
+                if not prb.starting_date:
+                    continue
+                row = dict(prb_attrs[prb.id])
+                row['starting_date'] = prb.starting_date.isoformat()
+                batch_rules.append(row)
+
+        excluded_decoration_ids = []
+        if person_id:
+            exclusions = self.env['rm.excluded.awards'].search([
+                ('person_id', '=', person_id), ('active', '=', True),
+            ])
+            excluded_decoration_ids = exclusions.mapped('decoration_name').ids
+
+        return {
+            'prb_attrs': prb_attrs,
+            'seniority_rules': seniority_rules,
+            'batch_rules': batch_rules,
+            'excluded_decoration_ids': excluded_decoration_ids,
+        }
 
     @api.onchange('id_number')
     def extract_years_from_id_number(self):
@@ -200,15 +366,15 @@ class ResPerson(models.Model):
                 birth_year_val = int(birth_yr_str)
                 joining_year_val = int(joining_yr_str)
                 birth_year = (2000 + birth_year_val) if (0 <= birth_year_val <= current_yr) else (1900 + birth_year_val)
-                joinng_year = (2000 + joining_year_val) if (0 <= joining_year_val <= current_yr) else (1900 + joining_year_val)
-
+                joinng_year = (2000 + joining_year_val) if (0 <= joining_year_val <= current_yr) else (
+                            1900 + joining_year_val)
 
                 # Set birth_date to Jan 1st of that year
                 record.birth_date = date(birth_year, 1, 1)
                 record.service_confirmation_date = date(joinng_year, 1, 1)
             else:
                 record.birth_date = False
-                record.service_confirmation_date  = False
+                record.service_confirmation_date = False
 
     def get_sorted_awards(self):
         """Return obtained awards sorted for Ribbon Rack display: lowest
@@ -270,6 +436,27 @@ class ResPerson(models.Model):
             i += self.RACK_COLUMNS
         return rows
 
+    def _get_medal_rack_awards(self, size):
+        """Return this person's medal-eligible acquisitions for the given
+        Medal Rack size ('l' = Tunic, 's' = Meskit), as an ORDERED
+        rm.prb recordset - highest precedence (descending sequence)
+        first, same ordering rule _get_rack_rows uses before splitting
+        into rows. Unlike Ribbon Rack, there's no row-splitting here:
+        medals mount individually (see rm.medal.part's docstring), so
+        this flat, ordered list of awards IS the rack's identity.
+
+        Only acquisitions flagged is_medal AND the size-appropriate
+        add_to_big_medal/add_to_mini_medal flag are included."""
+        self.ensure_one()
+        flag_field = 'add_to_big_medal' if size == 'l' else 'add_to_mini_medal'
+        acquisitions = self.env['rm.acquisition'].search([
+            ('person_id', '=', self.id),
+            ('is_medal', '=', True),
+            (flag_field, '=', True),
+        ])
+        sorted_acquisitions = acquisitions.sorted(key=lambda a: a.sequence, reverse=True)
+        return sorted_acquisitions.mapped('award_id')
+
     def action_issue_ribbon_rack(self):
         """UI button: run the cascade and show a notification describing
         what happened. See _issue_ribbon_rack_unit() for the underlying
@@ -279,28 +466,29 @@ class ResPerson(models.Model):
         unit, message = self._issue_ribbon_rack_unit()
         return self._issue_notification(message)
 
+    def action_issue_tunic_medal_rack(self):
+        """UI button: same idea as action_issue_ribbon_rack, for the
+        Tunic (large-size) Medal Rack. See _issue_medal_rack_unit()."""
+        self.ensure_one()
+        unit, message = self._issue_medal_rack_unit('l')
+        return self._issue_notification(message, title=_('Tunic Medal Rack Issued'))
+
+    def action_issue_meskit_medal_rack(self):
+        """UI button: same idea as action_issue_ribbon_rack, for the
+        Meskit (small-size) Medal Rack. See _issue_medal_rack_unit()."""
+        self.ensure_one()
+        unit, message = self._issue_medal_rack_unit('s')
+        return self._issue_notification(message, title=_('Meskit Medal Rack Issued'))
+
     def _issue_ribbon_rack_unit(self):
-        """Full stock-aware resolution cascade for handing this person a
-        Ribbon Rack:
+        """Full stock-aware resolution cascade for handing this person a Ribbon Rack:
 
-        1. Exact-match unreserved Rack Product stock already assembled
-           for this exact combination of rows -> hand it straight over,
-           nothing else happens.
-        2. Otherwise, resolve each row (Line) independently: exact Line
-           stock -> trim-substitute from a longer in-stock Line (fully
-           consuming it) -> create a brand new Line and manufacture it
-           from raw materials.
-        3. Assemble/manufacture exactly one unit of the (now identified,
-           and if new, permanently identity-locked) Rack Product,
-           reserved for this person - assembling rows into a rack is a
-           real step even when every row came straight from stock, so
-           this only skips entirely when step 1 already found a
-           fully pre-built rack.
-
-        Returns (rm.rack.unit, message) - the resulting/handed-over unit
-        (already delivered in the step-1 case, still reserved/pending
-        delivery otherwise) and a human-readable description of what
-        happened.
+        1. If a complete Rack is in stock (actual product stock) → allocate it, no MOs created.
+        2. If no complete Rack in stock:
+           a. For each Line (row), check actual product stock quantity
+           b. If stock < needed, manufacture ONLY the shortage
+           c. If stock >= needed, use stock (no MO)
+           d. Always manufacture the Rack assembly (unless a complete rack was found)
         """
         self.ensure_one()
         RackLine = self.env['rm.rack.line']
@@ -311,8 +499,7 @@ class ResPerson(models.Model):
                 '%s has no acquisitions on the Acquisition Ledger to build a ribbon rack for.'
             ) % self.display_name)
 
-        # Step 1: is there already a Rack Product for this EXACT
-        # combination of already-known Lines, with unreserved stock?
+        # Step 1: Check for complete rack in stock (actual product stock)
         exact_line_ids = []
         for row in rows:
             key = RackLine._key_for_award_ids(row.ids)
@@ -326,53 +513,218 @@ class ResPerson(models.Model):
             rack_key = RackProduct._key_for_line_ids(exact_line_ids)
             rack = RackProduct.search([('identity_key', '=', rack_key)], limit=1)
             if rack:
-                available_unit = self.env['rm.rack.unit'].search([
-                    ('rack_id', '=', rack.id),
-                    ('state', '=', 'in_stock'),
-                    ('reserved_person_id', '=', False),
-                ], limit=1)
-                if available_unit:
-                    available_unit.action_deliver(self.id)
-                    rack.record_usage()
-                    return available_unit, _(
-                        'Handed over an existing Rack Product #%(id)s from stock (%(identity)s).'
-                    ) % {'id': rack.id, 'identity': rack.display_identity}
+                # Check actual product stock for this rack
+                rack._ensure_product()  # Ensure product exists before checking stock
+                available_quantity = rack.get_available_stock_quantity()
+                if available_quantity >= 1:
+                    # Complete rack found in stock - just allocate it
+                    available_unit = rack.get_stock_units(1)
+                    if available_unit:
+                        available_unit.action_deliver(self.id)
+                        rack.record_usage()
+                        return available_unit, _(
+                            'Handed over an existing Rack Product #%(id)s from stock (%(identity)s). '
+                            'No manufacturing orders were created.'
+                        ) % {'id': rack.id, 'identity': rack.display_identity}
 
-        # Step 2: resolve each row independently.
+        # Step 2: No complete rack in stock - resolve each line with quantity awareness
         resolved_line_ids = []
+        total_lines_manufactured = 0
+
         for row in rows:
             award_ids = row.ids
-            match_line, match_unit = RackLine.find_best_stock_match(award_ids)
             exact_line = RackLine.get_or_create(award_ids)
-            if match_line and match_unit:
-                match_unit.write({
-                    'state': 'consumed',
-                    'consumed_note': _('Used for %s') % self.display_name,
-                })
+
+            # Ensure the line has a product
+            exact_line._ensure_product()
+
+            # Check how many units we need (1 for each row/line)
+            needed = 1
+
+            # Get available stock for this exact line (actual product stock)
+            available_quantity = exact_line.get_available_stock_quantity()
+
+            if available_quantity >= needed:
+                # We have enough stock - use it
+                exact_line.consume_stock_units(needed, self.display_name)
             else:
-                new_unit = exact_line.manufacture_unit()
-                new_unit.write({
-                    'state': 'consumed',
-                    'consumed_note': _('Used for %s') % self.display_name,
-                })
+                # Not enough stock - use what we have and manufacture the rest
+                if available_quantity > 0:
+                    # Use existing stock first
+                    exact_line.consume_stock_units(int(available_quantity), self.display_name)
+
+                # Manufacture the shortage
+                shortage = needed - int(available_quantity)
+                if shortage > 0:
+                    new_units = exact_line.manufacture_units(shortage)
+                    for unit in new_units:
+                        unit.write({
+                            'state': 'consumed',
+                            'consumed_note': _('Used for %s') % self.display_name,
+                        })
+                    total_lines_manufactured += shortage
+
             exact_line.record_usage()
             resolved_line_ids.append(exact_line.id)
 
-        # Step 3: assemble/manufacture the rack itself, reserved for this person.
+        # Step 3: Assemble the rack
         rack = RackProduct.get_or_create(resolved_line_ids)
+
+        # Ensure rack has a product
+        rack._ensure_product()
+
+        # Check if we have a rack in stock (actual product stock)
+        available_rack_quantity = rack.get_available_stock_quantity()
+        if available_rack_quantity >= 1:
+            # Found a rack in stock - allocate it
+            available_unit = rack.get_stock_units(1)
+            if available_unit:
+                available_unit.action_deliver(self.id)
+                rack.record_usage()
+
+                if total_lines_manufactured == 0:
+                    return available_unit, _(
+                        'Used existing lines from stock and allocated an existing Rack Product #%(id)s from stock. '
+                        'No manufacturing orders were created.'
+                    ) % {'id': rack.id}
+                else:
+                    return available_unit, _(
+                        'Manufactured %(count)d line unit(s) and allocated an existing Rack Product #%(id)s from stock.'
+                    ) % {'count': total_lines_manufactured, 'id': rack.id}
+
+        # No rack in stock - manufacture it
         new_rack_unit = rack.manufacture_unit(reserved_person_id=self.id)
         rack.record_usage()
-        return new_rack_unit, _(
-            'No ready-made rack matched exactly - assembled and reserved a new '
-            'unit of Rack Product #%(id)s for %(name)s.'
-        ) % {'id': rack.id, 'name': self.display_name}
 
-    def _issue_notification(self, message):
+        # Build a detailed message
+        if total_lines_manufactured == 0:
+            # All lines came from stock, but no complete rack existed
+            return new_rack_unit, _(
+                'Used all required lines from stock and manufactured a new Rack Product #%(id)s for %(name)s. '
+                'Only the rack assembly MO was created (no line MOs).'
+            ) % {'id': rack.id, 'name': self.display_name}
+        else:
+            return new_rack_unit, _(
+                'Manufactured %(count)d line unit(s) (shortage from stock) and assembled a new Rack Product #%(id)s for %(name)s. '
+                'Created MOs for %(count)d line(s) and the rack assembly.'
+            ) % {'count': total_lines_manufactured, 'id': rack.id, 'name': self.display_name}
+
+    def _medal_rack_label(self, size):
+        return _('Tunic Medal Rack') if size == 'l' else _('Meskit Medal Rack')
+
+    def _issue_medal_rack_unit(self, size):
+        """Full stock-aware resolution cascade for handing this person a
+        Medal Rack (size 'l' = Tunic, 's' = Meskit). Unlike Ribbon
+        Rack's cascade, which resolves several Lines (one per row) and
+        then combines them into a Rack, there is only ONE Medal Part
+        to resolve here - it already covers this person's whole
+        medal-eligible combination (see rm.medal.part's docstring) -
+        so this is a simpler 2-step version of the same idea:
+
+        1. If a complete Medal Rack is in stock for this exact combination
+           → allocate it, no MOs created.
+        2. If not:
+           a. Resolve the one Medal Part for this combination (stock-aware:
+              use what's in stock, manufacture only the shortage)
+           b. Manufacture the Rack assembly (unless a complete rack was found)
+        """
+        self.ensure_one()
+        MedalPart = self.env['rm.medal.part']
+        MedalRack = self.env['rm.medal.rack']
+        label = self._medal_rack_label(size)
+        awards = self._get_medal_rack_awards(size)
+        if not awards:
+            raise UserError(_(
+                '%(person)s has no medal-eligible acquisitions on the Acquisition '
+                'Ledger flagged for a %(label)s.'
+            ) % {'person': self.display_name, 'label': label})
+        award_ids = awards.ids
+
+        # Step 1: Check for a complete rack in stock (exact combination/size match)
+        part_key = MedalPart._key_for_award_ids(award_ids, size)
+        existing_part = MedalPart.search([('identity_key', '=', part_key)], limit=1)
+        if existing_part:
+            rack = MedalRack.search([('identity_key', '=', existing_part.identity_key)], limit=1)
+            if rack:
+                rack._ensure_product()
+                available_quantity = rack.get_available_stock_quantity()
+                if available_quantity >= 1:
+                    available_unit = rack.get_stock_units(1)
+                    if available_unit:
+                        available_unit.action_deliver(self.id)
+                        rack.record_usage()
+                        return available_unit, _(
+                            'Handed over an existing %(label)s #%(id)s from stock (%(identity)s). '
+                            'No manufacturing orders were created.'
+                        ) % {'label': label, 'id': rack.id, 'identity': rack.display_identity}
+
+        # Step 2: No complete rack in stock - resolve the one Medal Part
+        # (stock-aware: use what's in stock, manufacture only the shortage)
+        part = MedalPart.get_or_create(award_ids, size)
+        part._ensure_product()
+
+        needed = 1
+        part_manufactured = 0
+        available_quantity = part.get_available_stock_quantity()
+        if available_quantity >= needed:
+            part.consume_stock_units(needed, self.display_name)
+        else:
+            if available_quantity > 0:
+                part.consume_stock_units(int(available_quantity), self.display_name)
+            shortage = needed - int(available_quantity)
+            if shortage > 0:
+                new_units = part.manufacture_units(shortage)
+                for unit in new_units:
+                    unit.write({
+                        'state': 'consumed',
+                        'consumed_note': _('Used for %s') % self.display_name,
+                    })
+                part_manufactured = shortage
+        part.record_usage()
+
+        # Step 3: Assemble the rack around this Part
+        rack = MedalRack.get_or_create(part.id)
+        rack._ensure_product()
+
+        available_rack_quantity = rack.get_available_stock_quantity()
+        if available_rack_quantity >= 1:
+            available_unit = rack.get_stock_units(1)
+            if available_unit:
+                available_unit.action_deliver(self.id)
+                rack.record_usage()
+
+                if part_manufactured == 0:
+                    return available_unit, _(
+                        'Used the existing medal part from stock and allocated an existing '
+                        '%(label)s #%(id)s from stock. No manufacturing orders were created.'
+                    ) % {'label': label, 'id': rack.id}
+                else:
+                    return available_unit, _(
+                        'Manufactured a new medal part and allocated an existing '
+                        '%(label)s #%(id)s from stock.'
+                    ) % {'label': label, 'id': rack.id}
+
+        # No rack in stock - manufacture it
+        new_rack_unit = rack.manufacture_unit(reserved_person_id=self.id)
+        rack.record_usage()
+
+        if part_manufactured == 0:
+            return new_rack_unit, _(
+                'Used the existing medal part from stock and manufactured a new %(label)s '
+                '#%(id)s for %(name)s. Only the rack assembly MO was created (no part MO).'
+            ) % {'label': label, 'id': rack.id, 'name': self.display_name}
+        else:
+            return new_rack_unit, _(
+                'Manufactured a new medal part (shortage from stock) and assembled a new '
+                '%(label)s #%(id)s for %(name)s. Created MOs for the part and the rack assembly.'
+            ) % {'label': label, 'id': rack.id, 'name': self.display_name}
+
+    def _issue_notification(self, message, title=None):
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('Ribbon Rack Issued'),
+                'title': title or _('Ribbon Rack Issued'),
                 'message': message,
                 'type': 'success',
                 'sticky': True,
@@ -394,4 +746,22 @@ class ResPerson(models.Model):
             'view_mode': 'list,form',
             'domain': [('person_id', '=', self.id)],
             'context': {'default_person_id': self.id},
+        }
+
+    def action_select_for_rack_wizard(self):
+        """Row button on rm.sale.line.person.wizard's result list -
+        writes this Person back onto whichever wizard opened it (passed
+        via context) and reopens that same wizard so the pick shows
+        immediately. UI glue only, not meant to be called elsewhere."""
+        self.ensure_one()
+        wizard_id = self.env.context.get('rack_wizard_id')
+        wizard = self.env['rm.sale.line.person.wizard'].browse(wizard_id) if wizard_id else None
+        if wizard and wizard.exists():
+            wizard.person_id = self.id
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'rm.sale.line.person.wizard',
+            'res_id': wizard_id,
+            'view_mode': 'form',
+            'target': 'new',
         }

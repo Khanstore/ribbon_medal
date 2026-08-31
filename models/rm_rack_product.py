@@ -80,13 +80,16 @@ class RmRackProduct(models.Model):
         return self.create({
             'identity_key': key,
             'rack_line_ids': [(0, 0, {'sequence': idx, 'line_id': lid})
-                               for idx, lid in enumerate(line_ids)],
+                              for idx, lid in enumerate(line_ids)],
         })
 
     def _ensure_product(self):
         self.ensure_one()
         if not self.product_tmpl_id:
-            vals = self._prepare_sync_product_vals(self.name or f'Rack #{self.id}')
+            vals = self._prepare_sync_product_vals(
+                self.name or f'Rack #{self.id}',
+                size_variants='l_only'  # Only create L variant
+            )
             tmpl = self._create_product_resilient(vals)
             self.product_tmpl_id = tmpl.id
 
@@ -138,25 +141,84 @@ class RmRackProduct(models.Model):
         self.bom_id = bom.id
         return bom
 
+    def get_available_stock_quantity(self):
+        """Return the actual available stock quantity of this rack's product.
+        Checks the product's stock availability in all warehouses/locations."""
+        self.ensure_one()
+        if not self.product_tmpl_id:
+            return 0.0
+
+        # Get the product variant
+        product = self.product_tmpl_id.product_variant_id
+        if not product:
+            return 0.0
+
+        # Get available stock
+        return product.qty_available
+
+    def get_stock_units(self, quantity):
+        """Get actual stock units (rm.rack.unit records) for this rack.
+        Returns the specified quantity of in-stock units, or fewer if not enough."""
+        self.ensure_one()
+        # First check if we have enough actual product stock
+        available_qty = self.get_available_stock_quantity()
+        if available_qty < quantity:
+            # We don't have enough physical stock, return what's available
+            quantity = int(available_qty)
+
+        if quantity <= 0:
+            return self.env['rm.rack.unit']
+
+        # Get the rack units that are in stock and not reserved
+        return self.env['rm.rack.unit'].search([
+            ('rack_id', '=', self.id),
+            ('state', '=', 'in_stock'),
+            ('reserved_person_id', '=', False)
+        ], limit=int(quantity))
+
+    def manufacture_units(self, quantity, reserved_person_id=False):
+        """Manufacture `quantity` units of this rack. Returns list of created units."""
+        self.ensure_one()
+        created_units = self.env['rm.rack.unit']
+        for _ in range(int(quantity)):
+            unit = self.manufacture_unit(reserved_person_id=reserved_person_id)
+            created_units |= unit
+        return created_units
+
     def record_usage(self):
         for rack in self:
             rack.write({'use_count': rack.use_count + 1, 'last_used_date': fields.Datetime.now()})
 
     def manufacture_unit(self, reserved_person_id=False):
-        """Create+confirm an MO for exactly 1 unit of this Rack, return
-        the resulting rm.rack.unit. Same MO-confirm-means-in_stock
-        simplification as rm.rack.line.manufacture_unit - see there."""
+        """Add 1 unit of demand for this Rack to manufacturing. If an MO
+        for this exact Rack's product/BOM is already pending (confirmed,
+        nothing consumed yet), the unit is folded into it - quantity and
+        origin merged onto the existing MO - rather than raising a new
+        one. Only when no pending MO exists is a new mrp.production
+        created+confirmed. Returns the resulting rm.rack.unit. Same
+        MO-confirm-means-in_stock simplification as
+        rm.rack.line.manufacture_unit - see there."""
         self.ensure_one()
         if not self.bom_id:
             self._build_bom()
-        production = self.env['mrp.production'].create({
-            'product_id': self.product_tmpl_id.product_variant_id.id,
-            'product_qty': 1.0,
-            'product_uom_id': self.product_tmpl_id.uom_id.id,
-            'bom_id': self.bom_id.id,
-            'origin': self.display_identity,
-        })
-        production.action_confirm()
+        product = self.product_tmpl_id.product_variant_id
+        Production = self.env['mrp.production']
+        pending = Production.search([
+            ('product_id', '=', product.id),
+            ('bom_id', '=', self.bom_id.id),
+            ('state', '=', 'confirmed'),
+        ], order='id', limit=1)
+        if pending:
+            production = pending.rm_add_quantity(1.0, extra_origin=self.display_identity)
+        else:
+            production = Production.create({
+                'product_id': product.id,
+                'product_qty': 1.0,
+                'product_uom_id': self.product_tmpl_id.uom_id.id,
+                'bom_id': self.bom_id.id,
+                'origin': self.display_identity,
+            })
+            production.action_confirm()
         return self.env['rm.rack.unit'].create({
             'rack_id': self.id,
             'state': 'in_stock',
