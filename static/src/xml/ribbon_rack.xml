@@ -7,10 +7,10 @@
 <t t-foreach="rows" t-as="row" t-key="row_index">
 <div class="o_ribbon_rack_row">
 <t t-foreach="row" t-as="cell" t-key="cell_index">
-<div class="o_ribbon_rack_cell o_ribbon_rack_filled" t-att-title="cell.name">
-<img t-if="getImageUrl(cell)" t-att-src="getImageUrl(cell)" t-att-alt="cell.name" class="o_ribbon_rack_img"/>
+<div class="o_ribbon_rack_cell o_ribbon_rack_filled" t-att-title="cell.data.name">
+<img t-if="getImageUrl(cell)" t-att-src="getImageUrl(cell)" t-att-alt="cell.data.name" class="o_ribbon_rack_img"/>
 <div t-else="" class="o_ribbon_rack_placeholder">
-<span t-esc="cell.name"/>
+<span t-esc="cell.data.name"/>
 </div>
 <img t-if="getDeviceImageUrl(cell)" t-att-src="getDeviceImageUrl(cell)" alt="" class="o_ribbon_rack_img"/>
 </div>

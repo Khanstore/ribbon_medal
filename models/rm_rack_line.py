@@ -148,7 +148,6 @@ class RmRackLine(models.Model):
         self.write({'bom_id': bom.id, 'bom_incomplete': incomplete})
         return bom
 
-<<<<<<< Updated upstream
     def _get_size_l_variant(self, product_tmpl):
         if not product_tmpl:
             return self.env['product.product']
@@ -156,14 +155,6 @@ class RmRackLine(models.Model):
             lambda p: 'L' in p.product_template_attribute_value_ids.mapped(
                 'product_attribute_value_id.name')
         )[:1]
-=======
-    def _get_size_l_variant(self, product_tmpl=None):
-        """Return the Size=L product.product variant of `product_tmpl`.
-        If product_tmpl is None, use this line's own product_tmpl_id."""
-        if product_tmpl is None:
-            product_tmpl = self.product_tmpl_id
-        return self._get_size_variant(product_tmpl, 'L')
->>>>>>> Stashed changes
 
     def record_usage(self):
         for line in self:
