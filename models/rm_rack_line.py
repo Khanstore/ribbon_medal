@@ -167,12 +167,7 @@ class RmRackLine(models.Model):
         If product_tmpl is None, use this line's own product_tmpl_id."""
         if product_tmpl is None:
             product_tmpl = self.product_tmpl_id
-        if not product_tmpl:
-            return self.env['product.product']
-        return product_tmpl.product_variant_ids.filtered(
-            lambda p: 'L' in p.product_template_attribute_value_ids.mapped(
-                'product_attribute_value_id.name')
-        )[:1]
+        return self._get_size_variant(product_tmpl, 'L')
 
     def get_available_stock_quantity(self):
         """Return the actual available stock quantity of this line's product.

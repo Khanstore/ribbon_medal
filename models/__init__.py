@@ -21,6 +21,9 @@ from . import rm_set_order_line
 from . import rm_set_order
 from . import rm_rack_line
 from . import rm_rack_product
+from . import rm_medal_part
+from . import rm_medal_rack
 from . import rm_person_search_wizard
 from . import rm_sale_line_person_wizard
+from . import rm_partner_to_person_wizard
 from . import sale_order
