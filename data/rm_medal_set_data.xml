@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- New component category for the Medal itself. Resolved
+             automatically per medal-eligible award (the same way
+             RIBBON is auto-resolved on the ribbon_rack template), but
+             at the Medal Rack tier rather than the Medal Part tier -
+             see rm.medal.rack._build_bom / rm.medal.part._build_bom. -->
+        <record id="component_category_medal" model="rm.component.category">
+            <field name="code">MEDAL</field>
+            <field name="name">Medal (struck piece)</field>
+        </record>
+
+        <!-- Finished products manufactured for a person's Medal Rack.
+             One generic product per size is used for every person -
+             what varies per person is the dynamically-built,
+             identity-locked rm.medal.rack + mrp.bom underneath, not
+             the sale/product record itself (same approach the generic
+             Ribbon Rack product uses). -->
+        <record id="product_tunic_medal_rack" model="product.template">
+            <field name="name">Tunic Medal Rack</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="True"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+        <record id="product_meskit_medal_rack" model="product.template">
+            <field name="name">Meskit Medal Rack</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="purchase_ok" eval="True"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Placeholder fixed product for the Medal Rack's backing
+             board - one per whole rack (not one per medal), so it's
+             fixed/non-user-selected like Fastener and Packaging. -->
+        <record id="product_medal_set_backing" model="product.template">
+            <field name="name">Medal Rack Backing Board</field>
+            <field name="type">consu</field>
+            <field name="sale_ok" eval="False"/>
+            <field name="purchase_ok" eval="True"/>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- Medal Set Template: what a Medal Part (the ribbon mount
+             for a person's WHOLE medal-eligible combination) and a
+             Medal Rack (Tunic=size L / Meskit=size S) are made of, as
+             category-level rules shared by both sizes (the actual
+             size is resolved per-build, not baked into the template).
+
+             RIBBON + GUM are resolved at the Medal Part tier, once
+             per award in the combination
+             (rm.medal.part._build_bom). MEDAL (once per award),
+             BACKING, FASTENER and PACKAGING (once each for the whole
+             rack) are resolved at the Medal Rack tier
+             (rm.medal.rack._build_bom) - this is where "ribbon parts
+             and medals are combined to manufacture a medal rack". -->
+        <record id="set_template_medal_set" model="rm.set.template">
+            <field name="name">Generic Medal Set Template</field>
+            <field name="category">medal_set</field>
+            <field name="description">Ribbon + gum per medal (on the Medal Part). One medal per medal, one backing board, one safety pin and one packaging box per rack (on the Medal Rack).</field>
+        </record>
+
+        <record id="template_component_medal_ribbon" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_medal_set"/>
+            <field name="category_id" ref="component_category_ribbon"/>
+            <field name="scope">per_cell</field>
+            <field name="quantity">4.00</field>
+            <field name="uom_id" ref="uom.product_uom_cm"/>
+            <field name="is_user_selected" eval="True"/>
+        </record>
+        <record id="template_component_medal_gum" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_medal_set"/>
+            <field name="category_id" ref="component_category_gum"/>
+            <field name="default_product_id" ref="product_set_gum"/>
+            <field name="scope">per_cell</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="False"/>
+        </record>
+        <record id="template_component_medal_medal" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_medal_set"/>
+            <field name="category_id" ref="component_category_medal"/>
+            <field name="scope">per_cell</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="True"/>
+        </record>
+        <record id="template_component_medal_backing" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_medal_set"/>
+            <field name="category_id" ref="component_category_backing"/>
+            <field name="default_product_id" ref="product_medal_set_backing"/>
+            <field name="scope">per_rack</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="False"/>
+        </record>
+        <record id="template_component_medal_fastener" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_medal_set"/>
+            <field name="category_id" ref="component_category_fastener"/>
+            <field name="default_product_id" ref="ribbon_medal.product_ribbon_kathi"/>
+            <field name="scope">per_rack</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="False"/>
+        </record>
+        <record id="template_component_medal_packaging" model="rm.set.template.component">
+            <field name="template_id" ref="set_template_medal_set"/>
+            <field name="category_id" ref="component_category_packaging"/>
+            <field name="default_product_id" ref="product_set_packaging_box"/>
+            <field name="scope">per_rack</field>
+            <field name="quantity">1.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="is_user_selected" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

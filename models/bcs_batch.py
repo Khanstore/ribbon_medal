@@ -10,5 +10,6 @@ class bcsBatch(models.Model):
     _rec_name = 'name'
     name = fields.Char(string='Batch Name')
     description = fields.Char(string='Batch Description')
-    total_person = fields.One2many('res.person','bcs_batch',string='Joining Date')
+    total_person = fields.One2many('res.partner', 'bcs_batch', string='Joining Date',
+                                    domain=[('is_person', '=', True)])
     joining_date = fields.Date(string='Joining Date')

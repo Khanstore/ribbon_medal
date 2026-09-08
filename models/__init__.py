@@ -2,12 +2,13 @@ from . import rm_forces
 from . import rm_ranks
 from . import rm_rules_category
 from . import rm_product_sync_mixin
+from . import product_template
 from . import rm_decoration
 from . import prb
 from . import attachments
 from . import rm_unit_category
 from . import rm_unit
-from . import res_person
+from . import res_partner
 from . import bcs_batch
 from . import rm_personal_award
 from . import posting_mision
@@ -27,3 +28,4 @@ from . import rm_person_search_wizard
 from . import rm_sale_line_person_wizard
 from . import rm_partner_to_person_wizard
 from . import sale_order
+from . import stock_move

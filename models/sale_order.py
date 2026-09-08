@@ -7,7 +7,7 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     person_id = fields.Many2one(
-        'res.person', string='Person', index=True,
+        'res.partner', string='Person', index=True, domain=[('is_person', '=', True)],
         help='Legacy/fallback only - prefer setting Person directly on '
              'each rack order line instead, since one order can have '
              'rack lines (Ribbon Rack, Tunic Medal Rack, Meskit Medal '
@@ -33,6 +33,18 @@ class SaleOrder(models.Model):
              'when there is more than one.')
     meskit_medal_rack_unit_id_state = fields.Selection(
         related='meskit_medal_rack_unit_id.state', string='Meskit Medal Rack Unit Status')
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id_person(self):
+        """If the Customer for this order is themselves marked as
+        Personnel (is_person), default the order's Person field to
+        them directly - only when Person isn't already set, so this
+        never clobbers a Person the user (or the rack-line wizard)
+        already chose. There's no separate lookup needed anymore:
+        Person and Contact are the same record now, so "is this
+        Customer also a Person" is just checking is_person."""
+        if self.partner_id and self.partner_id.is_person and not self.person_id:
+            self.person_id = self.partner_id
 
     @api.model
     def _get_rack_kind_config(self):
@@ -121,6 +133,30 @@ class SaleOrder(models.Model):
                 order.message_post(body=message)
         return res
 
+    def _rm_order_line_action_views(self):
+        """Same fallback-to-standard-list-view approach as
+        res.partner._rack_line_action_views - kept as its own copy here
+        (rather than a shared mixin) since it's a 2-line helper and
+        SaleOrder/res.partner don't otherwise share a base."""
+        list_view = self.env.ref('sale.view_order_line_tree', raise_if_not_found=False)
+        return [(list_view.id if list_view else False, 'list'), (False, 'form')]
+
+    def action_view_rack_units(self):
+        """Combined replacement for the 3 separate "X Rack Unit"
+        buttons - opens this order's own lines that have had a unit
+        issued (any of the 3 types, delivered or not); the actual
+        rm.rack.unit / rm.medal.rack.unit record is reachable from
+        there via that line's Ribbon/Tunic/Meskit Rack Unit field."""
+        self.ensure_one()
+        Line = self.env['sale.order.line']
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Rack Units'),
+            'res_model': 'sale.order.line',
+            'views': self._rm_order_line_action_views(),
+            'domain': [('order_id', '=', self.id)] + Line._rm_issued_domain_leaf(),
+        }
+
     def action_open_rack_unit(self):
         self.ensure_one()
         return {
@@ -159,7 +195,15 @@ class SaleOrder(models.Model):
             'res_model': 'rm.sale.line.person.wizard',
             'view_mode': 'form',
             'target': 'new',
-            'context': {'default_order_id': self.id, 'default_rack_type': rack_type},
+            'context': {
+                'default_order_id': self.id,
+                'default_rack_type': rack_type,
+                # Pre-fill the wizard's Person from the order's own
+                # Person, if it already has one - see
+                # rm.sale.line.person.wizard.action_confirm for the
+                # reverse direction (wizard -> order) on this same path.
+                'default_person_id': self.person_id.id,
+            },
         }
 
     def action_add_ribbon_rack_line(self):
@@ -183,8 +227,13 @@ class SaleOrder(models.Model):
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
+    order_date = fields.Datetime(
+        related='order_id.date_order', string='Order Date', store=True, readonly=True,
+        help="The order's own Order Date, exposed here (stored, so it's "
+             "groupable/sortable) for list views like the Person form's "
+             "Ordered Racks / Racks Not Delivered smart buttons.")
     person_id = fields.Many2one(
-        'res.person', string='Person',
+        'res.partner', string='Person', domain=[('is_person', '=', True)],
         help="Whose rack this line is for (Ribbon Rack, Tunic Medal Rack, "
              "or Meskit Medal Rack - see rack_type). Selecting them prices "
              "the line at their current estimated price for that rack type "
@@ -203,6 +252,39 @@ class SaleOrderLine(models.Model):
         'rm.medal.rack.unit', string='Meskit Medal Rack Unit', readonly=True, copy=False,
         help='The specific Meskit Medal Rack unit produced or handed over '
              'for this line.')
+    rm_rack_instance_name = fields.Char(
+        compute='_compute_rm_rack_instance_name', string='Product',
+        help="Once this line's rack has been issued (order confirmed), "
+             "the specific manufactured instance behind it (e.g. 'Rack "
+             "#6', 'Medal Rack #11') - since every line of a given rack "
+             "type sells the same generic product, this is what "
+             "actually distinguishes two lines for two different people "
+             "(or two lines of the same type for the same person). "
+             "Falls back to the line's own product name before that, or "
+             "for any non-rack line.")
+
+    @api.depends(
+        'product_id.display_name', 'rack_unit_id.rack_id.product_tmpl_id.name',
+        'tunic_medal_rack_unit_id.rack_id.product_tmpl_id.name',
+        'meskit_medal_rack_unit_id.rack_id.product_tmpl_id.name')
+    def _compute_rm_rack_instance_name(self):
+        for line in self:
+            unit = line.rack_unit_id or line.tunic_medal_rack_unit_id or line.meskit_medal_rack_unit_id
+            line.rm_rack_instance_name = (
+                unit.rack_id.product_tmpl_id.name if unit else line.product_id.display_name)
+
+    @api.model
+    def _rm_issued_domain_leaf(self):
+        """Domain fragment: this line has had a unit issued for at
+        least one of the 3 rack types (regardless of delivered state).
+        Shared by the Sale Order form's combined "Rack Unit" button."""
+        return [
+            '|', '|',
+            ('rack_unit_id', '!=', False),
+            ('tunic_medal_rack_unit_id', '!=', False),
+            ('meskit_medal_rack_unit_id', '!=', False),
+        ]
+
     rack_type = fields.Selection(
         [('ribbon', 'Ribbon Rack'), ('tunic_medal', 'Tunic Medal Rack'), ('meskit_medal', 'Meskit Medal Rack')],
         compute='_compute_rack_type',
@@ -279,6 +361,6 @@ class SaleOrderLine(models.Model):
         rest = [l for l in lines[1:] if not l.strip().startswith('(For:')]
         new_lines = [base_name]
         if self.person_id:
-            new_lines.append(_('(For: %s)') % self.person_id.display_name)
+            new_lines.append(_('(For: %s)') % self.person_id.rm_rack_label())
         new_lines.extend(rest)
         self.name = '\n'.join(new_lines)

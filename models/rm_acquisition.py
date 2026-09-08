@@ -9,7 +9,7 @@ class postingMissions(models.Model):
     _description = 'all Special posting and missions are listed here'
     _rec_name = 'mission_id'
     mission_id = fields.Many2one('rm.prb',string='Award Name')
-    person_id=fields.Many2one('res.person',string='Person')
+    person_id=fields.Many2one('res.partner',string='Person', domain=[('is_person', '=', True)])
     award_year = fields.Integer(string='Award Date')
     attachment_id = fields.Many2one('rm.attachment',string='Attachment')
     note = fields.Char(string='note')
@@ -31,7 +31,7 @@ class personalAwards(models.Model):
     _description = 'all achievement and award listed here'
     _rec_name = 'award_id'
     award_id = fields.Many2one('rm.prb',string='Award Name')
-    person_id=fields.Many2one('res.person',string='Person')
+    person_id=fields.Many2one('res.partner',string='Person', domain=[('is_person', '=', True)])
     award_year = fields.Integer(string='Award Date')
     attachment_id = fields.Many2one('rm.attachment',string='Attachment')
     note = fields.Char(string='note')
@@ -86,7 +86,7 @@ class RmAcquisition(models.Model):
     _auto = False
     _order = 'person_id asc, source asc, year desc'
 
-    person_id = fields.Many2one('res.person', string='Person', readonly=True)
+    person_id = fields.Many2one('res.partner', string='Person', readonly=True, domain=[('is_person', '=', True)])
     award_id = fields.Many2one('rm.prb', string='Award', readonly=True)
     source = fields.Selection([
         ('personal', 'Personal Award'),
@@ -192,8 +192,8 @@ class RmAcquisition(models.Model):
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'seniority'
-                    JOIN res_person rp
-                        ON rp.force_id = prb.force_id
+                    JOIN res_partner rp
+                        ON rp.force_id = prb.force_id AND rp.is_person IS TRUE
                     WHERE prb.active IS TRUE
                       AND prb.service_age IS NOT NULL
                       AND rp.service_confirmation_date IS NOT NULL
@@ -216,8 +216,8 @@ class RmAcquisition(models.Model):
                     FROM rm_prb prb
                     JOIN rm_rules_category rule
                         ON rule.id = prb.rule_category_id AND rule.name = 'batch'
-                    JOIN res_person rp
-                        ON rp.force_id = prb.force_id
+                    JOIN res_partner rp
+                        ON rp.force_id = prb.force_id AND rp.is_person IS TRUE
                     WHERE prb.active IS TRUE
                       AND prb.starting_date IS NOT NULL
                       AND rp.service_confirmation_date IS NOT NULL

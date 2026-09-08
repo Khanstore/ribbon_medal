@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================= Personnel-specific browsing (own menu) ================= -->
+    <!-- These target res.partner directly (is_person=True, via the action's
+         domain below) and keep the same specialised Personnel UX the old
+         res.person model had - NOT the general Contacts form/list, which
+         gets only a light additional tab further down this file. -->
+
+    <record id="view_res_person_list" model="ir.ui.view">
+        <field name="name">res.partner.list.personnel</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <list string="Personnel" sample="1">
+                <field name="image_128" widget="image" class="oe_avatar" options="{'size': [24, 24]}" string=""/>
+                <field name="id_number"/>
+                <field name="name"/>
+                <field name="rank_id"/>
+                <field name="force_id" optional="show"/>
+                <field name="current_workplace" optional="show"/>
+                <field name="bcs_batch" optional="hide"/>
+                <field name="service_confirmation_date" optional="hide"/>
+                <field name="award_count" string="Awards" widget="badge" decoration-success="award_count &gt; 0"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_res_person_form" model="ir.ui.view">
+        <field name="name">res.partner.form.personnel</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <form string="Personnel Record">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_ordered_racks" type="object"
+                                class="oe_stat_button" icon="fa-shopping-cart">
+                            <field name="ordered_rack_count" widget="statinfo" string="Ordered Racks"/>
+                        </button>
+                        <button name="action_view_undelivered_racks" type="object"
+                                class="oe_stat_button" icon="fa-truck">
+                            <field name="undelivered_rack_count" widget="statinfo" string="Not Delivered"/>
+                        </button>
+                    </div>
+                    <field name="is_person" invisible="1"/>
+                    <field name="image_1920" widget="image" class="oe_avatar"
+                           options="{'preview_image': 'image_128'}"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Full Name, e.g. Md. Rahim Uddin"/></h1>
+                        <h3 class="text-muted mt-1">
+                            <field name="rank_id" placeholder="Rank" class="oe_inline"/>
+                            <span invisible="not rank_id or not force_id"> · </span>
+                            <field name="force_id" readonly="1" class="oe_inline" placeholder="Force"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Service Information" col="2">
+                            <field name="id_number"/>
+                            <field name="current_workplace"/>
+                            <field name="bcs_batch"/>
+                            <field name="service_confirmation_date"/>
+                            <field name="service_age" readonly="1"/>
+                            <field name="retirement_date"/>
+                            <field name="is_retired" readonly="1"/>
+                        </group>
+                        <group string="Personal &amp; Contact" col="2">
+                            <field name="name_eng"/>
+                            <field name="name_bng"/>
+                            <field name="birth_date"/>
+                            <field name="age" readonly="1"/>
+                            <field name="email" widget="email"/>
+                            <field name="phone" widget="phone"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Decorations" name="decorations">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <button name="action_save_and_refresh" type="object"
+                                        string="Save &amp; Refresh" class="btn-secondary"
+                                        icon="fa-refresh"
+                                        help="Saves any pending changes and reloads the page - use this if the Ribbon/Medal Rack images below look out of date after issuing or changing a rack."/>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <button name="action_issue_ribbon_rack" type="object"
+                                        string="Issue Ribbon Rack" class="btn-primary"
+                                        help="Stock-aware: reuses an existing Rack if an exact match is available, otherwise assembles from existing/new Lines and reserves a fresh unit for this person."/>
+                                <button name="action_generate_ribbon_rack" type="object"
+                                        string="Build Fresh (Manual)" class="btn-secondary"
+                                        help="Always builds a brand-new generic Ribbon Rack from raw materials, ignoring Rack/Line stock."/>
+                                <span class="badge text-bg-secondary fs-6">
+                                    Estimated Price: <field name="rack_total_price" readonly="1" class="oe_inline"/>
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <button name="action_issue_tunic_medal_rack" type="object"
+                                        string="Issue Tunic Medal Rack" class="btn-primary"
+                                        help="Stock-aware: reuses an existing Tunic Medal Rack if an exact match is available, otherwise assembles from existing/new Medal Parts and reserves a fresh unit for this person."/>
+                                <span class="badge text-bg-secondary fs-6">
+                                    Estimated Price: <field name="tunic_medal_rack_price" readonly="1" class="oe_inline"/>
+                                </span>
+                                <button name="action_issue_meskit_medal_rack" type="object"
+                                        string="Issue Meskit Medal Rack" class="btn-primary"
+                                        help="Stock-aware: reuses an existing Meskit Medal Rack if an exact match is available, otherwise assembles from existing/new Medal Parts and reserves a fresh unit for this person."/>
+                                <span class="badge text-bg-secondary fs-6">
+                                    Estimated Price: <field name="meskit_medal_rack_price" readonly="1" class="oe_inline"/>
+                                </span>
+                            </div>
+                            <group>
+                                <group>
+                                    <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
+
+                                        <list>
+                                            <field name="name"/>
+                                            <field name="sequence"/>
+                                            <field name="is_ribbon"/>
+                                            <field name="is_medal"/>
+                                            <field name="ribbon_image"/>
+                                            <field name="attachment_id"/>
+                                        </list>
+                                    </field>
+                                </group>
+                                <group>
+                                    <field name="rack_ledger_ids" widget="medal_rack" nolabel="1">
+                                        <list>
+                                            <field name="name"/>
+                                            <field name="sequence"/>
+                                            <field name="is_ribbon"/>
+                                            <field name="is_medal"/>
+                                            <field name="medal_image"/>
+                                            <field name="attachment_id"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Award" name="personal_awards">
+                            <field name="personal_award_ledger_ids" nolabel="1">
+                                <list>
+                                    <field name="award_id"/>
+                                    <field name="attachment_id"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Service" name="service">
+                            <field name="service_ledger_ids" nolabel="1"
+                                   >
+                                <list >
+                                    <field name="award_id"/>
+                                    <field name="attachment_id"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Seniority" name="seniority">
+                            <field name="seniority_ledger_ids" nolabel="1"
+                                   options="{'create': false, 'delete': false, 'edit': false}">
+                                <list create="false" delete="false" edit="false">
+                                    <field name="award_id"/>
+                                    <field name="attachment_id"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Customised" name="customised_ledger">
+                            <div class="mb-3">
+                                <button name="action_copy_ledger_to_custom" type="object"
+                                        string="Copy from Ledger" class="btn-secondary"/>
+                            </div>
+                            <field name="custom_ledger_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="award_id"/>
+                                    <field name="source"/>
+                                    <field name="year"/>
+                                    <field name="attachment_id"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_res_person_kanban" model="ir.ui.view">
+        <field name="name">res.partner.kanban.personnel</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" sample="1">
+                <field name="image_128"/>
+                <field name="name"/>
+                <field name="rank_id"/>
+                <field name="force_id"/>
+                <field name="current_workplace"/>
+                <field name="award_count"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex align-items-center gap-2">
+                            <img t-att-src="kanban_image('res.partner', 'image_128', record.id.raw_value)"
+                                 class="o_kanban_image rounded-circle" alt="Photo" width="48" height="48"/>
+                            <div class="flex-grow-1">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                                <div t-if="record.rank_id.raw_value or record.force_id.raw_value" class="text-muted small">
+                                    <field name="rank_id"/>
+                                    <span t-if="record.rank_id.raw_value and record.force_id.raw_value"> · </span>
+                                    <field name="force_id"/>
+                                </div>
+                                <div t-if="record.current_workplace.raw_value" class="text-muted small">
+                                    <field name="current_workplace"/>
+                                </div>
+                                <div class="mt-1">
+                                    <span class="badge text-bg-secondary">
+                                        <field name="award_count"/> awards
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_res_person_search" model="ir.ui.view">
+        <field name="name">res.partner.search.personnel</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <search string="Search Personnel">
+                <field name="name"/>
+                <field name="id_number"/>
+                <field name="rank_id"/>
+                <field name="force_id"/>
+                <field name="current_workplace"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_force" string="Force" context="{'group_by': 'force_id'}"/>
+                    <filter name="group_by_rank" string="Rank" context="{'group_by': 'rank_id'}"/>
+                    <filter name="group_by_workplace" string="Current Workplace" context="{'group_by': 'current_workplace'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_res_person" model="ir.actions.act_window">
+        <field name="name">Personnel</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('is_person', '=', True)]</field>
+        <field name="context">{'default_is_person': True}</field>
+        <field name="search_view_id" ref="view_res_person_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a Personnel Record</p>
+            <p>Track personnel, their rank, force, and the decorations they've earned.</p>
+        </field>
+    </record>
+
+    <!-- ================= Light touch on the standard Contacts form ================= -->
+    <!-- Lets "Is Personnel" be ticked (and the core fields filled in) from
+         the regular Contacts app too, without going through the heavier
+         Personnel-specific form above. Deliberately does NOT duplicate the
+         Decorations/Award/Service/etc. tabs here - those stay exclusive to
+         the dedicated Personnel form. -->
+    <record id="view_partner_form_rm_is_person" model="ir.ui.view">
+        <field name="name">res.partner.form.rm.is.person</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="company_type" position="after">
+                <field name="is_person"/>
+            </field>
+            <!-- Hide the core Contact fields on the main sheet for
+                 Personnel records - moved (via duplicate declaration,
+                 not position="move", to avoid needing to know their
+                 exact wrapper structure) into the Contacts & Addresses
+                 tab below instead, since Personnel records don't need
+                 full commercial-contact fields front-and-center. Only
+                 affects is_person=True records - every other Contact
+                 (customers, vendors, companies) is unchanged. -->
+            <field name="street" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="street2" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="city" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="state_id" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="zip" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="country_id" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="vat" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="function" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="phone" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="mobile" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="email" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="website" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="title" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="lang" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <field name="category_id" position="attributes">
+                <attribute name="invisible">is_person</attribute>
+            </field>
+            <!-- Same fields, shown instead at the top of Contacts &
+                 Addresses, only for Personnel records. -->
+            <page name="contact_addresses" position="inside">
+                <group invisible="not is_person">
+                    <group string="Address">
+                        <field name="street"/>
+                        <field name="street2"/>
+                        <field name="city"/>
+                        <field name="state_id"/>
+                        <field name="zip"/>
+                        <field name="country_id"/>
+                    </group>
+                    <group string="Contact Details">
+                        <field name="function"/>
+                        <field name="phone"/>
+                        <field name="mobile"/>
+                        <field name="email"/>
+                        <field name="website"/>
+                        <field name="title"/>
+                        <field name="lang"/>
+                        <field name="category_id" widget="many2many_tags"/>
+                        <field name="vat"/>
+                    </group>
+                </group>
+            </page>
+            <notebook position="inside">
+                <page string="Personnel Info" name="personnel_info" invisible="not is_person">
+                    <group>
+                        <group string="Service Information">
+                            <field name="id_number" required="is_person"/>
+                            <field name="rank_id"/>
+                            <field name="current_workplace"/>
+                            <field name="bcs_batch"/>
+                            <field name="service_confirmation_date"/>
+                            <field name="retirement_date"/>
+                        </group>
+                        <group string="Personal Details">
+                            <field name="name_eng"/>
+                            <field name="name_bng"/>
+                            <field name="birth_date"/>
+                        </group>
+                    </group>
+                    <separator string="Ribbon Rack / Medal Rack"/>
+                    <group>
+                        <group>
+                            <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="sequence"/>
+                                    <field name="is_ribbon"/>
+                                    <field name="is_medal"/>
+                                    <field name="ribbon_image"/>
+                                    <field name="attachment_id"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group>
+                            <field name="rack_ledger_ids" widget="medal_rack" nolabel="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="sequence"/>
+                                    <field name="is_ribbon"/>
+                                    <field name="is_medal"/>
+                                    <field name="medal_image"/>
+                                    <field name="attachment_id"/>
+                                </list>
+                            </field>
+                        </group>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>

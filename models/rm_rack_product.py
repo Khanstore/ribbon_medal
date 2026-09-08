@@ -91,6 +91,7 @@ class RmRackProduct(models.Model):
                 size_variants='l_only'  # Only create L variant
             )
             tmpl = self._create_product_resilient(vals)
+            tmpl.rm_is_finished_rack = True
             self.product_tmpl_id = tmpl.id
 
     def _build_bom(self):
@@ -246,14 +247,15 @@ class RmRackUnit(models.Model):
     state = fields.Selection(
         [('in_stock', 'In Stock'), ('delivered', 'Delivered')], default='in_stock', required=True)
     reserved_person_id = fields.Many2one(
-        'res.person', string='Reserved For',
+        'res.partner', string='Reserved For', domain=[('is_person', '=', True)],
         help='Set only when this unit was manufactured specifically '
              'because this person needed one - it stays locked to them '
              'until delivered. Empty = general stock, available to '
              'anyone with a matching need.')
     mrp_production_id = fields.Many2one('mrp.production', readonly=True)
     mo_state = fields.Selection(related='mrp_production_id.state', string='MO Status')
-    delivered_to_person_id = fields.Many2one('res.person', readonly=True)
+    delivered_to_person_id = fields.Many2one(
+        'res.partner', readonly=True, domain=[('is_person', '=', True)])
     delivery_date = fields.Datetime(readonly=True)
 
     def action_deliver(self, person_id=None):

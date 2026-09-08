@@ -1,6 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_res_person_user,res.person.user,model_res_person,group_ribbon_medal_user,1,1,1,0
-access_res_person_manager,res.person.manager,model_res_person,group_ribbon_medal_manager,1,1,1,1
 access_rm_forces_user,rm.forces.user,model_rm_forces,group_ribbon_medal_user,1,0,0,0
 access_rm_forces_manager,rm.forces.manager,model_rm_forces,group_ribbon_medal_manager,1,1,1,1
 access_rm_ranks_user,rm.ranks.user,model_rm_ranks,group_ribbon_medal_user,1,0,0,0

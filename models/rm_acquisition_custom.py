@@ -17,7 +17,8 @@ class RmAcquisitionCustom(models.Model):
     _order = 'person_id, sequence, id'
     _rec_name = 'award_id'
 
-    person_id = fields.Many2one('res.person', string='Person', required=True, ondelete='cascade', index=True)
+    person_id = fields.Many2one('res.partner', string='Person', required=True, ondelete='cascade',
+                                 index=True, domain=[('is_person', '=', True)])
     award_id = fields.Many2one('rm.prb', string='Award', required=True)
     source = fields.Selection([
         ('personal', 'Personal Award'),
