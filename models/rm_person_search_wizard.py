@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.osv import expression
 
 
 class RmPersonSearchWizard(models.TransientModel):
@@ -40,9 +41,9 @@ class RmPersonSearchWizard(models.TransientModel):
     search_rank_id = fields.Many2one('rm.ranks', string='Search by Rank')
     search_unit_id = fields.Many2one('rm.unit', string='Search by Unit')
     result_person_ids = fields.Many2many(
-        'res.person', string='Matches', compute='_compute_results')
+        'res.partner', string='Matches', compute='_compute_results')
     person_id = fields.Many2one(
-        'res.person', string='Selected Person',
+        'res.partner', string='Selected Person', domain=[('is_person', '=', True)],
         help='Pick the matching person from the results above, or type '
              'a name/ID/phone/mobile/email directly into this field to '
              'search - or leave blank and use "No Match - Create New '
@@ -52,7 +53,7 @@ class RmPersonSearchWizard(models.TransientModel):
                  'search_phone', 'search_mobile', 'search_email',
                  'search_rank_id', 'search_unit_id')
     def _compute_results(self):
-        Person = self.env['res.person']
+        Person = self.env['res.partner']
         for wizard in self:
             if wizard.deep_search:
                 clauses = []
@@ -84,20 +85,24 @@ class RmPersonSearchWizard(models.TransientModel):
             if not clauses:
                 wizard.result_person_ids = Person
                 continue
-            domain = ['|'] * (len(clauses) - 1) + clauses
+            domain = expression.AND([
+                [('is_person', '=', True)],
+                expression.OR([[c] for c in clauses]),
+            ])
             wizard.result_person_ids = Person.search(domain, limit=20)
 
     def action_create_new_person(self):
-        """No match found - hand off to the standard blank Personnel
-        form. Once saved there, come back to this wizard (or use the
-        Decorations tab's own Issue/Build buttons directly) to place
-        the order."""
+        """No match found - hand off to the standard Contacts form,
+        pre-flagged as Personnel. Once saved there, come back to this
+        wizard (or use the Decorations tab's own Issue/Build buttons
+        directly) to place the order."""
         return {
             'type': 'ir.actions.act_window',
             'name': _('New Personnel'),
-            'res_model': 'res.person',
+            'res_model': 'res.partner',
             'view_mode': 'form',
             'target': 'current',
+            'context': {'default_is_person': True},
         }
 
     def action_confirm(self):
@@ -106,18 +111,21 @@ class RmPersonSearchWizard(models.TransientModel):
         self.ensure_one()
         if not self.person_id:
             raise UserError(_('Select a person first (or create a new one).'))
-        rack_tmpl = self.env.ref('ribbon_medal.product_ribbon_rack', raise_if_not_found=False)
-        if not rack_tmpl:
-            raise UserError(_('The "Ribbon Rack" product is not set up.'))
+        variant = self.person_id._resolve_rack_variant('ribbon')
+        if not variant:
+            raise UserError(_(
+                '%s has no acquisitions on the Acquisition Ledger yet to build '
+                'a Ribbon Rack for.') % self.person_id.display_name)
         order = self.env['sale.order'].create({
-            'partner_id': self.person_id.partner_id.id,
+            'partner_id': self.person_id.id,
             'person_id': self.person_id.id,
             'order_line': [(0, 0, {
-                'product_id': rack_tmpl.product_variant_id.id,
+                'product_id': variant.id,
+                'rack_type': 'ribbon',
                 'product_uom_qty': 1,
                 'price_unit': self.person_id.rack_total_price,
                 'person_id': self.person_id.id,
-                'name': _('%s\n(For: %s)') % (rack_tmpl.name, self.person_id.display_name),
+                'name': _('%s\n(For: %s)') % (variant.name, self.person_id.rm_rack_label()),
             })],
         })
         return {

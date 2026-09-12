@@ -4,8 +4,17 @@ from odoo.exceptions import UserError
 
 
 class RmPartnerToPersonWizard(models.TransientModel):
+    """Bulk-mark selected Contacts as Personnel.
+
+    Under the earlier res.person model (delegation inheritance to a
+    separate table), "converting" a Contact meant creating a brand-new
+    Person record pointing at it. Now that Personnel is just
+    is_person=True directly on res.partner, this wizard's job is much
+    simpler: for each selected Contact not already Personnel (and not a
+    Company), tick is_person and fill in ID Number/Rank.
+    """
     _name = 'rm.partner.to.person.wizard'
-    _description = 'Convert Partners to Personnel Records'
+    _description = 'Mark Contacts as Personnel'
 
     line_ids = fields.One2many(
         'rm.partner.to.person.wizard.line', 'wizard_id', string='Partners')
@@ -23,62 +32,56 @@ class RmPartnerToPersonWizard(models.TransientModel):
         vals = super().default_get(fields_list)
         partner_ids = self.env.context.get('active_ids') or []
         partners = self.env['res.partner'].browse(partner_ids)
-        existing_person_by_partner = {
-            p.partner_id.id: p for p in self.env['res.person'].search(
-                [('partner_id', 'in', partner_ids)])
-        }
         lines = []
         for partner in partners:
-            existing = existing_person_by_partner.get(partner.id)
             is_company = partner.company_type == 'company'
             lines.append((0, 0, {
                 'partner_id': partner.id,
-                'existing_person_id': existing.id if existing else False,
+                'already_person': partner.is_person,
                 'is_company': is_company,
-                'skip': bool(existing) or is_company,
+                'skip': partner.is_person or is_company,
             }))
         vals['line_ids'] = lines
         return vals
 
     def action_confirm(self):
-        Person = self.env['res.person']
-        to_create = self.line_ids.filtered(lambda l: not l.skip)
-        already_have = Person.search([('partner_id', 'in', to_create.partner_id.ids)])
+        to_convert = self.line_ids.filtered(lambda l: not l.skip)
+        already_have = to_convert.filtered('already_person')
         if already_have:
             raise UserError(_(
-                'These already have a Person record - tick Skip for them '
-                '(or open their existing Person record instead): %s'
+                'These are already Personnel - tick Skip for them instead: %s'
             ) % ', '.join(already_have.mapped('partner_id.display_name')))
-        created = Person
-        for line in to_create:
-            created |= Person.create({
-                'partner_id': line.partner_id.id,
+        converted = self.env['res.partner']
+        for line in to_convert:
+            line.partner_id.write({
+                'is_person': True,
                 'id_number': line.id_number or False,
                 'rank_id': line.rank_id.id if line.rank_id else False,
             })
-        if not created:
+            converted |= line.partner_id
+        if not converted:
             return {'type': 'ir.actions.act_window_close'}
         return {
             'type': 'ir.actions.act_window',
             'name': _('Converted Personnel'),
-            'res_model': 'res.person',
+            'res_model': 'res.partner',
             'view_mode': 'list,form',
-            'domain': [('id', 'in', created.ids)],
+            'domain': [('id', 'in', converted.ids)],
         }
 
 
 class RmPartnerToPersonWizardLine(models.TransientModel):
     _name = 'rm.partner.to.person.wizard.line'
-    _description = 'Convert Partners to Personnel Records - Line'
+    _description = 'Mark Contacts as Personnel - Line'
 
     wizard_id = fields.Many2one('rm.partner.to.person.wizard', required=True, ondelete='cascade')
     partner_id = fields.Many2one('res.partner', required=True, readonly=True)
     is_company = fields.Boolean(readonly=True)
-    existing_person_id = fields.Many2one('res.person', readonly=True)
+    already_person = fields.Boolean(readonly=True)
     skip = fields.Boolean(
         default=False,
-        help='Ticked automatically for partners that are already a '
-             'Person, or are a Company rather than an individual - '
+        help='Ticked automatically for partners that are already '
+             'Personnel, or are a Company rather than an individual - '
              'untick only if you\'re sure. You can also tick this '
              "yourself to skip any other partner in this batch.")
     id_number = fields.Char(string='ID Number')

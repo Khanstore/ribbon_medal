@@ -22,7 +22,8 @@ class RmSetOrder(models.Model):
 
     name = fields.Char(default='New', copy=False, readonly=True)
     person_id = fields.Many2one(
-        'res.person', required=True, string='Person', ondelete='restrict', index=True)
+        'res.partner', required=True, string='Person', ondelete='restrict', index=True,
+        domain=[('is_person', '=', True)])
     product_id = fields.Many2one(
         'product.product', required=True, string='Ribbon Rack Product',
         default=lambda self: self._default_product_id(),

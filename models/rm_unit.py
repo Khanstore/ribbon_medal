@@ -19,7 +19,8 @@ class RmUnit(models.Model):
         'rm.ranks', string='Chief Rank')
     active = fields.Boolean(default=True)
 
-    person_ids = fields.One2many('res.person', 'current_workplace', string='Personnel')
+    person_ids = fields.One2many('res.partner', 'current_workplace', string='Personnel',
+                                  domain=[('is_person', '=', True)])
     person_count = fields.Integer(compute='_compute_person_count')
 
     def _compute_person_count(self):
@@ -31,8 +32,8 @@ class RmUnit(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'name': 'Personnel',
-            'res_model': 'res.person',
+            'res_model': 'res.partner',
             'view_mode': 'list,kanban,form',
-            'domain': [('current_workplace', '=', self.id)],
-            'context': {'default_current_workplace': self.id},
+            'domain': [('current_workplace', '=', self.id), ('is_person', '=', True)],
+            'context': {'default_current_workplace': self.id, 'default_is_person': True},
         }

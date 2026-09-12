@@ -2,12 +2,14 @@ from . import rm_forces
 from . import rm_ranks
 from . import rm_rules_category
 from . import rm_product_sync_mixin
+from . import rm_rack_image
+from . import product_template
 from . import rm_decoration
 from . import prb
 from . import attachments
 from . import rm_unit_category
 from . import rm_unit
-from . import res_person
+from . import res_partner
 from . import bcs_batch
 from . import rm_personal_award
 from . import posting_mision

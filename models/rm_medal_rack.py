@@ -20,7 +20,7 @@ class RmMedalRack(models.Model):
     Ribbon Racks.
     """
     _name = 'rm.medal.rack'
-    _inherit = ['rm.product.sync.mixin']
+    _inherit = ['rm.product.sync.mixin', 'rm.rack.image.mixin']
     _description = 'Medal Rack (Tunic/Meskit - finished rack for one Medal Part)'
     _order = 'id'
 
@@ -32,7 +32,19 @@ class RmMedalRack(models.Model):
         related='part_id.display_identity', store=True, string='Medals')
     part_award_ids = fields.One2many(
         related='part_id.award_ids', string='Award Sequence', readonly=True)
-    product_tmpl_id = fields.Many2one('product.template', readonly=True, copy=False)
+    product_id = fields.Many2one(
+        'product.product', readonly=True, copy=False,
+        help="This Rack's own variant of the shared 'Medal Rack' "
+             "product.template - see _ensure_product below.")
+    product_label = fields.Char(
+        readonly=True, copy=False,
+        help='This Rack\'s own short label (e.g. "Medal Rack #6") - kept '
+             "as a plain field for reference on this record's own form, "
+             "since the underlying product's own name is now shared "
+             "across every Medal Rack (it no longer distinguishes this "
+             "one) - the actual product shown to users elsewhere "
+             "(sale order lines, deliveries, MOs) is product_id itself, "
+             "which is what actually carries the specific variant now.")
     bom_id = fields.Many2one('mrp.bom', readonly=True, copy=False)
     use_count = fields.Integer(default=0, readonly=True)
     last_used_date = fields.Datetime(readonly=True)
@@ -72,12 +84,66 @@ class RmMedalRack(models.Model):
 
     def _ensure_product(self):
         self.ensure_one()
-        if not self.product_tmpl_id:
-            vals = self._prepare_sync_product_vals(
-                'Medal Rack #%s' % (self.id or 'new'),
-                size_variants='l_only' if self.size == 'l' else 's_only')
-            tmpl = self._create_product_resilient(vals)
-            self.product_tmpl_id = tmpl.id
+        if not self.product_id:
+            label = 'Medal Rack #%s' % (self.id or 'new')
+            variant = self._ensure_rm_variant(
+                'Medal Rack', 'Medal Rack Combination', label,
+                extra_template_vals={'rm_is_finished_rack': True})
+            self.write({'product_id': variant.id, 'product_label': label})
+        self._generate_rack_image()
+
+    # Must match static/src/scss/medal_rack.scss's fixed 12cm row / 3cm
+    # cell / 8cm cell-height layout exactly, at a chosen 40px/cm scale
+    # (arbitrary but consistent - only the ratios need to match CSS).
+    _MEDAL_CELL_W, _MEDAL_CELL_H = 120, 320
+    _MEDAL_ROW_W = 480
+
+    def _get_own_row(self):
+        """This Medal Rack's own row, left-to-right, highest
+        precedence on the right - reconstructed from its own Part's
+        award_ids (junction sequence 0 = highest precedence, matching
+        how it was created), then reversed to match rendering order
+        (see medal_rack.js's `row` getter, which this mirrors)."""
+        self.ensure_one()
+        if not self.part_id:
+            return self.env['rm.prb']
+        ordered_desc = self.part_id.award_ids.sorted('sequence').mapped('award_id')
+        return ordered_desc[::-1]
+
+    def _generate_rack_image(self):
+        """(Re)generate this Rack's own product image - a real, stored
+        picture matching the Medal Rack widget's own layout (fixed
+        12cm-wide row, cells overlapping equally once there are more
+        than 4) - set on the underlying variant (image_variant_1920),
+        not the shared template. Safe/cheap to call repeatedly; does
+        nothing if Pillow isn't available, there's no row to draw, or
+        the product isn't resolved yet."""
+        self.ensure_one()
+        if not self.product_id or not self._rm_pil_available():
+            return
+        row = self._get_own_row()
+        count = len(row)
+        if not count:
+            return
+        canvas = self._rm_new_canvas(self._MEDAL_ROW_W, self._MEDAL_CELL_H)
+        if count == 1:
+            lefts = [(self._MEDAL_ROW_W - self._MEDAL_CELL_W) // 2]
+        else:
+            overlap = max(0.0, self._MEDAL_CELL_W - (self._MEDAL_ROW_W - self._MEDAL_CELL_W) / (count - 1))
+            step = self._MEDAL_CELL_W - overlap
+            total_w = step * (count - 1) + self._MEDAL_CELL_W
+            start = (self._MEDAL_ROW_W - total_w) / 2
+            lefts = [round(start + i * step) for i in range(count)]
+        # Paste right-to-left so the LEFTMOST cell ends up drawn last
+        # (on top) wherever cells overlap - matching the widget's own
+        # z-index: count - index (leftmost highest).
+        for idx in reversed(range(count)):
+            prb = row[idx]
+            self._rm_paste_cell(
+                canvas, prb.medal_id.medal_product_tmpl_id.image_1920,
+                prb.attachment_id.image,
+                (lefts[idx], 0, self._MEDAL_CELL_W, self._MEDAL_CELL_H))
+        self.product_id.image_variant_1920 = self._rm_finalize_image(canvas, flatten=False)
 
     def _build_bom(self):
         """1x this Rack's own Medal Part product (ensured to have its
@@ -106,7 +172,7 @@ class RmMedalRack(models.Model):
         size_label = self.size.upper()
 
         self.part_id._ensure_product_and_bom()
-        add(self.part_id.product_tmpl_id.product_variant_id, 1.0, self.part_id.product_tmpl_id.uom_id)
+        add(self.part_id.product_id, 1.0, self.part_id.product_id.uom_id)
 
         medal_rule = template.component_rule_ids.filtered(
             lambda r: r.scope == 'per_cell' and r.category_id.code == 'MEDAL')[:1]
@@ -135,8 +201,8 @@ class RmMedalRack(models.Model):
                              '\n- '.join(missing))
 
         bom = self.env['mrp.bom'].create({
-            'product_tmpl_id': self.product_tmpl_id.id,
-            'product_id': self.product_tmpl_id.product_variant_id.id,
+            'product_tmpl_id': self.product_id.product_tmpl_id.id,
+            'product_id': self.product_id.id,
             'product_qty': 1.0,
             'type': 'normal',
             'code': 'MEDALRACK-%s' % self.id,
@@ -151,10 +217,7 @@ class RmMedalRack(models.Model):
 
     def get_available_stock_quantity(self):
         self.ensure_one()
-        if not self.product_tmpl_id:
-            return 0.0
-        product = self.product_tmpl_id.product_variant_id
-        return product.qty_available if product else 0.0
+        return self.product_id.qty_available if self.product_id else 0.0
 
     def get_stock_units(self, quantity):
         self.ensure_one()
@@ -182,7 +245,7 @@ class RmMedalRack(models.Model):
         self.ensure_one()
         if not self.bom_id:
             self._build_bom()
-        product = self.product_tmpl_id.product_variant_id
+        product = self.product_id
         Production = self.env['mrp.production']
         pending = Production.search([
             ('product_id', '=', product.id),
@@ -195,7 +258,7 @@ class RmMedalRack(models.Model):
             production = Production.create({
                 'product_id': product.id,
                 'product_qty': 1.0,
-                'product_uom_id': self.product_tmpl_id.uom_id.id,
+                'product_uom_id': self.product_id.uom_id.id,
                 'bom_id': self.bom_id.id,
                 'origin': self.display_identity,
             })
@@ -220,12 +283,13 @@ class RmMedalRackUnit(models.Model):
     state = fields.Selection(
         [('in_stock', 'In Stock'), ('delivered', 'Delivered')], default='in_stock', required=True)
     reserved_person_id = fields.Many2one(
-        'res.person', string='Reserved For',
+        'res.partner', string='Reserved For', domain=[('is_person', '=', True)],
         help='Set when this unit was freshly manufactured for a specific person '
              'but not yet marked delivered.')
     mrp_production_id = fields.Many2one('mrp.production', readonly=True, string='Manufacturing Order')
     mo_state = fields.Selection(related='mrp_production_id.state', string='MO Status')
-    delivered_to_person_id = fields.Many2one('res.person', readonly=True, string='Delivered To')
+    delivered_to_person_id = fields.Many2one(
+        'res.partner', readonly=True, string='Delivered To', domain=[('is_person', '=', True)])
     delivery_date = fields.Datetime(readonly=True)
 
     def action_deliver(self, person_id=None):

@@ -1,13 +1,14 @@
 {
     'name': 'Ribbon Medal - Personnel Decorations',
-    'version': '18.0.1.0.87',
+    'version': '18.0.2.1.4',
     'category': 'Human Resources',
     'summary': 'Manage personnel records and their decorations (ribbons/medals) for military/police organizations',
     'description': """
 Ribbon Medal
 ============
-Manage personnel (res.person, extending res.partner), organizational forces,
-ranks, decoration acquisition rules, and decorations (ribbons/medals).
+Manage personnel (is_person on res.partner directly - no separate model),
+organizational forces, ranks, decoration acquisition rules, and decorations
+(ribbons/medals).
 
 Features
 --------
@@ -40,7 +41,7 @@ Features
         'data/rm_set_template_data.xml',
         'data/rm_medal_set_data.xml',
 
-        'views/res_person_views.xml',
+        'views/res_partner_views.xml',
         'views/rm_ranks_views.xml',
         'views/rm_bcs_batch.xml',
         'views/rm_attachment_views.xml',
@@ -65,6 +66,7 @@ Features
         'views/rm_medal_part_views.xml',
         'views/rm_medal_rack_views.xml',
         'views/sale_order_views.xml',
+        'views/mrp_production_views.xml',
         'views/ribbon_medal_menus.xml',
     ],
     'assets': {

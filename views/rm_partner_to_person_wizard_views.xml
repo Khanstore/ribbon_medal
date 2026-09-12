@@ -4,22 +4,23 @@
         <field name="name">rm.partner.to.person.wizard.form</field>
         <field name="model">rm.partner.to.person.wizard</field>
         <field name="arch" type="xml">
-            <form string="Convert to Person">
+            <form string="Mark as Personnel">
                 <p>
-                    Each row below becomes a new Personnel record pointing
-                    at the <em>same</em> Contact - nothing about the
-                    Contact itself is duplicated or changed. Fill in ID
-                    Number and Rank where you have them; leave blank to
-                    fill in later on the Person record. Rows already
-                    ticked "Skip" are either already a Person or a
-                    Company, not an individual - review before unticking.
+                    Each row below gets "Is Personnel" ticked on the
+                    <em>same</em> Contact - nothing about the Contact
+                    itself is duplicated or changed. Fill in ID Number
+                    and Rank where you have them; leave blank to fill in
+                    later on the Contact's own Personnel Info tab. Rows
+                    already ticked "Skip" are either already Personnel
+                    or a Company, not an individual - review before
+                    unticking.
                 </p>
                 <field name="line_ids">
                     <list editable="bottom" create="false">
                         <field name="partner_id" readonly="1"/>
                         <field name="is_company" column_invisible="1"/>
-                        <field name="existing_person_id" readonly="1"
-                               string="Already a Person?"/>
+                        <field name="already_person" readonly="1"
+                               string="Already Personnel?"/>
                         <field name="id_number" readonly="skip"/>
                         <field name="rank_id" readonly="skip"/>
                         <field name="skip"/>
@@ -27,13 +28,13 @@
                 </field>
                 <p>
                     <field name="convertible_count" readonly="1" nolabel="1" class="oe_inline"/>
-                    will be converted,
+                    will be marked as Personnel,
                     <field name="skipped_count" readonly="1" nolabel="1" class="oe_inline"/>
                     skipped.
                 </p>
                 <footer>
                     <button name="action_confirm" type="object"
-                            string="Convert" class="btn-primary"
+                            string="Mark as Personnel" class="btn-primary"
                             invisible="not convertible_count"/>
                     <button string="Cancel" special="cancel" class="btn-secondary"/>
                 </footer>
@@ -42,7 +43,7 @@
     </record>
 
     <record id="action_convert_partner_to_person" model="ir.actions.act_window">
-        <field name="name">Convert to Person</field>
+        <field name="name">Mark as Personnel</field>
         <field name="res_model">rm.partner.to.person.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>

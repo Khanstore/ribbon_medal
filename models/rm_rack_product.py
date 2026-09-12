@@ -22,7 +22,7 @@ class RmRackProduct(models.Model):
     releases it back to general stock).
     """
     _name = 'rm.rack.product'
-    _inherit = ['rm.product.sync.mixin']
+    _inherit = ['rm.product.sync.mixin', 'rm.rack.image.mixin']
     _description = 'Rack Product (locked-identity combination of Lines)'
     _order = 'id'
 
@@ -36,7 +36,18 @@ class RmRackProduct(models.Model):
         compute='_compute_display_identity', store=True, string='Rows')
     rack_line_ids = fields.One2many(
         'rm.rack.product.line', 'rack_id', string='Rows', readonly=True)
-    product_tmpl_id = fields.Many2one('product.template', readonly=True, copy=False)
+    product_id = fields.Many2one(
+        'product.product', readonly=True, copy=False,
+        help="This Rack's own variant of the shared 'Ribbon Rack' "
+             "product.template - see _ensure_product below.")
+    product_label = fields.Char(
+        readonly=True, copy=False,
+        help='This Rack\'s own short label (e.g. "Rack #6") - kept as '
+             "a plain field since, unlike before, the product's own "
+             "template name is now shared across every Rack (it no "
+             "longer distinguishes this one) - used as the sale/"
+             "delivery/MO product's own name (product_id.name), so all "
+             "three naturally show the same specific label.")
     bom_id = fields.Many2one('mrp.bom', readonly=True, copy=False)
     use_count = fields.Integer(default=0, readonly=True)
     last_used_date = fields.Datetime(readonly=True)
@@ -85,13 +96,57 @@ class RmRackProduct(models.Model):
 
     def _ensure_product(self):
         self.ensure_one()
-        if not self.product_tmpl_id:
-            vals = self._prepare_sync_product_vals(
-                self.name or f'Rack #{self.id}',
-                size_variants='l_only'  # Only create L variant
-            )
-            tmpl = self._create_product_resilient(vals)
-            self.product_tmpl_id = tmpl.id
+        if not self.product_id:
+            label = self.name or f'Rack #{self.id}'
+            variant = self._ensure_rm_variant(
+                'Ribbon Rack', 'Ribbon Rack Combination', label,
+                extra_template_vals={'rm_is_finished_rack': True})
+            self.write({'product_id': variant.id, 'product_label': label})
+        self._generate_rack_image()
+
+    # Must match static/src/scss/ribbon_rack.scss's .o_ribbon_rack_cell
+    # (108x39px) and background (#e9e9e9) exactly.
+    _RIBBON_CELL_W, _RIBBON_CELL_H = 108, 39
+    _RIBBON_BG = (233, 233, 233, 255)
+
+    def _get_own_rows(self):
+        """This Rack's own rows, top row first, each already in
+        left-to-right rendering order - reconstructed from this
+        record's own rack_line_ids/item_ids, mirroring
+        res.partner._get_rack_rows()'s shape exactly, but from this
+        Rack's fixed, own composition rather than a person's live,
+        changing acquisitions."""
+        self.ensure_one()
+        return [prod_line.line_id.item_ids.sorted('sequence').mapped('award_id')
+                for prod_line in self.rack_line_ids.sorted('sequence')]
+
+    def _generate_rack_image(self):
+        """(Re)generate this Rack's own product image - a real, stored
+        picture matching the Ribbon Rack widget's own layout (see
+        rm.rack.image.mixin) - set on the underlying variant
+        (image_variant_1920), not the shared template. Safe/cheap to
+        call repeatedly; does nothing if Pillow isn't available, there
+        are no rows to draw, or the product isn't resolved yet."""
+        self.ensure_one()
+        if not self.product_id or not self._rm_pil_available():
+            return
+        rows = self._get_own_rows()
+        if not rows:
+            return
+        n_cols = max(len(row) for row in rows)
+        canvas = self._rm_new_canvas(
+            n_cols * self._RIBBON_CELL_W, len(rows) * self._RIBBON_CELL_H, self._RIBBON_BG)
+        for row_idx, row in enumerate(rows):
+            x_offset = (canvas.width - len(row) * self._RIBBON_CELL_W) // 2
+            top = row_idx * self._RIBBON_CELL_H
+            for col_idx, prb in enumerate(row):
+                left = x_offset + col_idx * self._RIBBON_CELL_W
+                self._rm_paste_cell(
+                    canvas,
+                    prb.ribbon_id.ribbon_product_tmpl_id.image_1920,
+                    prb.attachment_id.image,
+                    (left, top, self._RIBBON_CELL_W, self._RIBBON_CELL_H))
+        self.product_id.image_variant_1920 = self._rm_finalize_image(canvas, flatten=True)
 
     def _build_bom(self):
         """N x Line products (one per row, each ensured to have its own
@@ -115,8 +170,8 @@ class RmRackProduct(models.Model):
         for prod_line in self.rack_line_ids.sorted('sequence'):
             line = prod_line.line_id
             line._ensure_product_and_bom()
-            variant = line.product_tmpl_id.product_variant_id
-            add(variant, 1.0, line.product_tmpl_id.uom_id)
+            variant = line.product_id
+            add(variant, 1.0, line.product_id.uom_id)
 
         for rule in template.component_rule_ids.filtered(lambda r: r.scope == 'per_rack'):
             product = rule.default_product_id.product_variant_id
@@ -129,8 +184,8 @@ class RmRackProduct(models.Model):
             raise UserError(_('Missing product selection(s):\n- %s') % '\n- '.join(missing))
 
         bom = self.env['mrp.bom'].create({
-            'product_tmpl_id': self.product_tmpl_id.id,
-            'product_id': self.product_tmpl_id.product_variant_id.id,
+            'product_tmpl_id': self.product_id.product_tmpl_id.id,
+            'product_id': self.product_id.id,
             'product_qty': 1.0,
             'type': 'normal',
             'code': f'RACK-{self.id}',
@@ -145,16 +200,11 @@ class RmRackProduct(models.Model):
         """Return the actual available stock quantity of this rack's product.
         Checks the product's stock availability in all warehouses/locations."""
         self.ensure_one()
-        if not self.product_tmpl_id:
-            return 0.0
-
-        # Get the product variant
-        product = self.product_tmpl_id.product_variant_id
-        if not product:
+        if not self.product_id:
             return 0.0
 
         # Get available stock
-        return product.qty_available
+        return self.product_id.qty_available
 
     def get_stock_units(self, quantity):
         """Get actual stock units (rm.rack.unit records) for this rack.
@@ -201,7 +251,7 @@ class RmRackProduct(models.Model):
         self.ensure_one()
         if not self.bom_id:
             self._build_bom()
-        product = self.product_tmpl_id.product_variant_id
+        product = self.product_id
         Production = self.env['mrp.production']
         pending = Production.search([
             ('product_id', '=', product.id),
@@ -214,7 +264,7 @@ class RmRackProduct(models.Model):
             production = Production.create({
                 'product_id': product.id,
                 'product_qty': 1.0,
-                'product_uom_id': self.product_tmpl_id.uom_id.id,
+                'product_uom_id': self.product_id.uom_id.id,
                 'bom_id': self.bom_id.id,
                 'origin': self.display_identity,
             })
@@ -246,14 +296,15 @@ class RmRackUnit(models.Model):
     state = fields.Selection(
         [('in_stock', 'In Stock'), ('delivered', 'Delivered')], default='in_stock', required=True)
     reserved_person_id = fields.Many2one(
-        'res.person', string='Reserved For',
+        'res.partner', string='Reserved For', domain=[('is_person', '=', True)],
         help='Set only when this unit was manufactured specifically '
              'because this person needed one - it stays locked to them '
              'until delivered. Empty = general stock, available to '
              'anyone with a matching need.')
     mrp_production_id = fields.Many2one('mrp.production', readonly=True)
     mo_state = fields.Selection(related='mrp_production_id.state', string='MO Status')
-    delivered_to_person_id = fields.Many2one('res.person', readonly=True)
+    delivered_to_person_id = fields.Many2one(
+        'res.partner', readonly=True, domain=[('is_person', '=', True)])
     delivery_date = fields.Datetime(readonly=True)
 
     def action_deliver(self, person_id=None):

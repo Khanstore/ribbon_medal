@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.osv import expression
 
 
 class RmSaleLinePersonWizard(models.TransientModel):
@@ -19,9 +20,9 @@ class RmSaleLinePersonWizard(models.TransientModel):
              'set by the button/line that opened it.')
     search_term = fields.Char(string='Search')
     result_person_ids = fields.Many2many(
-        'res.person', string='Matches', compute='_compute_results')
+        'res.partner', string='Matches', compute='_compute_results')
     person_id = fields.Many2one(
-        'res.person', string='Person', required=True,
+        'res.partner', string='Person', required=True, domain=[('is_person', '=', True)],
         help='Pick the matching person from the results below, or type '
              'a name/ID/phone/mobile/email directly into this field to '
              'search.')
@@ -30,22 +31,22 @@ class RmSaleLinePersonWizard(models.TransientModel):
 
     @api.depends('search_term')
     def _compute_results(self):
-        Person = self.env['res.person']
+        Person = self.env['res.partner']
         for wizard in self:
             term = wizard.search_term
             if not term:
                 wizard.result_person_ids = Person
                 continue
-            clauses = [
-                ('name', 'ilike', term),
-                ('id_number', 'ilike', term),
-                ('phone', 'ilike', term),
-                ('mobile', 'ilike', term),
-                ('email', 'ilike', term),
-                ('rank_id.name', 'ilike', term),
-                ('current_workplace.name', 'ilike', term),
+            or_clauses = [
+                [('name', 'ilike', term)],
+                [('id_number', 'ilike', term)],
+                [('phone', 'ilike', term)],
+                [('mobile', 'ilike', term)],
+                [('email', 'ilike', term)],
+                [('rank_id.name', 'ilike', term)],
+                [('current_workplace.name', 'ilike', term)],
             ]
-            domain = ['|'] * (len(clauses) - 1) + clauses
+            domain = expression.AND([[('is_person', '=', True)], expression.OR(or_clauses)])
             wizard.result_person_ids = Person.search(domain, limit=20)
 
     @api.depends('person_id', 'rack_type')
@@ -73,18 +74,29 @@ class RmSaleLinePersonWizard(models.TransientModel):
             if not self.order_id.exists():
                 raise UserError(_(
                     'This order no longer exists - reopen it and try again.'))
-            rack_tmpl = self.env.ref(cfg['product_xmlid'], raise_if_not_found=False)
-            if not rack_tmpl:
-                raise UserError(_('The "%s" product is not set up.') % cfg['label'])
+            variant = self.person_id._resolve_rack_variant(self.rack_type)
+            if not variant:
+                raise UserError(_(
+                    '%(person)s has no acquisitions on the Acquisition Ledger yet '
+                    'to build a %(label)s for.'
+                ) % {'person': self.person_id.display_name, 'label': cfg['label']})
             price = self.person_id[cfg['price_field']]
             self.env['sale.order.line'].create({
                 'order_id': self.order_id.id,
-                'product_id': rack_tmpl.product_variant_id.id,
+                'product_id': variant.id,
+                'rack_type': self.rack_type,
                 'product_uom_qty': 1,
                 'price_unit': price,
                 'person_id': self.person_id.id,
-                'name': _('%s\n(For: %s)') % (rack_tmpl.name, self.person_id.display_name),
+                'name': _('%s\n(For: %s)') % (variant.name, self.person_id.rm_rack_label()),
             })
+            # Adding a brand-new rack line via this wizard also sets the
+            # order-level Person to whoever was just picked - only on
+            # this add-new-line path, never when this same wizard is
+            # instead re-pricing/re-noting an existing line (line_id set
+            # above), so editing one line's Person for a multi-person
+            # order never clobbers the order's own Person.
+            self.order_id.person_id = self.person_id.id
         else:
             raise UserError(_('Nothing to apply this to - reopen the order and try again.'))
         return {'type': 'ir.actions.client', 'tag': 'soft_reload'}

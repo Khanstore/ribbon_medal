@@ -7,7 +7,7 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     person_id = fields.Many2one(
-        'res.person', string='Person', index=True,
+        'res.partner', string='Person', index=True, domain=[('is_person', '=', True)],
         help='Legacy/fallback only - prefer setting Person directly on '
              'each rack order line instead, since one order can have '
              'rack lines (Ribbon Rack, Tunic Medal Rack, Meskit Medal '
@@ -33,6 +33,18 @@ class SaleOrder(models.Model):
              'when there is more than one.')
     meskit_medal_rack_unit_id_state = fields.Selection(
         related='meskit_medal_rack_unit_id.state', string='Meskit Medal Rack Unit Status')
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id_person(self):
+        """If the Customer for this order is themselves marked as
+        Personnel (is_person), default the order's Person field to
+        them directly - only when Person isn't already set, so this
+        never clobbers a Person the user (or the rack-line wizard)
+        already chose. There's no separate lookup needed anymore:
+        Person and Contact are the same record now, so "is this
+        Customer also a Person" is just checking is_person."""
+        if self.partner_id and self.partner_id.is_person and not self.person_id:
+            self.person_id = self.partner_id
 
     @api.model
     def _get_rack_kind_config(self):
@@ -74,36 +86,26 @@ class SaleOrder(models.Model):
             },
         }
 
-    def _get_rack_kind_product(self, rack_type):
-        config = self._get_rack_kind_config().get(rack_type)
-        if not config:
-            return self.env['product.product']
-        tmpl = self.env.ref(config['product_xmlid'], raise_if_not_found=False)
-        return tmpl.product_variant_id if tmpl else self.env['product.product']
-
     def action_confirm(self):
         config = self._get_rack_kind_config()
-        rack_products = {rt: self._get_rack_kind_product(rt) for rt in config}
-        product_to_type = {p.id: rt for rt, p in rack_products.items() if p}
 
         for order in self:
             for line in order.order_line:
-                rack_type = product_to_type.get(line.product_id.id)
-                if rack_type and not (line.person_id or order.person_id):
+                if line.rack_type and not (line.person_id or order.person_id):
                     raise UserError(_(
                         'Line "%(product)s" on "%(order)s" is a %(label)s line with no '
                         'Person set - select one on that line before confirming.'
                     ) % {
                         'product': line.product_id.display_name,
                         'order': order.name,
-                        'label': config[rack_type]['label'],
+                        'label': config[line.rack_type]['label'],
                     })
 
         res = super().action_confirm()
 
         for order in self:
             for line in order.order_line:
-                rack_type = product_to_type.get(line.product_id.id)
+                rack_type = line.rack_type
                 if not rack_type:
                     continue
                 person = line.person_id or order.person_id
@@ -113,6 +115,14 @@ class SaleOrder(models.Model):
                 unit_field = cfg['unit_field']
                 if line[unit_field]:
                     continue
+                # Re-resolve now, right before committing stock/MOs -
+                # the person's combination may have changed (a new
+                # award, say) since this line was created, and the
+                # actual manufactured/delivered product must match
+                # whatever product_id ends up showing on the line.
+                variant = person._resolve_rack_variant(rack_type)
+                if variant and variant != line.product_id:
+                    line.product_id = variant.id
                 issue_method = getattr(person, cfg['issue_method'])
                 unit, message = issue_method(*cfg['issue_args'])
                 line[unit_field] = unit.id
@@ -120,6 +130,30 @@ class SaleOrder(models.Model):
                     order[unit_field] = unit.id
                 order.message_post(body=message)
         return res
+
+    def _rm_order_line_action_views(self):
+        """Same fallback-to-standard-list-view approach as
+        res.partner._rack_line_action_views - kept as its own copy here
+        (rather than a shared mixin) since it's a 2-line helper and
+        SaleOrder/res.partner don't otherwise share a base."""
+        list_view = self.env.ref('sale.view_order_line_tree', raise_if_not_found=False)
+        return [(list_view.id if list_view else False, 'list'), (False, 'form')]
+
+    def action_view_rack_units(self):
+        """Combined replacement for the 3 separate "X Rack Unit"
+        buttons - opens this order's own lines that have had a unit
+        issued (any of the 3 types, delivered or not); the actual
+        rm.rack.unit / rm.medal.rack.unit record is reachable from
+        there via that line's Ribbon/Tunic/Meskit Rack Unit field."""
+        self.ensure_one()
+        Line = self.env['sale.order.line']
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Rack Units'),
+            'res_model': 'sale.order.line',
+            'views': self._rm_order_line_action_views(),
+            'domain': [('order_id', '=', self.id)] + Line._rm_issued_domain_leaf(),
+        }
 
     def action_open_rack_unit(self):
         self.ensure_one()
@@ -159,7 +193,15 @@ class SaleOrder(models.Model):
             'res_model': 'rm.sale.line.person.wizard',
             'view_mode': 'form',
             'target': 'new',
-            'context': {'default_order_id': self.id, 'default_rack_type': rack_type},
+            'context': {
+                'default_order_id': self.id,
+                'default_rack_type': rack_type,
+                # Pre-fill the wizard's Person from the order's own
+                # Person, if it already has one - see
+                # rm.sale.line.person.wizard.action_confirm for the
+                # reverse direction (wizard -> order) on this same path.
+                'default_person_id': self.person_id.id,
+            },
         }
 
     def action_add_ribbon_rack_line(self):
@@ -183,8 +225,13 @@ class SaleOrder(models.Model):
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
+    order_date = fields.Datetime(
+        related='order_id.date_order', string='Order Date', store=True, readonly=True,
+        help="The order's own Order Date, exposed here (stored, so it's "
+             "groupable/sortable) for list views like the Person form's "
+             "Ordered Racks / Racks Not Delivered smart buttons.")
     person_id = fields.Many2one(
-        'res.person', string='Person',
+        'res.partner', string='Person', domain=[('is_person', '=', True)],
         help="Whose rack this line is for (Ribbon Rack, Tunic Medal Rack, "
              "or Meskit Medal Rack - see rack_type). Selecting them prices "
              "the line at their current estimated price for that rack type "
@@ -203,29 +250,46 @@ class SaleOrderLine(models.Model):
         'rm.medal.rack.unit', string='Meskit Medal Rack Unit', readonly=True, copy=False,
         help='The specific Meskit Medal Rack unit produced or handed over '
              'for this line.')
+
+    @api.model
+    def _rm_issued_domain_leaf(self):
+        """Domain fragment: this line has had a unit issued for at
+        least one of the 3 rack types (regardless of delivered state).
+        Shared by the Sale Order form's combined "Rack Unit" button."""
+        return [
+            '|', '|',
+            ('rack_unit_id', '!=', False),
+            ('tunic_medal_rack_unit_id', '!=', False),
+            ('meskit_medal_rack_unit_id', '!=', False),
+        ]
+
     rack_type = fields.Selection(
         [('ribbon', 'Ribbon Rack'), ('tunic_medal', 'Tunic Medal Rack'), ('meskit_medal', 'Meskit Medal Rack')],
-        compute='_compute_rack_type',
         help='Which of the three rack product types this line is, if any - '
-             'drives which Person-picker button/field shows on the line.')
-
-    @api.depends('product_id')
-    def _compute_rack_type(self):
-        config = self.env['sale.order']._get_rack_kind_config()
-        product_to_type = {}
-        for rack_type, cfg in config.items():
-            tmpl = self.env.ref(cfg['product_xmlid'], raise_if_not_found=False)
-            product = tmpl.product_variant_id if tmpl else False
-            if product:
-                product_to_type[product.id] = rack_type
-        for line in self:
-            line.rack_type = product_to_type.get(line.product_id.id, False)
+             'drives which Person-picker button/field shows on the line. '
+             'A real, stored decision (set once, when the line is '
+             'created) rather than derived from product_id - since '
+             "product_id is now the person's own specific rack variant, "
+             'not a fixed generic product it could otherwise be matched '
+             'against.')
 
     @api.onchange('product_id')
     def _onchange_product_id_rack_prompt(self):
-        """Selecting one of the three generic rack products on a line
-        prompts for the Person it's for, right here on the line, and
-        prices + annotates the line immediately if one is already set."""
+        """Picking one of the three generic rack products directly
+        (rather than via the "Add Ribbon/Tunic/Meskit" buttons, which
+        set rack_type explicitly themselves) is a one-time trigger:
+        detect rack_type from it here, then prompt for the Person it's
+        for. Once a Person is picked, _apply_rack_person() replaces
+        product_id with that person's actual specific rack variant -
+        the generic product only ever exists on a line transiently,
+        as this detection trigger, on this manual-entry path."""
+        if not self.rack_type:
+            config = self.env['sale.order']._get_rack_kind_config()
+            for rack_type, cfg in config.items():
+                tmpl = self.env.ref(cfg['product_xmlid'], raise_if_not_found=False)
+                if tmpl and tmpl.product_variant_id == self.product_id:
+                    self.rack_type = rack_type
+                    break
         if not self.rack_type:
             return
         if self.person_id:
@@ -265,20 +329,28 @@ class SaleOrderLine(models.Model):
 
     def _apply_rack_person(self):
         """Price this line at the Person's current estimated price for
-        this line's rack_type, and add a small note right after the
-        product name in the line description, e.g. 'Ribbon Rack /
-        (For: John Doe)'."""
+        this line's rack_type, set product_id to their CURRENT actual
+        specific rack variant (re-resolved every call, so this stays
+        correct even if their combination changed since the line was
+        last touched), and add a small note right after the product
+        name in the line description, e.g. 'Rack #6 / (For: John Doe)'."""
         self.ensure_one()
         config = self.env['sale.order']._get_rack_kind_config()
         cfg = config.get(self.rack_type)
         price_field = cfg['price_field'] if cfg else None
         self.price_unit = (
             self.person_id[price_field] if (self.person_id and price_field) else 0.0)
-        lines = (self.name or self.product_id.name or '').split('\n')
-        base_name = lines[0] if lines else (self.product_id.name or '')
-        rest = [l for l in lines[1:] if not l.strip().startswith('(For:')]
-        new_lines = [base_name]
+        if self.person_id and self.rack_type:
+            variant = self.person_id._resolve_rack_variant(self.rack_type)
+            if variant:
+                self.product_id = variant.id
+        # Always rebuild the description's first line from the CURRENT
+        # product_id (rather than reusing whatever text was already
+        # there) - product_id may have just changed above, and the
+        # description should track it, not a stale snapshot.
+        rest = [l for l in (self.name or '').split('\n')[1:] if not l.strip().startswith('(For:')]
+        new_lines = [self.product_id.name or '']
         if self.person_id:
-            new_lines.append(_('(For: %s)') % self.person_id.display_name)
+            new_lines.append(_('(For: %s)') % self.person_id.rm_rack_label())
         new_lines.extend(rest)
         self.name = '\n'.join(new_lines)

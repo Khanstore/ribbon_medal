@@ -15,7 +15,8 @@ class RmRanks(models.Model):
         default=0, help='Higher value indicates a more senior rank.')
     active = fields.Boolean(default=True)
 
-    person_ids = fields.One2many('res.person', 'rank_id', string='Personnel')
+    person_ids = fields.One2many('res.partner', 'rank_id', string='Personnel',
+                                  domain=[('is_person', '=', True)])
     person_count = fields.Integer(compute='_compute_person_count')
 
     _sql_constraints = [
