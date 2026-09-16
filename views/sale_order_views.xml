@@ -33,11 +33,7 @@
                             icon="fa-plus"/>
                 </div>
             </xpath>
-            <xpath expr="//field[@name='order_line']//field[@name='product_id']" position="attributes">
-                <attribute name="column_invisible">1</attribute>
-            </xpath>
             <xpath expr="//field[@name='order_line']//field[@name='product_id']" position="after">
-                <field name="rm_rack_instance_name"/>
                 <field name="rack_type" column_invisible="1"/>
                 <field name="person_id" column_invisible="1"/>
                 <button name="action_open_person_wizard" type="object"

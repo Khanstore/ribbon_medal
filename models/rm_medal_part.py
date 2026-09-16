@@ -47,7 +47,10 @@ class RmMedalPart(models.Model):
         'rm.medal.part.award', 'part_id', string='Awards', readonly=True)
     display_identity = fields.Char(
         compute='_compute_display_identity', store=True, string='Medal Part')
-    product_tmpl_id = fields.Many2one('product.template', readonly=True, copy=False)
+    product_id = fields.Many2one(
+        'product.product', readonly=True, copy=False,
+        help="This Part's own variant of the shared 'Medal Part' "
+             "product.template - see _ensure_product below.")
     bom_id = fields.Many2one('mrp.bom', readonly=True, copy=False)
     use_count = fields.Integer(default=0, readonly=True)
     last_used_date = fields.Datetime(readonly=True)
@@ -74,8 +77,7 @@ class RmMedalPart(models.Model):
 
     def _compute_stock_count(self):
         for part in self:
-            product = part._get_own_variant()
-            part.stock_count = int(product.qty_available) if product else 0
+            part.stock_count = int(part.product_id.qty_available) if part.product_id else 0
 
     @api.model
     def _key_for_award_ids(self, award_ids, size):
@@ -101,21 +103,14 @@ class RmMedalPart(models.Model):
                           for idx, aid in enumerate(award_ids)],
         })
 
-    def _get_own_variant(self):
-        """Return this Part's own single-size product.product variant."""
-        self.ensure_one()
-        if not self.product_tmpl_id:
-            return self.env['product.product']
-        return self._get_size_variant(self.product_tmpl_id, self.size.upper())
-
     def _ensure_product(self):
         self.ensure_one()
-        if not self.product_tmpl_id:
-            vals = self._prepare_sync_product_vals(
-                'Medal Part: %s' % self.display_identity,
-                size_variants='l_only' if self.size == 'l' else 's_only')
-            tmpl = self._create_product_resilient(vals)
-            self.product_tmpl_id = tmpl.id
+        if not self.product_id:
+            size_label = 'Tunic' if self.size == 'l' else 'Meskit'
+            variant = self._ensure_rm_variant(
+                'Medal Part', 'Medal Part Combination',
+                '%s: %s' % (size_label, self.display_identity))
+            self.product_id = variant.id
 
     def _ensure_product_and_bom(self):
         self.ensure_one()
@@ -171,8 +166,8 @@ class RmMedalPart(models.Model):
                     incomplete = True
 
         bom = self.env['mrp.bom'].create({
-            'product_tmpl_id': self.product_tmpl_id.id,
-            'product_id': self.product_tmpl_id.product_variant_id.id,
+            'product_tmpl_id': self.product_id.product_tmpl_id.id,
+            'product_id': self.product_id.id,
             'product_qty': 1.0,
             'type': 'normal',
             'code': 'MEDALPART-%s' % self.identity_key,
@@ -187,8 +182,7 @@ class RmMedalPart(models.Model):
 
     def get_available_stock_quantity(self):
         self.ensure_one()
-        product = self._get_own_variant()
-        return product.qty_available if product else 0.0
+        return self.product_id.qty_available if self.product_id else 0.0
 
     def get_stock_units(self, quantity):
         self.ensure_one()
@@ -228,7 +222,7 @@ class RmMedalPart(models.Model):
         several units of the same Part are needed back to back)."""
         self.ensure_one()
         self._ensure_product_and_bom()
-        product = self.product_tmpl_id.product_variant_id
+        product = self.product_id
         Production = self.env['mrp.production']
         pending = Production.search([
             ('product_id', '=', product.id),
@@ -241,7 +235,7 @@ class RmMedalPart(models.Model):
             production = Production.create({
                 'product_id': product.id,
                 'product_qty': 1.0,
-                'product_uom_id': self.product_tmpl_id.uom_id.id,
+                'product_uom_id': self.product_id.uom_id.id,
                 'bom_id': self.bom_id.id,
                 'origin': self.display_identity,
             })

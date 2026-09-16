@@ -14,7 +14,7 @@
                     their current estimated price for this rack type.
                 </p>
                 <group>
-                    <field name="search_term"
+                    <field name="search_term" widget="rm_live_search"
                            placeholder="Search by name, ID, phone, mobile, email, rank, or unit..."/>
                 </group>
                 <field name="result_person_ids" nolabel="1" readonly="1"
@@ -30,11 +30,31 @@
                                 context="{'rack_wizard_id': parent.id}"/>
                     </list>
                 </field>
-                <group>
-                    <field name="person_id"
-                           placeholder="...or type/search directly here"/>
-                    <field name="rack_total_price" invisible="not person_id" readonly="1"/>
-                </group>
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1 pe-3">
+                        <group>
+                            <field name="person_id"
+                                   placeholder="...or type/search directly here"/>
+                            <field name="rack_total_price" invisible="not person_id" readonly="1"/>
+                        </group>
+                        <group invisible="rack_type == 'ribbon' or not person_id"
+                               string="Customer-Deposited Medals">
+                            <field name="available_award_ids" invisible="1"/>
+                            <field name="deposited_award_ids" nolabel="1"
+                                   widget="many2many_tags"
+                                   domain="[('id', 'in', available_award_ids)]"
+                                   placeholder="None - tick any award whose medal the customer is supplying themselves"/>
+                        </group>
+                    </div>
+                    <div class="text-center flex-shrink-0" style="min-width: 200px;"
+                         invisible="not person_id">
+                        <field name="rack_preview_image" widget="image" nolabel="1"
+                               class="oe_avatar" options="{'size': [200, 200]}"/>
+                        <div class="text-muted small mt-1" invisible="rack_preview_image">
+                            No rack image yet for this combination
+                        </div>
+                    </div>
+                </div>
                 <footer>
                     <button name="action_confirm" type="object"
                             string="Confirm" class="btn-primary"

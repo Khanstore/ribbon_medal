@@ -31,6 +31,29 @@ class RmAcquisitionCustom(models.Model):
     note = fields.Char(string='Note')
     attachment_id = fields.Many2one('rm.attachment', string='Attachment')
 
+    # Per-row opt-in to each of the three racks. Deliberately NOT
+    # defaulted to True (unlike rm.personal.awards / rm.mission.posting,
+    # where they default True): this table is a manual customisation, so
+    # a row only joins a customised rack once explicitly ticked here.
+    # copy_from_ledger leaves them untouched for the same reason.
+    add_to_ribbon = fields.Boolean(string='ribbon')
+    add_to_big_medal = fields.Boolean(string='Tunic Medal')
+    add_to_mini_medal = fields.Boolean(string='Mini/Meskit Medal')
+
+    # Pass-through display fields so the customised rack widgets can
+    # read everything they render straight off these rows, exactly as
+    # the standard rack widgets read it off rm.acquisition.
+    award_name = fields.Char(related='award_id.name', readonly=True, string='Award Name')
+    prb_sequence = fields.Float(
+        related='award_id.sequence', readonly=True, string='Precedence',
+        help="The award type's own precedence. Note the customised racks "
+             'order by this row\'s manual Sequence instead - that '
+             'reordering is the point of this table.')
+    is_ribbon = fields.Boolean(related='award_id.is_ribbon', readonly=True)
+    is_medal = fields.Boolean(related='award_id.is_medal', readonly=True)
+    ribbon_image = fields.Binary(related='award_id.ribbon_image', readonly=True)
+    medal_image = fields.Binary(related='award_id.medal_image', readonly=True)
+
     def copy_from_ledger(self, person):
         """Snapshot `person`'s current rm.acquisition rows into this
         table. Only adds entries not already present here (matched on

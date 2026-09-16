@@ -140,14 +140,14 @@ export const ribbonRackField = {
     component: RibbonRackField,
     supportedTypes: ["many2many"],
     relatedFields: [
-        { name: "award_id", type: "many2one" },
+        { name: "award_id", type: "many2one", relation: "rm.prb" },
         { name: "name", type: "char" },
         { name: "sequence", type: "float" },
         { name: "is_ribbon", type: "boolean" },
         { name: "is_medal", type: "boolean" },
         { name: "ribbon_image", type: "binary" },
         { name: "medal_image", type: "binary" },
-        { name: "attachment_id", type: "many2one" },
+        { name: "attachment_id", type: "many2one", relation: "rm.attachment" },
     ],
 };
 

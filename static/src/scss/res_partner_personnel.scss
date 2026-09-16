@@ -1,0 +1,135 @@
+// Visual polish for the "Personnel Info" tab on the standard Contacts
+// form (base.view_partner_form, inherited by view_partner_form_rm_is_person)
+// and the identity subtitle in its header. Scoped entirely under
+// .o_rm_person_subtitle / .o_rm_personnel_page so nothing here can leak
+// onto Companies, vendors, or any other Contacts record - is_person=False
+// records never render these elements at all (see the view's invisible
+// conditions), and every rule below is nested under one of these two
+// wrapper classes.
+//
+// Colours are neutral, low-saturation overlays (rgba over currentColor's
+// neighbourhood) rather than fixed hex fills, so the result holds up in
+// both Odoo's light and dark backend themes without a separate dark-mode
+// branch. The one deliberate accent - a muted brass/gold, evoking a
+// campaign ribbon or citation card without tipping into kitsch - is used
+// sparingly: section icons and the active inner-tab underline only.
+
+$rm-accent: #b8892b;
+$rm-card-border: rgba(127, 127, 127, 0.22);
+$rm-card-bg: rgba(127, 127, 127, 0.045);
+$rm-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+.o_rm_person_subtitle {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    font-size: 14px;
+
+    .o_field_widget {
+        display: inline-flex;
+    }
+
+    input {
+        font-size: inherit;
+        color: inherit;
+        background: transparent;
+        border: none;
+        padding: 0;
+        width: auto;
+        min-width: 2ch;
+    }
+}
+
+.o_rm_personnel_page {
+    // Card-style field groups: every <group> in this tab gets a quiet
+    // bordered panel instead of sitting directly on the page background,
+    // so Service Information / Personal Details / the rack displays read
+    // as distinct, scannable blocks rather than one long field list.
+    .o_group {
+        background: $rm-card-bg;
+        border: 1px solid $rm-card-border;
+        border-radius: 6px;
+        box-shadow: $rm-card-shadow;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
+
+    // A group nested directly inside another (the two-Service-Information/
+    // Personal-Details columns, the Standard/Customised rack pairs) would
+    // otherwise get double borders/padding - flatten the inner ones.
+    .o_group .o_group {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin-bottom: 0;
+    }
+
+    // Section headers replacing plain <separator> - an icon plus label
+    // with a thin rule trailing off, marking a new block without the
+    // heavier full-width line a bare separator draws.
+    .o_rm_section_title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.2px;
+        margin: 20px 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid $rm-card-border;
+
+        i.fa {
+            color: $rm-accent;
+            font-size: 13px;
+            width: 16px;
+            text-align: center;
+        }
+    }
+    // The very first section title in a page doesn't need the extra
+    // breathing room above it that separates it from a preceding block.
+    > .o_rm_section_title:first-child,
+    .o_group + .o_rm_section_title {
+        margin-top: 20px;
+    }
+
+    // Ribbon/Medal Rack widgets sit on a plain grey cell background of
+    // their own (see ribbon_rack.scss/medal_rack.scss) - give them a
+    // white-ish backing panel so they read as a mounted display rather
+    // than floating on the card tint, especially once transparent-PNG
+    // ribbon/medal images are involved.
+    .o_rm_rack_display .o_group {
+        background: var(--o-view-background-color, #fff);
+    }
+
+    // The inner notebook (Service Info / Acquisitions / Customisation /
+    // Compare) as a compact segmented control instead of full-width
+    // Odoo tabs, so four sub-pages don't read as heavy as the outer
+    // Contacts-form tab strip they sit directly beneath.
+    > .o_notebook {
+        > .o_notebook_headers {
+            border-bottom: 1px solid $rm-card-border;
+            margin-bottom: 12px;
+
+            .nav-link {
+                font-size: 13px;
+                padding: 6px 14px;
+                border: none;
+                border-bottom: 2px solid transparent;
+                color: inherit;
+                opacity: 0.65;
+
+                &.active {
+                    opacity: 1;
+                    border-bottom-color: $rm-accent;
+                    font-weight: 600;
+                }
+
+                &:hover:not(.active) {
+                    opacity: 0.9;
+                }
+            }
+        }
+    }
+}

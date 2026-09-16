@@ -34,7 +34,14 @@ const CELL_WIDTH_CM = 3;
  */
 export class MedalRackField extends Component {
     static template = "ribbon_medal.MedalRackField";
-    static props = { ...standardFieldProps };
+    static props = {
+        ...standardFieldProps,
+        // "big" (Tunic) | "mini" (Mini/Meskit) | "any". Selects which
+        // per-acquisition opt-in flag is honoured; "any" (the default,
+        // and what every pre-existing usage of this widget gets) keeps
+        // the original behaviour of showing every medal regardless.
+        medalType: { type: String, optional: true },
+    };
     static fieldDependencies = RACK_LEDGER_FIELD_DEPENDENCIES;
 
     setup() {
@@ -74,6 +81,9 @@ export class MedalRackField extends Component {
                 has_ribbon_image: !!r.data.ribbon_image,
                 has_medal_image: !!r.data.medal_image,
                 attachment_id: many2oneId(r.data.attachment_id),
+                // COALESCE(..., TRUE) - same default as the server view.
+                add_to_big_medal: r.data.add_to_big_medal !== false,
+                add_to_mini_medal: r.data.add_to_mini_medal !== false,
             }));
         }
         return computeMergedLedger({
@@ -92,8 +102,12 @@ export class MedalRackField extends Component {
      * sequence (highest sequence = highest precedence, first in array).
      */
     get sortedAwards() {
+        const medalType = this.props.medalType || "any";
+        const flagField = medalType === "mini" ? "add_to_mini_medal"
+            : medalType === "big" ? "add_to_big_medal"
+            : null;
         return this._ledgerRows
-            .filter((r) => r.is_medal)
+            .filter((r) => r.is_medal && (!flagField || r[flagField] !== false))
             .sort((a, b) => (b.sequence || 0) - (a.sequence || 0));
     }
 
@@ -153,15 +167,20 @@ export const medalRackField = {
     component: MedalRackField,
     supportedTypes: ["many2many"],
     relatedFields: [
-        { name: "award_id", type: "many2one" },
+        { name: "award_id", type: "many2one", relation: "rm.prb" },
         { name: "name", type: "char" },
         { name: "sequence", type: "float" },
         { name: "is_ribbon", type: "boolean" },
         { name: "is_medal", type: "boolean" },
         { name: "medal_image", type: "binary" },
         { name: "ribbon_image", type: "binary" },
-        { name: "attachment_id", type: "many2one" },
+        { name: "attachment_id", type: "many2one", relation: "rm.attachment" },
+        { name: "add_to_big_medal", type: "boolean" },
+        { name: "add_to_mini_medal", type: "boolean" },
     ],
+    extractProps: ({ options }) => ({
+        medalType: (options && options.medal_type) || "any",
+    }),
 };
 
 registry.category("fields").add("medal_rack", medalRackField);

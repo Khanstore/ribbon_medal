@@ -185,7 +185,7 @@ export function useRackLedgerContext(getPersonId, getForceId, getPrbIds) {
         if (!forceId && !prbIds.length) {
             return;
         }
-        orm.call("res.person", "get_rack_widget_context", [getPersonId(), forceId, prbIds])
+        orm.call("res.partner", "get_rack_widget_context", [getPersonId(), forceId, prbIds])
             .then((result) => {
                 if (key !== lastKey) {
                     return; // a newer request has since superseded this one - discard

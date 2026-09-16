@@ -111,18 +111,21 @@ class RmPersonSearchWizard(models.TransientModel):
         self.ensure_one()
         if not self.person_id:
             raise UserError(_('Select a person first (or create a new one).'))
-        rack_tmpl = self.env.ref('ribbon_medal.product_ribbon_rack', raise_if_not_found=False)
-        if not rack_tmpl:
-            raise UserError(_('The "Ribbon Rack" product is not set up.'))
+        variant = self.person_id._resolve_rack_variant('ribbon')
+        if not variant:
+            raise UserError(_(
+                '%s has no acquisitions on the Acquisition Ledger yet to build '
+                'a Ribbon Rack for.') % self.person_id.display_name)
         order = self.env['sale.order'].create({
             'partner_id': self.person_id.id,
             'person_id': self.person_id.id,
             'order_line': [(0, 0, {
-                'product_id': rack_tmpl.product_variant_id.id,
+                'product_id': variant.id,
+                'rack_type': 'ribbon',
                 'product_uom_qty': 1,
                 'price_unit': self.person_id.rack_total_price,
                 'person_id': self.person_id.id,
-                'name': _('%s\n(For: %s)') % (rack_tmpl.name, self.person_id.rm_rack_label()),
+                'name': _('%s\n(For: %s)') % (variant.name, self.person_id.rm_rack_label()),
             })],
         })
         return {

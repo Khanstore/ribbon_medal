@@ -27,7 +27,10 @@ class RmRackLine(models.Model):
     item_ids = fields.One2many('rm.rack.line.item', 'line_id', string='Ribbons', readonly=True)
     display_identity = fields.Char(
         compute='_compute_display_identity', store=True, string='Ribbons')
-    product_tmpl_id = fields.Many2one('product.template', readonly=True, copy=False)
+    product_id = fields.Many2one(
+        'product.product', readonly=True, copy=False,
+        help="This Line's own variant of the shared 'Rack Line' "
+             "product.template - see _ensure_product below.")
     bom_id = fields.Many2one('mrp.bom', readonly=True, copy=False)
     use_count = fields.Integer(default=0, readonly=True)
     last_used_date = fields.Datetime(readonly=True)
@@ -55,18 +58,12 @@ class RmRackLine(models.Model):
     def _compute_stock_count(self):
         """Compute the actual product stock quantity for this line."""
         for line in self:
-            if not line.product_tmpl_id:
-                line.stock_count = 0
-                continue
-
-            # Get the Size L variant
-            product = line._get_size_l_variant()
-            if not product:
+            if not line.product_id:
                 line.stock_count = 0
                 continue
 
             # Get actual stock from product
-            line.stock_count = int(product.qty_available)
+            line.stock_count = int(line.product_id.qty_available)
 
     @api.model
     def _key_for_award_ids(self, award_ids):
@@ -91,13 +88,9 @@ class RmRackLine(models.Model):
 
     def _ensure_product(self):
         self.ensure_one()
-        if not self.product_tmpl_id:
-            vals = self._prepare_sync_product_vals(
-                f'Rack Line: {self.display_identity}',
-                size_variants='l_only'  # Only create L variant
-            )
-            tmpl = self._create_product_resilient(vals)
-            self.product_tmpl_id = tmpl.id
+        if not self.product_id:
+            self.product_id = self._ensure_rm_variant(
+                'Rack Line', 'Rack Line Combination', f'Rack Line: {self.display_identity}').id
 
     def _ensure_product_and_bom(self):
         self.ensure_one()
@@ -150,8 +143,8 @@ class RmRackLine(models.Model):
                     incomplete = True
 
         bom = self.env['mrp.bom'].create({
-            'product_tmpl_id': self.product_tmpl_id.id,
-            'product_id': self.product_tmpl_id.product_variant_id.id,
+            'product_tmpl_id': self.product_id.product_tmpl_id.id,
+            'product_id': self.product_id.id,
             'product_qty': 1.0,
             'type': 'normal',
             'code': f'LINE-{self.identity_key}',
@@ -162,27 +155,22 @@ class RmRackLine(models.Model):
         self.write({'bom_id': bom.id, 'bom_incomplete': incomplete})
         return bom
 
-    def _get_size_l_variant(self, product_tmpl=None):
-        """Return the Size=L product.product variant of `product_tmpl`.
-        If product_tmpl is None, use this line's own product_tmpl_id."""
-        if product_tmpl is None:
-            product_tmpl = self.product_tmpl_id
+    def _get_size_l_variant(self, product_tmpl):
+        """Return the Size=L product.product variant of `product_tmpl`
+        - used only for OTHER templates (e.g. a ribbon decoration's own
+        product), which still use the simple Size-only variant system
+        untouched by this model's own Combination-variant redesign."""
         return self._get_size_variant(product_tmpl, 'L')
 
     def get_available_stock_quantity(self):
         """Return the actual available stock quantity of this line's product.
         Checks the product's stock availability in all warehouses/locations."""
         self.ensure_one()
-        if not self.product_tmpl_id:
-            return 0.0
-
-        # Get the product variant (Size L)
-        product = self._get_size_l_variant()
-        if not product:
+        if not self.product_id:
             return 0.0
 
         # Get available stock (this uses Odoo's stock.quant or stock.move line)
-        return product.qty_available
+        return self.product_id.qty_available
 
     def get_stock_units(self, quantity):
         """Get actual stock units (rm.rack.line.unit records) for this line.
@@ -244,7 +232,7 @@ class RmRackLine(models.Model):
         that distinction matters."""
         self.ensure_one()
         self._ensure_product_and_bom()
-        product = self.product_tmpl_id.product_variant_id
+        product = self.product_id
         Production = self.env['mrp.production']
         pending = Production.search([
             ('product_id', '=', product.id),
@@ -257,7 +245,7 @@ class RmRackLine(models.Model):
             production = Production.create({
                 'product_id': product.id,
                 'product_qty': 1.0,
-                'product_uom_id': self.product_tmpl_id.uom_id.id,
+                'product_uom_id': self.product_id.uom_id.id,
                 'bom_id': self.bom_id.id,
                 'origin': self.display_identity,
             })

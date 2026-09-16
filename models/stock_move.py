@@ -18,12 +18,12 @@ class StockMove(models.Model):
 
     @api.depends(
         'product_id.display_name',
-        'sale_line_id.rack_unit_id.rack_id.product_tmpl_id.name',
-        'sale_line_id.tunic_medal_rack_unit_id.rack_id.product_tmpl_id.name',
-        'sale_line_id.meskit_medal_rack_unit_id.rack_id.product_tmpl_id.name')
+        'sale_line_id.rack_unit_id.rack_id.product_label',
+        'sale_line_id.tunic_medal_rack_unit_id.rack_id.product_label',
+        'sale_line_id.meskit_medal_rack_unit_id.rack_id.product_label')
     def _compute_rm_rack_instance_name(self):
         for move in self:
             line = move.sale_line_id
             unit = line.rack_unit_id or line.tunic_medal_rack_unit_id or line.meskit_medal_rack_unit_id
             move.rm_rack_instance_name = (
-                unit.rack_id.product_tmpl_id.name if unit else move.product_id.display_name)
+                unit.rack_id.product_label if unit else move.product_id.display_name)

@@ -132,6 +132,32 @@ class ResPartner(models.Model):
         domain=[('source', '=', 'seniority')])
     custom_ledger_ids = fields.One2many(
         'rm.acquisition.custom', 'person_id', string='Customised Ledger')
+    custom_ledger_display_ids = fields.One2many(
+        'rm.acquisition.custom', 'person_id', string='Customised Ledger (Display)',
+        help='Same rows as custom_ledger_ids, exposed under a second field '
+             'name purely so the Compare page\'s read-only rack widgets '
+             "never share a view field-node with the Customisation page's "
+             'own editable list of the same records - two arch nodes for '
+             'one field name can have their column widgets (e.g. the '
+             "Sequence handle) merged/overwritten by the view compiler, "
+             'which silently broke drag-reordering there.')
+    has_custom_rack = fields.Boolean(
+        string='Has Customised Rack', compute='_compute_has_custom_rack',
+        help='True as soon as any Customised Ledger row is ticked for at '
+             'least one of the three racks. Drives the Compare page, which '
+             'is pointless (and would show three empty customised racks) '
+             'until something is actually ticked. Not stored, so it '
+             'follows ticks made on an open, unsaved form.')
+
+    @api.depends('custom_ledger_ids.add_to_ribbon',
+                 'custom_ledger_ids.add_to_big_medal',
+                 'custom_ledger_ids.add_to_mini_medal')
+    def _compute_has_custom_rack(self):
+        for partner in self:
+            partner.has_custom_rack = any(
+                row.add_to_ribbon or row.add_to_big_medal or row.add_to_mini_medal
+                for row in partner.custom_ledger_ids
+            )
 
     @api.depends('birth_date')
     def _compute_age(self):
@@ -179,6 +205,17 @@ class ResPartner(models.Model):
         'force_id', 'service_confirmation_date',
     )
 
+    # Depends list for anything that must fall back to a person's
+    # Customised Ledger (rm.acquisition.custom) instead of their live
+    # Acquisition Ledger, whenever one exists for that rack - see
+    # _custom_ribbon_rows/_custom_medal_rows.
+    _CUSTOM_LEDGER_DEPENDS = (
+        'custom_ledger_ids', 'custom_ledger_ids.award_id', 'custom_ledger_ids.sequence',
+        'custom_ledger_ids.attachment_id', 'custom_ledger_ids.is_medal',
+        'custom_ledger_ids.add_to_ribbon', 'custom_ledger_ids.add_to_big_medal',
+        'custom_ledger_ids.add_to_mini_medal',
+    )
+
     @api.depends(*_LEDGER_DEPENDS)
     def _compute_award_count(self):
         Acquisition = self.env['rm.acquisition']
@@ -188,26 +225,11 @@ class ResPartner(models.Model):
     @api.depends()
     def _compute_ordered_rack_count(self):
         Line = self.env['sale.order.line']
-        rack_product_ids = self._get_rack_product_ids()
         for partner in self:
             partner.ordered_rack_count = Line.search_count([
                 ('person_id', '=', partner.id),
-                ('product_id', 'in', rack_product_ids),
+                ('rack_type', '!=', False),
             ])
-
-    @api.model
-    def _get_rack_product_ids(self):
-        """The 3 generic sale-order rack products (Ribbon/Tunic/Meskit
-        Medal Rack) - used to scope sale.order.line searches to actual
-        rack-order lines, since sale.order.line.rack_type is a
-        non-stored compute and can't be searched on directly."""
-        config = self.env['sale.order']._get_rack_kind_config()
-        products = self.env['product.product']
-        for cfg in config.values():
-            tmpl = self.env.ref(cfg['product_xmlid'], raise_if_not_found=False)
-            if tmpl:
-                products |= tmpl.product_variant_id
-        return products.ids
 
     @api.depends()
     def _compute_undelivered_rack_count(self):
@@ -247,7 +269,7 @@ class ResPartner(models.Model):
             'views': self._rack_line_action_views(),
             'domain': [
                 ('person_id', '=', self.id),
-                ('product_id', 'in', self._get_rack_product_ids()),
+                ('rack_type', '!=', False),
             ],
             'context': {'group_by': ['order_id']},
         }
@@ -283,31 +305,48 @@ class ResPartner(models.Model):
         for partner in self:
             partner.rack_ledger_ids = Acquisition.search([('person_id', '=', partner.id)])
 
-    @api.depends(*_LEDGER_DEPENDS)
+    @api.depends(*_LEDGER_DEPENDS, *_CUSTOM_LEDGER_DEPENDS)
     def _compute_rack_total_price(self):
         Acquisition = self.env['rm.acquisition']
         for partner in self:
+            custom_rows = partner._custom_ribbon_rows()
+            if custom_rows:
+                partner.rack_total_price = sum(
+                    partner._custom_row_ribbon_price(row) for row in custom_rows)
+                continue
             acquisitions = Acquisition.search([('person_id', '=', partner.id)])
             partner.rack_total_price = (
                     sum(acquisitions.mapped('ribbon_list_price'))
                     + sum(acquisitions.mapped('attachment_list_price'))
             )
 
-    @api.depends(*_LEDGER_DEPENDS)
+    @api.depends(*_LEDGER_DEPENDS, *_CUSTOM_LEDGER_DEPENDS)
     def _compute_medal_rack_prices(self):
         Acquisition = self.env['rm.acquisition']
         for partner in self:
+            custom_tunic = partner._custom_medal_rows('l')
+            if custom_tunic:
+                partner.tunic_medal_rack_price = sum(
+                    partner._custom_row_medal_price(row) for row in custom_tunic)
+            custom_meskit = partner._custom_medal_rows('s')
+            if custom_meskit:
+                partner.meskit_medal_rack_price = sum(
+                    partner._custom_row_medal_price(row) for row in custom_meskit)
+            if custom_tunic and custom_meskit:
+                continue
             medal_acquisitions = Acquisition.search([
                 ('person_id', '=', partner.id), ('is_medal', '=', True),
             ])
-            tunic = medal_acquisitions.filtered('add_to_big_medal')
-            meskit = medal_acquisitions.filtered('add_to_mini_medal')
-            partner.tunic_medal_rack_price = (
-                    sum(tunic.mapped('medal_list_price')) + sum(tunic.mapped('attachment_list_price'))
-            )
-            partner.meskit_medal_rack_price = (
-                    sum(meskit.mapped('medal_list_price')) + sum(meskit.mapped('attachment_list_price'))
-            )
+            if not custom_tunic:
+                tunic = medal_acquisitions.filtered('add_to_big_medal')
+                partner.tunic_medal_rack_price = (
+                        sum(tunic.mapped('medal_list_price')) + sum(tunic.mapped('attachment_list_price'))
+                )
+            if not custom_meskit:
+                meskit = medal_acquisitions.filtered('add_to_mini_medal')
+                partner.meskit_medal_rack_price = (
+                        sum(meskit.mapped('medal_list_price')) + sum(meskit.mapped('attachment_list_price'))
+                )
 
     @api.model
     def get_rack_widget_context(self, person_id, force_id, prb_ids):
@@ -426,13 +465,65 @@ class ResPartner(models.Model):
 
     RACK_COLUMNS = 4
 
+    def _custom_ribbon_rows(self):
+        """This person's Customised Ledger rows ticked for the Ribbon
+        Rack, in precedence order (highest precedence FIRST - lowest
+        manual `sequence` value, matching how dragging a row to the
+        top of the Customisation list works). Empty recordset when the
+        person has no customisation for this rack, in which case
+        callers should fall back to the live Acquisition Ledger."""
+        self.ensure_one()
+        return self.custom_ledger_ids.filtered(
+            lambda row: row.add_to_ribbon and row.award_id
+        ).sorted(key=lambda row: row.sequence)
+
+    def _custom_medal_rows(self, size):
+        """Same as _custom_ribbon_rows, for a Medal Rack size ('l' =
+        Tunic, 's' = Meskit/Mini) - only rows both ticked for that
+        size AND whose award actually has a medal."""
+        self.ensure_one()
+        flag_field = 'add_to_big_medal' if size == 'l' else 'add_to_mini_medal'
+        return self.custom_ledger_ids.filtered(
+            lambda row: row[flag_field] and row.is_medal and row.award_id
+        ).sorted(key=lambda row: row.sequence)
+
+    @api.model
+    def _custom_row_ribbon_price(self, row):
+        """Ribbon + attachment list price for one Customised Ledger
+        row, same arithmetic rm.acquisition's own ribbon_list_price/
+        attachment_list_price related fields use - attachment falls
+        back to the award type's own default when this row didn't set
+        one of its own, same COALESCE the SQL view applies."""
+        price = row.award_id.ribbon_id.ribbon_product_tmpl_id.list_price
+        attachment = row.attachment_id or row.award_id.attachment_id
+        if attachment:
+            price += attachment.device_product_tmpl_id.list_price
+        return price
+
+    @api.model
+    def _custom_row_medal_price(self, row):
+        """Medal + attachment list price for one Customised Ledger row."""
+        price = row.award_id.medal_id.medal_product_tmpl_id.list_price
+        attachment = row.attachment_id or row.award_id.attachment_id
+        if attachment:
+            price += attachment.device_product_tmpl_id.list_price
+        return price
+
     def _get_rack_rows(self):
         """Split this person's acquired ribbons into rows, mirroring the
-        Ribbon Rack widget's own layout exactly."""
+        Ribbon Rack widget's own layout exactly. Uses the Customised
+        Ledger instead of the live Acquisition Ledger whenever this
+        person has one for the Ribbon Rack (see _custom_ribbon_rows) -
+        so the rack actually built for a sale order matches what the
+        Compare page's "Customised" column shows."""
         self.ensure_one()
-        acquisitions = self.env['rm.acquisition'].search([('person_id', '=', self.id)])
-        sorted_acquisitions = acquisitions.sorted(key=lambda a: a.sequence, reverse=True)
-        awards = sorted_acquisitions.mapped('award_id')
+        custom_rows = self._custom_ribbon_rows()
+        if custom_rows:
+            awards = custom_rows.mapped('award_id')
+        else:
+            acquisitions = self.env['rm.acquisition'].search([('person_id', '=', self.id)])
+            sorted_acquisitions = acquisitions.sorted(key=lambda a: a.sequence, reverse=True)
+            awards = sorted_acquisitions.mapped('award_id')
         count = len(awards)
         if not count:
             return []
@@ -449,8 +540,13 @@ class ResPartner(models.Model):
     def _get_medal_rack_awards(self, size):
         """Return this person's medal-eligible acquisitions for the given
         Medal Rack size ('l' = Tunic, 's' = Meskit), ordered highest
-        precedence first."""
+        precedence first. Uses the Customised Ledger instead of the
+        live Acquisition Ledger whenever this person has one for this
+        size (see _custom_medal_rows)."""
         self.ensure_one()
+        custom_rows = self._custom_medal_rows(size)
+        if custom_rows:
+            return custom_rows.mapped('award_id')
         flag_field = 'add_to_big_medal' if size == 'l' else 'add_to_mini_medal'
         acquisitions = self.env['rm.acquisition'].search([
             ('person_id', '=', self.id),
@@ -459,6 +555,104 @@ class ResPartner(models.Model):
         ])
         sorted_acquisitions = acquisitions.sorted(key=lambda a: a.sequence, reverse=True)
         return sorted_acquisitions.mapped('award_id')
+
+    def _medal_rack_price(self, size, excluded_award_ids=None):
+        """Same arithmetic as tunic_medal_rack_price/meskit_medal_rack_price
+        (sum of each medal-eligible acquisition's own medal + attachment
+        list price), but with any award in `excluded_award_ids` left out
+        of the sum - used when the customer is depositing their own
+        medal for those specific awards, so they aren't charged for
+        medals the shop isn't actually supplying. Uses the Customised
+        Ledger instead of the live Acquisition Ledger whenever this
+        person has one for this size (see _custom_medal_rows)."""
+        self.ensure_one()
+        excluded = set(excluded_award_ids) if excluded_award_ids else set()
+        custom_rows = self._custom_medal_rows(size)
+        if custom_rows:
+            if excluded:
+                custom_rows = custom_rows.filtered(lambda row: row.award_id.id not in excluded)
+            return sum(self._custom_row_medal_price(row) for row in custom_rows)
+        flag_field = 'add_to_big_medal' if size == 'l' else 'add_to_mini_medal'
+        acquisitions = self.env['rm.acquisition'].search([
+            ('person_id', '=', self.id),
+            ('is_medal', '=', True),
+            (flag_field, '=', True),
+        ])
+        if excluded:
+            acquisitions = acquisitions.filtered(lambda a: a.award_id.id not in excluded)
+        return sum(acquisitions.mapped('medal_list_price')) + sum(acquisitions.mapped('attachment_list_price'))
+
+    def _rack_price(self, rack_type, excluded_award_ids=None):
+        """This person's current estimated price for `rack_type`, same
+        as reading the plain rack_total_price/tunic_medal_rack_price/
+        meskit_medal_rack_price field directly - except when
+        excluded_award_ids is given (customer-deposited medals), in
+        which case those awards' own medal/attachment cost is left out
+        of the sum. Ribbon Rack has no concept of a deposited medal (no
+        medal in it), so excluded_award_ids is only meaningful for the
+        two Medal Rack types."""
+        self.ensure_one()
+        config = self.env['sale.order']._get_rack_kind_config()
+        cfg = config.get(rack_type)
+        if not cfg:
+            return 0.0
+        if not excluded_award_ids or rack_type == 'ribbon':
+            return self[cfg['price_field']]
+        size = 'l' if rack_type == 'tunic_medal' else 's'
+        return self._medal_rack_price(size, excluded_award_ids=excluded_award_ids)
+
+    def _resolve_rack_variant(self, rack_type):
+        """Resolve (find-or-create identity + product ONLY - no stock
+        check, no manufacturing, nothing committed) this person's
+        CURRENT specific product.product for the given rack_type,
+        based on their live Acquisition Ledger right now. This is what
+        puts the real, specific rack product directly on a sale order
+        line - both when the line is first created, and again at order
+        confirmation in case the person's combination changed in
+        between (a new award, say) - rather than the generic,
+        undifferentiated "Ribbon Rack"/"Tunic Medal Rack"/"Meskit Medal
+        Rack" product every such line used to carry regardless of who
+        it was for.
+
+        Deliberately calls the exact same get_or_create/_ensure_product
+        methods _issue_ribbon_rack_unit/_issue_medal_rack_unit use
+        internally, just without their stock-check/consume/manufacture
+        steps - so "just resolve" and "resolve and commit" can never
+        disagree about which specific product a given combination maps
+        to.
+
+        Returns a (possibly empty) product.product - empty when the
+        person has no acquisitions yet for this rack_type, in which
+        case callers should fall back to a generic/placeholder state
+        rather than error."""
+        self.ensure_one()
+        if rack_type == 'ribbon':
+            rows = self._get_rack_rows()
+            if not rows:
+                return self.env['product.product']
+            RackLine = self.env['rm.rack.line']
+            RackProduct = self.env['rm.rack.product']
+            line_ids = []
+            for row in rows:
+                line = RackLine.get_or_create(row.ids)
+                line._ensure_product()
+                line_ids.append(line.id)
+            rack = RackProduct.get_or_create(line_ids)
+            rack._ensure_product()
+            return rack.product_id
+        if rack_type in ('tunic_medal', 'meskit_medal'):
+            size = 'l' if rack_type == 'tunic_medal' else 's'
+            awards = self._get_medal_rack_awards(size)
+            if not awards:
+                return self.env['product.product']
+            MedalPart = self.env['rm.medal.part']
+            MedalRack = self.env['rm.medal.rack']
+            part = MedalPart.get_or_create(awards.ids, size)
+            part._ensure_product()
+            rack = MedalRack.get_or_create(part.id)
+            rack._ensure_product()
+            return rack.product_id
+        return self.env['product.product']
 
     def action_issue_ribbon_rack(self):
         self.ensure_one()
@@ -475,7 +669,7 @@ class ResPartner(models.Model):
         unit, message = self._issue_medal_rack_unit('s')
         return self._issue_notification(message, title=_('Meskit Medal Rack Issued'))
 
-    def _issue_ribbon_rack_unit(self):
+    def _issue_ribbon_rack_unit(self, deposited_award_ids=None):
         """Full stock-aware resolution cascade for handing this person a Ribbon Rack:
 
         1. If a complete Rack is in stock (actual product stock) → allocate it, no MOs created.
@@ -484,6 +678,11 @@ class ResPartner(models.Model):
            b. If stock < needed, manufacture ONLY the shortage
            c. If stock >= needed, use stock (no MO)
            d. Always manufacture the Rack assembly (unless a complete rack was found)
+
+        deposited_award_ids is accepted only for a uniform calling
+        convention with _issue_medal_rack_unit - customer-deposited
+        medals don't apply to Ribbon Rack (there's no medal in it), so
+        this is always ignored here.
         """
         self.ensure_one()
         RackLine = self.env['rm.rack.line']
@@ -521,6 +720,7 @@ class ResPartner(models.Model):
 
         resolved_line_ids = []
         total_lines_manufactured = 0
+        new_line_productions = self.env['mrp.production']
 
         for row in rows:
             award_ids = row.ids
@@ -543,6 +743,7 @@ class ResPartner(models.Model):
                             'consumed_note': _('Used for %s') % self.display_name,
                         })
                     total_lines_manufactured += shortage
+                    new_line_productions |= new_units.mapped('mrp_production_id')
 
             exact_line.record_usage()
             resolved_line_ids.append(exact_line.id)
@@ -567,7 +768,8 @@ class ResPartner(models.Model):
                         'Manufactured %(count)d line unit(s) and allocated an existing Rack Product #%(id)s from stock.'
                     ) % {'count': total_lines_manufactured, 'id': rack.id}
 
-        new_rack_unit = rack.manufacture_unit(reserved_person_id=self.id)
+        new_rack_unit = rack.manufacture_unit(
+            reserved_person_id=self.id, component_productions=new_line_productions)
         rack.record_usage()
 
         if total_lines_manufactured == 0:
@@ -584,9 +786,20 @@ class ResPartner(models.Model):
     def _medal_rack_label(self, size):
         return _('Tunic Medal Rack') if size == 'l' else _('Meskit Medal Rack')
 
-    def _issue_medal_rack_unit(self, size):
+    def _issue_medal_rack_unit(self, size, deposited_award_ids=None):
         """Full stock-aware resolution cascade for handing this person a
-        Medal Rack (size 'l' = Tunic, 's' = Meskit)."""
+        Medal Rack (size 'l' = Tunic, 's' = Meskit).
+
+        deposited_award_ids: award ids (rm.prb) whose medal the customer
+        is supplying themselves for this build - the Medal Part (the
+        ribbon-mount assembly) is unaffected by this (it never consumes
+        the medal itself, see rm.medal.part's docstring), but any
+        "already in stock, hand it over as-is" shortcut is skipped for
+        the Rack tier specifically, since a generic stocked unit was
+        built with a company-stocked medal, not this customer's own -
+        see rm.medal.rack.manufacture_unit for where the deposited
+        medal's own raw-material requirement actually gets dropped,
+        on that one dedicated MO only."""
         self.ensure_one()
         MedalPart = self.env['rm.medal.part']
         MedalRack = self.env['rm.medal.rack']
@@ -599,28 +812,30 @@ class ResPartner(models.Model):
             ) % {'person': self.display_name, 'label': label})
         award_ids = awards.ids
 
-        part_key = MedalPart._key_for_award_ids(award_ids, size)
-        existing_part = MedalPart.search([('identity_key', '=', part_key)], limit=1)
-        if existing_part:
-            rack = MedalRack.search([('identity_key', '=', existing_part.identity_key)], limit=1)
-            if rack:
-                rack._ensure_product()
-                available_quantity = rack.get_available_stock_quantity()
-                if available_quantity >= 1:
-                    available_unit = rack.get_stock_units(1)
-                    if available_unit:
-                        available_unit.action_deliver(self.id)
-                        rack.record_usage()
-                        return available_unit, _(
-                            'Handed over an existing %(label)s #%(id)s from stock (%(identity)s). '
-                            'No manufacturing orders were created.'
-                        ) % {'label': label, 'id': rack.id, 'identity': rack.display_identity}
+        if not deposited_award_ids:
+            part_key = MedalPart._key_for_award_ids(award_ids, size)
+            existing_part = MedalPart.search([('identity_key', '=', part_key)], limit=1)
+            if existing_part:
+                rack = MedalRack.search([('identity_key', '=', existing_part.identity_key)], limit=1)
+                if rack:
+                    rack._ensure_product()
+                    available_quantity = rack.get_available_stock_quantity()
+                    if available_quantity >= 1:
+                        available_unit = rack.get_stock_units(1)
+                        if available_unit:
+                            available_unit.action_deliver(self.id)
+                            rack.record_usage()
+                            return available_unit, _(
+                                'Handed over an existing %(label)s #%(id)s from stock (%(identity)s). '
+                                'No manufacturing orders were created.'
+                            ) % {'label': label, 'id': rack.id, 'identity': rack.display_identity}
 
         part = MedalPart.get_or_create(award_ids, size)
         part._ensure_product()
 
         needed = 1
         part_manufactured = 0
+        new_part_productions = self.env['mrp.production']
         available_quantity = part.get_available_stock_quantity()
         if available_quantity >= needed:
             part.consume_stock_units(needed, self.display_name)
@@ -636,42 +851,52 @@ class ResPartner(models.Model):
                         'consumed_note': _('Used for %s') % self.display_name,
                     })
                 part_manufactured = shortage
+                new_part_productions |= new_units.mapped('mrp_production_id')
         part.record_usage()
 
         rack = MedalRack.get_or_create(part.id)
         rack._ensure_product()
 
-        available_rack_quantity = rack.get_available_stock_quantity()
-        if available_rack_quantity >= 1:
-            available_unit = rack.get_stock_units(1)
-            if available_unit:
-                available_unit.action_deliver(self.id)
-                rack.record_usage()
+        if not deposited_award_ids:
+            available_rack_quantity = rack.get_available_stock_quantity()
+            if available_rack_quantity >= 1:
+                available_unit = rack.get_stock_units(1)
+                if available_unit:
+                    available_unit.action_deliver(self.id)
+                    rack.record_usage()
 
-                if part_manufactured == 0:
-                    return available_unit, _(
-                        'Used the existing medal part from stock and allocated an existing '
-                        '%(label)s #%(id)s from stock. No manufacturing orders were created.'
-                    ) % {'label': label, 'id': rack.id}
-                else:
-                    return available_unit, _(
-                        'Manufactured a new medal part and allocated an existing '
-                        '%(label)s #%(id)s from stock.'
-                    ) % {'label': label, 'id': rack.id}
+                    if part_manufactured == 0:
+                        return available_unit, _(
+                            'Used the existing medal part from stock and allocated an existing '
+                            '%(label)s #%(id)s from stock. No manufacturing orders were created.'
+                        ) % {'label': label, 'id': rack.id}
+                    else:
+                        return available_unit, _(
+                            'Manufactured a new medal part and allocated an existing '
+                            '%(label)s #%(id)s from stock.'
+                        ) % {'label': label, 'id': rack.id}
 
-        new_rack_unit = rack.manufacture_unit(reserved_person_id=self.id)
+        new_rack_unit = rack.manufacture_unit(
+            reserved_person_id=self.id, deposited_award_ids=deposited_award_ids,
+            component_productions=new_part_productions)
         rack.record_usage()
+
+        deposit_note = ''
+        if deposited_award_ids:
+            deposit_note = _(' (customer-deposited medal(s) - not pulled from stock)')
 
         if part_manufactured == 0:
             return new_rack_unit, _(
                 'Used the existing medal part from stock and manufactured a new %(label)s '
-                '#%(id)s for %(name)s. Only the rack assembly MO was created (no part MO).'
-            ) % {'label': label, 'id': rack.id, 'name': self.display_name}
+                '#%(id)s for %(name)s%(deposit_note)s. Only the rack assembly MO was created '
+                '(no part MO).'
+            ) % {'label': label, 'id': rack.id, 'name': self.display_name, 'deposit_note': deposit_note}
         else:
             return new_rack_unit, _(
                 'Manufactured a new medal part (shortage from stock) and assembled a new '
-                '%(label)s #%(id)s for %(name)s. Created MOs for the part and the rack assembly.'
-            ) % {'label': label, 'id': rack.id, 'name': self.display_name}
+                '%(label)s #%(id)s for %(name)s%(deposit_note)s. Created MOs for the part and '
+                'the rack assembly.'
+            ) % {'label': label, 'id': rack.id, 'name': self.display_name, 'deposit_note': deposit_note}
 
     def _issue_notification(self, message, title=None):
         return {
