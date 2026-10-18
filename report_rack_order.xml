@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_rack_order" model="ir.actions.report">
+        <field name="name">Special Rack Report</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ribbon_medal.report_rack_order_document</field>
+        <field name="report_file">ribbon_medal.report_rack_order_document</field>
+        <field name="print_report_name">'Rack Report - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_type">report</field>
+    </record>
+    <template id="report_rack_order_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.basic_layout">
+                    <style>
+                        @page { size: A4 portrait; margin: 8mm; }
+                        .rack-copy { height: 132mm; box-sizing: border-box; padding: 5mm 7mm; font-size: 10pt; overflow: hidden; }
+                        .rack-copy h2 { font-size: 17pt; margin: 0 0 3mm 0; }
+                        .rack-copy h3 { font-size: 12pt; margin: 2mm 0; }
+                        .rack-copy table { width: 100%; border-collapse: collapse; margin-top: 3mm; }
+                        .rack-copy th, .rack-copy td { border: 1px solid #777; padding: 3px 5px; }
+                        .rack-copy .meta { margin: 1.5mm 0; }
+                        .cut-line { border-top: 1px dashed #444; text-align: center; height: 0; margin: 0; font-size: 8pt; }
+                        .muted { color: #555; }
+                    </style>
+                    <t t-set="rack_lines" t-value="o.order_line.filtered(lambda l: not l.display_type and l.is_rack_line)"/>
+                    <t t-set="posted_invoices" t-value="o.invoice_ids.filtered(lambda inv: inv.state == 'posted' and inv.move_type == 'out_invoice')"/>
+                    <t t-set="paid_amount" t-value="sum([(inv.amount_total - inv.amount_residual) for inv in posted_invoices])"/>
+                    <t t-set="due_amount" t-value="max(o.amount_total - paid_amount, 0.0)"/>
+                    <div class="page">
+                        <div class="rack-copy">
+                            <h2>RIBBON / MEDAL RACK ORDER</h2>
+                            <h3>CUSTOMER COPY</h3>
+                            <div class="meta"><strong>Sale Order:</strong> <span t-field="o.name"/> &#160; <strong>Customer:</strong> <span t-field="o.partner_id.name"/></div>
+                            <div class="meta"><strong>Phone:</strong> <span t-esc="o.partner_id.phone or o.partner_id.mobile or '-'"/> &#160; <strong>Delivery date:</strong> <span t-esc="o.commitment_date and o.commitment_date.strftime('%d/%m/%Y') or '-'"/></div>
+                            <table>
+                                <thead><tr><th>Ribbon / Medal Combination</th><th style="width:12%">Qty</th><th style="width:20%">Line Total</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="rack_lines" t-as="line">
+                                        <td><span t-field="line.name"/><br/><small><strong>Deposited medals:</strong> <span t-esc="line._rm_deposited_awards_display()"/></small></td>
+                                        <td class="text-center"><span t-field="line.product_uom_qty"/></td>
+                                        <td class="text-end"><span t-field="line.price_subtotal" t-options="{'widget':'monetary','display_currency':o.currency_id}"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table>
+                                <tbody>
+                                    <tr><td><strong>Order Total</strong></td><td class="text-end"><span t-field="o.amount_total" t-options="{'widget':'monetary','display_currency':o.currency_id}"/></td></tr>
+                                    <tr><td><strong>Paid</strong></td><td class="text-end"><span t-esc="paid_amount" t-options="{'widget':'monetary','display_currency':o.currency_id}"/></td></tr>
+                                    <tr><td><strong>Due</strong></td><td class="text-end"><span t-esc="due_amount" t-options="{'widget':'monetary','display_currency':o.currency_id}"/></td></tr>
+                                </tbody>
+                            </table>
+                            <div class="meta" style="margin-top:5mm"><strong>Customer signature:</strong> ______________________________</div>
+                        </div>
+                        <div class="cut-line">✂ CUT HERE — CUSTOMER / PRODUCTION</div>
+                        <div class="rack-copy">
+                            <h2>RIBBON / MEDAL RACK ORDER</h2>
+                            <h3>PRODUCTION COPY</h3>
+                            <div class="meta"><strong>Sale Order:</strong> <span t-field="o.name"/> &#160; <strong>Customer / reference:</strong> <span t-field="o.partner_id.name"/></div>
+                            <div class="meta"><strong>Required delivery date:</strong> <span t-esc="o.commitment_date and o.commitment_date.strftime('%d/%m/%Y') or '-'"/></div>
+                            <table>
+                                <thead><tr><th>Rack / Ribbon / Medal Combination &amp; Deposits</th><th style="width:15%">Qty</th></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="rack_lines" t-as="line">
+                                        <td><strong><span t-field="line.product_id.display_name"/></strong><br/><span t-esc="line.name"/><br/><small><strong>Person:</strong> <span t-esc="line.person_id.display_name or o.person_id.display_name or '-'"/></small><br/><small><strong>Deposited medals:</strong> <span t-esc="line._rm_deposited_awards_display()"/></small></td>
+                                        <td class="text-center"><span t-field="line.product_uom_qty"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="meta" style="margin-top:4mm"><strong>Production notes:</strong> __________________________________________________________</div>
+                            <div class="meta"><strong>Checked by:</strong> __________________________ &#160; <strong>Completed:</strong> __________________</div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

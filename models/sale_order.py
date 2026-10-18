@@ -36,6 +36,30 @@ class SaleOrder(models.Model):
     meskit_medal_rack_unit_id_state = fields.Selection(
         related='meskit_medal_rack_unit_id.state', string='Meskit Medal Rack Unit Status')
 
+    has_rack_lines = fields.Boolean(string='Has Rack Lines', compute='_compute_rack_report_flags')
+    mrp_production_count = fields.Integer(string='Manufacturing Orders', compute='_compute_rack_report_flags')
+
+    @api.depends('order_line.rack_type', 'order_line.product_id.product_tmpl_id.rm_is_finished_rack', 'name')
+    def _compute_rack_report_flags(self):
+        Production = self.env['mrp.production']
+        for order in self:
+            order.has_rack_lines = any(line.is_rack_line for line in order.order_line if not line.display_type)
+            order.mrp_production_count = Production.search_count([('origin', '=', order.name)]) if order.name else 0
+
+    def action_print_rack_report(self):
+        self.ensure_one()
+        if not any(line.is_rack_line for line in self.order_line if not line.display_type):
+            raise UserError(_('This Sale Order has no Ribbon Rack or Medal Rack lines.'))
+        return self.env.ref('ribbon_medal.action_report_rack_order').report_action(self)
+
+    def action_view_manufacturing_orders(self):
+        self.ensure_one()
+        productions = self.env['mrp.production'].search([('origin', '=', self.name)]) if self.name else self.env['mrp.production']
+        action = self.env['ir.actions.actions']._for_xml_id('mrp.mrp_production_action')
+        action['domain'] = [('id', 'in', productions.ids)]
+        action['context'] = dict(self.env.context, default_origin=self.name)
+        return action
+
     @api.onchange('partner_id')
     def _onchange_partner_id_person(self):
         """If the Customer for this order is themselves marked as
@@ -316,6 +340,14 @@ class SaleOrderLine(models.Model):
             return {int(key): max(0, int(value)) for key, value in data.items() if int(value) > 0}
         except (ValueError, TypeError, AttributeError):
             return {}
+
+    def _rm_deposited_awards_display(self):
+        self.ensure_one()
+        quantities = self._rm_deposit_quantities()
+        if not quantities:
+            return _('None')
+        awards = self.env['rm.prb'].browse(list(quantities)).exists()
+        return ', '.join('%s × %s' % (award.display_name, quantities[award.id]) for award in awards) or _('None')
 
     @api.onchange('product_id')
     def _onchange_product_id_rack_prompt(self):

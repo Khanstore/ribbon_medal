@@ -6,6 +6,11 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_view_manufacturing_orders" type="object"
+                        class="oe_stat_button" icon="fa-industry"
+                        invisible="mrp_production_count == 0">
+                    <field name="mrp_production_count" widget="statinfo" string="Manufacturing Orders"/>
+                </button>
                 <button name="action_view_rack_units" type="object"
                         class="oe_stat_button" icon="fa-flask"
                         invisible="not rack_unit_id and not tunic_medal_rack_unit_id and not meskit_medal_rack_unit_id">
@@ -21,6 +26,13 @@
                 <field name="meskit_medal_rack_unit_id" invisible="1"/>
             </xpath>
             <xpath expr="//field[@name='order_line']" position="before">
+                <div class="d-flex gap-2 mb-2">
+                    <button name="action_print_rack_report" type="object"
+                            string="Print Rack Report" class="btn-primary"
+                            icon="fa-print" invisible="not has_rack_lines"/>
+                    <field name="has_rack_lines" invisible="1"/>
+                    <field name="mrp_production_count" invisible="1"/>
+                </div>
                 <div class="d-flex gap-2 mb-2">
                     <button name="action_add_ribbon_rack_line" type="object"
                             string="Add Ribbon Rack Line" class="btn-secondary"

@@ -1,9 +1,22 @@
 # -*- coding: utf-8 -*-
-from odoo import models
+from odoo import api, fields, models
 
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
+
+    sale_order_ref_id = fields.Many2one(
+        'sale.order', string='Sale Order', compute='_compute_sale_order_ref', store=False,
+        help='Sale Order linked to this delivery.')
+
+    @api.depends('sale_id', 'origin')
+    def _compute_sale_order_ref(self):
+        SaleOrder = self.env['sale.order']
+        for picking in self:
+            order = picking.sale_id if 'sale_id' in picking._fields else False
+            if not order and picking.origin:
+                order = SaleOrder.search([('name', '=', picking.origin.strip())], limit=1)
+            picking.sale_order_ref_id = order
 
     def _rm_related_productions(self):
         """Every top-level Rack/Medal Rack MO tied to this delivery's

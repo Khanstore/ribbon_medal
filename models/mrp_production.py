@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import api, fields, models
 
 # A production is only safe to fold extra quantity into while it's still
 # purely "pending" - confirmed but nothing has actually been consumed or
@@ -11,6 +11,18 @@ RM_PENDING_STATE = 'confirmed'
 
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
+
+    sale_order_ref_id = fields.Many2one(
+        'sale.order', string='Sale Order', compute='_compute_sale_order_ref', store=False,
+        help='Sale Order identified by this manufacturing order source reference.')
+
+    @api.depends('origin')
+    def _compute_sale_order_ref(self):
+        SaleOrder = self.env['sale.order']
+        for production in self:
+            origin = (production.origin or '').strip()
+            refs = [part.strip() for part in origin.split(' + ') if part.strip()]
+            production.sale_order_ref_id = SaleOrder.search([('name', 'in', refs)], limit=1) if refs else False
 
     rm_set_order_id = fields.Many2one(
         'rm.set.order', string='Ribbon Rack Set Order', ondelete='set null', copy=False, index=True)

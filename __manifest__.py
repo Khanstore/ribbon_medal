@@ -1,6 +1,6 @@
 {
     'name': 'Ribbon Medal - Personnel Decorations',
-    'version': '18.0.2.7.11',
+    'version': '18.0.2.7.13',
     'category': 'Human Resources',
     'summary': 'Professional personnel awards, ribbon and medal rack design, production and fulfillment',
     'description': """
@@ -22,7 +22,7 @@ Features
 """,
     'author': 'SM Ashraf',
     'license': 'LGPL-3',
-    'depends': ['base', 'sale', 'stock', 'mail','website_sale','purchase' ,'product', 'mrp'],
+    'depends': ['base', 'sale', 'sale_stock', 'stock', 'mail','website_sale','purchase' ,'product', 'mrp'],
     'data': [
         'security/ribbon_medal_security.xml',
         'security/ir.model.access.csv',
@@ -68,6 +68,8 @@ Features
         'views/rm_medal_rack_views.xml',
         'views/sale_order_views.xml',
         'views/mrp_production_views.xml',
+        'views/stock_picking_views.xml',
+        'report_rack_order.xml',
         'views/ribbon_medal_menus.xml',
     ],
     'assets': {

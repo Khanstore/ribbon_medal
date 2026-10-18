@@ -24,4 +24,15 @@
          standard button now (see MrpProduction.button_mark_done in
          mrp_production.py) - no separate view/button needed here. -->
 
+    <record id="view_mrp_production_form_ribbon_medal_sale_order" model="ir.ui.view">
+        <field name="name">mrp.production.form.ribbon.medal.sale.order</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Do not insert after every field named origin: the standard MO form also contains embedded stock.move views, where that xpath can resolve to stock.move.origin and cause a field/model mismatch. Insert only in the first top-level group of the MO form. -->
+            <xpath expr="//sheet/group[1]" position="inside">
+                <field name="sale_order_ref_id" readonly="1" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>
