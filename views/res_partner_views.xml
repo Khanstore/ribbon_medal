@@ -348,15 +348,16 @@
         <field name="mode">primary</field>
         <field name="arch" type="xml">
             <search string="Search Personnel">
-                <field name="name"/>
-                <field name="id_number"/>
+                <field name="name" string="Name" filter_domain="['|', ('name', 'ilike', self), ('name_eng', 'ilike', self)]"/>
+                <field name="id_number" string="Personnel ID"/>
                 <field name="rank_id"/>
                 <field name="force_id"/>
-                <field name="current_workplace"/>
+                <field name="current_workplace" string="Unit / Workplace"/>
+                <field name="phone"/>
                 <group expand="0" string="Group By">
                     <filter name="group_by_force" string="Force" context="{'group_by': 'force_id'}"/>
                     <filter name="group_by_rank" string="Rank" context="{'group_by': 'rank_id'}"/>
-                    <filter name="group_by_workplace" string="Current Workplace" context="{'group_by': 'current_workplace'}"/>
+                    <filter name="group_by_workplace" string="Unit / Workplace" context="{'group_by': 'current_workplace'}"/>
                 </group>
             </search>
         </field>
@@ -502,236 +503,245 @@
                 </group>
             </page>
             <notebook position="inside">
-                <page string="Personnel Info" name="personnel_info" invisible="not is_person">
-                    <div class="o_rm_personnel_page">
-                    <notebook>
-                        <page string="Service Info" name="personnel_service_info">
-                            <group>
-                                <group string="Service Information">
-                                    <field name="id_number" required="is_person"/>
-                                    <field name="rank_id"/>
-                                    <field name="current_workplace"/>
-                                    <field name="bcs_batch"/>
-                                    <field name="service_confirmation_date"/>
-                                    <field name="retirement_date"/>
-                                </group>
-                                <group string="Personal Details">
-                                    <field name="name_eng"/>
-                                    <field name="name_bng"/>
-                                    <field name="birth_date"/>
-                                </group>
-                            </group>
-                            <div class="o_rm_section_title">
-                                <i class="fa fa-flag" role="img" aria-label="Missions"/>
-                                <span>Missions</span>
-                            </div>
-                            <field name="mission_ledger_ids" nolabel="1">
-                                <list editable="bottom">
-                                    <field name="mission_id"/>
-                                    <field name="award_year"/>
-                                    <field name="attachment_id"/>
-                                    <field name="note"/>
-                                </list>
-                            </field>
-                            <div class="o_rm_section_title">
-                                <i class="fa fa-star" role="img" aria-label="Personal / Special Awards"/>
-                                <span>Personal / Special Awards</span>
-                            </div>
-                            <field name="personal_award_ledger_ids" nolabel="1">
-                                <list editable="bottom">
-                                    <field name="award_id"/>
-                                    <field name="award_year"/>
-                                    <field name="attachment_id"/>
-                                    <field name="note"/>
-                                </list>
-                            </field>
-                            <div class="o_rm_section_title">
-                                <i class="fa fa-shield" role="img" aria-label="Ribbon Rack / Medal Rack"/>
-                                <span>Ribbon Rack / Medal Rack</span>
-                            </div>
-                            <group class="o_rm_rack_display">
-                                <group>
-                                    <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
-                                        <list>
-                                            <field name="name"/>
-                                            <field name="sequence"/>
-                                            <field name="is_ribbon"/>
-                                            <field name="is_medal"/>
-                                            <field name="ribbon_image"/>
-                                            <field name="attachment_id"/>
-                                        </list>
-                                    </field>
-                                </group>
-                                <group>
-                                    <field name="rack_ledger_ids" widget="medal_rack" nolabel="1">
-                                        <list>
-                                            <field name="name"/>
-                                            <field name="sequence"/>
-                                            <field name="is_ribbon"/>
-                                            <field name="is_medal"/>
-                                            <field name="medal_image"/>
-                                            <field name="attachment_id"/>
-                                        </list>
-                                    </field>
-                                </group>
-                            </group>
-                        </page>
-                        <!-- Computed Many2one set of every decoration this
-                             person has acquired, from all sources - readonly,
-                             since it is derived from the acquisition ledgers. -->
-                        <page string="Acquisitions" name="personnel_acquisitions">
-                            <field name="obtained_awards_ids" nolabel="1" readonly="1">
-                                <list create="false" delete="false" edit="false">
-                                    <field name="sequence"/>
+                <!-- Personnel-only tabs, flattened as top-level tabs on
+                     the main Contacts notebook rather than one "Personnel
+                     Info" tab containing its own inner notebook - a
+                     tab-inside-a-tab is an extra click and an extra layer
+                     of navigation state for no real benefit here, since
+                     none of these six sections are so large they need to
+                     be hidden a level deeper. Each is independently
+                     invisible="not is_person", so together they behave
+                     exactly like the single old tab did for every other
+                     Contact. -->
+                <page string="Service Info" name="personnel_service_info"
+                      class="o_rm_personnel_page" invisible="not is_person">
+                    <group>
+                        <group string="Service Information">
+                            <field name="id_number" required="is_person"/>
+                            <field name="rank_id"/>
+                            <field name="current_workplace"/>
+                            <field name="bcs_batch"/>
+                            <field name="service_confirmation_date"/>
+                            <field name="retirement_date"/>
+                        </group>
+                        <group string="Personal Details">
+                            <field name="name_eng"/>
+                            <field name="name_bng"/>
+                            <field name="birth_date"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Awards &amp; Missions" name="personnel_awards_missions"
+                      class="o_rm_personnel_page" invisible="not is_person">
+                    <div class="o_rm_section_title">
+                        <i class="fa fa-flag" role="img" aria-label="Missions"/>
+                        <span>Missions</span>
+                    </div>
+                    <field name="mission_ledger_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="mission_id"/>
+                            <field name="award_year"/>
+                            <field name="attachment_id"/>
+                            <field name="note"/>
+                        </list>
+                    </field>
+                    <div class="o_rm_section_title">
+                        <i class="fa fa-star" role="img" aria-label="Personal / Special Awards"/>
+                        <span>Personal / Special Awards</span>
+                    </div>
+                    <field name="personal_award_ledger_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="award_id"/>
+                            <field name="award_year"/>
+                            <field name="attachment_id"/>
+                            <field name="note"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Rack Display" name="personnel_rack_display"
+                      class="o_rm_personnel_page" invisible="not is_person">
+                    <group class="o_rm_rack_display">
+                        <group string="Ribbon Rack">
+                            <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
+                                <list>
                                     <field name="name"/>
-                                    <field name="ribbon_id"/>
-                                    <field name="medal_id"/>
-                                    <field name="force_id"/>
-                                    <field name="starting_date"/>
+                                    <field name="sequence"/>
                                     <field name="is_ribbon"/>
                                     <field name="is_medal"/>
+                                    <field name="ribbon_image"/>
+                                    <field name="attachment_id"/>
                                 </list>
                             </field>
-                        </page>
-                        <page string="Customisation" name="personnel_customisation">
-                            <div class="mb-3">
-                                <button name="action_copy_ledger_to_custom" type="object"
-                                        string="Copy from Ledger" class="btn-secondary"/>
-                            </div>
-                            <field name="custom_ledger_ids" nolabel="1">
-                                <list editable="bottom">
-                                    <field name="sequence" widget="handle"/>
+                        </group>
+                        <group string="Medal Rack">
+                            <field name="rack_ledger_ids" widget="medal_rack" nolabel="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="sequence"/>
+                                    <field name="is_ribbon"/>
+                                    <field name="is_medal"/>
+                                    <field name="medal_image"/>
+                                    <field name="attachment_id"/>
+                                </list>
+                            </field>
+                        </group>
+                    </group>
+                </page>
+                <!-- Computed Many2one set of every decoration this
+                     person has acquired, from all sources - readonly,
+                     since it is derived from the acquisition ledgers. -->
+                <page string="Acquisitions" name="personnel_acquisitions"
+                      class="o_rm_personnel_page" invisible="not is_person">
+                    <field name="obtained_awards_ids" nolabel="1" readonly="1">
+                        <list create="false" delete="false" edit="false">
+                            <field name="sequence"/>
+                            <field name="name"/>
+                            <field name="ribbon_id"/>
+                            <field name="medal_id"/>
+                            <field name="force_id"/>
+                            <field name="starting_date"/>
+                            <field name="is_ribbon"/>
+                            <field name="is_medal"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Customisation" name="personnel_customisation"
+                      class="o_rm_personnel_page" invisible="not is_person">
+                    <div class="mb-3">
+                        <button name="action_copy_ledger_to_custom" type="object"
+                                string="Copy from Ledger" class="btn-secondary"/>
+                    </div>
+                    <field name="custom_ledger_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="award_id"/>
+                            <field name="source"/>
+                            <field name="year"/>
+                            <field name="add_to_ribbon"/>
+                            <field name="add_to_big_medal"/>
+                            <field name="add_to_mini_medal"/>
+                            <field name="attachment_id"/>
+                            <field name="note"/>
+                        </list>
+                    </field>
+                </page>
+                <!-- Only worth showing once something is actually ticked
+                     for a rack - see has_custom_rack. -->
+                <page string="Compare" name="personnel_rack_compare"
+                      class="o_rm_personnel_page" invisible="not is_person or not has_custom_rack">
+                    <field name="has_custom_rack" invisible="1"/>
+                    <div class="o_rm_section_title">
+                        <i class="fa fa-shield" role="img" aria-label="Ribbon Rack"/>
+                        <span>Ribbon Rack</span>
+                    </div>
+                    <group class="o_rm_rack_display">
+                        <group string="Standard">
+                            <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="sequence"/>
+                                    <field name="is_ribbon"/>
+                                    <field name="is_medal"/>
+                                    <field name="ribbon_image"/>
+                                    <field name="attachment_id"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Customised">
+                            <field name="custom_ledger_display_ids"
+                                   widget="custom_ribbon_rack" nolabel="1">
+                                <list>
+                                    <field name="sequence"/>
                                     <field name="award_id"/>
-                                    <field name="source"/>
-                                    <field name="year"/>
+                                    <field name="award_name"/>
+                                    <field name="is_ribbon"/>
+                                    <field name="is_medal"/>
+                                    <field name="ribbon_image"/>
+                                    <field name="medal_image"/>
+                                    <field name="attachment_id"/>
                                     <field name="add_to_ribbon"/>
                                     <field name="add_to_big_medal"/>
                                     <field name="add_to_mini_medal"/>
-                                    <field name="attachment_id"/>
-                                    <field name="note"/>
                                 </list>
                             </field>
-                        </page>
-                        <!-- Only worth showing once something is actually
-                             ticked for a rack - see has_custom_rack. -->
-                        <page string="Compare" name="personnel_rack_compare"
-                              invisible="not has_custom_rack">
-                            <field name="has_custom_rack" invisible="1"/>
-                            <div class="o_rm_section_title">
-                                <i class="fa fa-shield" role="img" aria-label="Ribbon Rack"/>
-                                <span>Ribbon Rack</span>
-                            </div>
-                            <group class="o_rm_rack_display">
-                                <group string="Standard">
-                                    <field name="rack_ledger_ids" widget="ribbon_rack" nolabel="1">
-                                        <list>
-                                            <field name="name"/>
-                                            <field name="sequence"/>
-                                            <field name="is_ribbon"/>
-                                            <field name="is_medal"/>
-                                            <field name="ribbon_image"/>
-                                            <field name="attachment_id"/>
-                                        </list>
-                                    </field>
-                                </group>
-                                <group string="Customised">
-                                    <field name="custom_ledger_display_ids"
-                                           widget="custom_ribbon_rack" nolabel="1">
-                                        <list>
-                                            <field name="sequence"/>
-                                            <field name="award_id"/>
-                                            <field name="award_name"/>
-                                            <field name="is_ribbon"/>
-                                            <field name="is_medal"/>
-                                            <field name="ribbon_image"/>
-                                            <field name="medal_image"/>
-                                            <field name="attachment_id"/>
-                                            <field name="add_to_ribbon"/>
-                                            <field name="add_to_big_medal"/>
-                                            <field name="add_to_mini_medal"/>
-                                        </list>
-                                    </field>
-                                </group>
-                            </group>
-                            <div class="o_rm_section_title">
-                                <i class="fa fa-certificate" role="img" aria-label="Tunic Medal Rack"/>
-                                <span>Tunic Medal Rack</span>
-                            </div>
-                            <group>
-                                <group string="Standard">
-                                    <field name="rack_ledger_ids" widget="medal_rack" nolabel="1"
-                                           options="{'medal_type': 'big'}">
-                                        <list>
-                                            <field name="name"/>
-                                            <field name="sequence"/>
-                                            <field name="is_ribbon"/>
-                                            <field name="is_medal"/>
-                                            <field name="medal_image"/>
-                                            <field name="attachment_id"/>
-                                        </list>
-                                    </field>
-                                </group>
-                                <group string="Customised">
-                                    <field name="custom_ledger_display_ids"
-                                           widget="custom_medal_rack" nolabel="1"
-                                           options="{'medal_type': 'big'}">
-                                        <list>
-                                            <field name="sequence"/>
-                                            <field name="award_id"/>
-                                            <field name="award_name"/>
-                                            <field name="is_ribbon"/>
-                                            <field name="is_medal"/>
-                                            <field name="ribbon_image"/>
-                                            <field name="medal_image"/>
-                                            <field name="attachment_id"/>
-                                            <field name="add_to_ribbon"/>
-                                            <field name="add_to_big_medal"/>
-                                            <field name="add_to_mini_medal"/>
-                                        </list>
-                                    </field>
-                                </group>
-                            </group>
-                            <div class="o_rm_section_title">
-                                <i class="fa fa-certificate" role="img" aria-label="Mini/Meskit Medal Rack"/>
-                                <span>Mini/Meskit Medal Rack</span>
-                            </div>
-                            <group>
-                                <group string="Standard">
-                                    <field name="rack_ledger_ids" widget="medal_rack" nolabel="1"
-                                           options="{'medal_type': 'mini'}">
-                                        <list>
-                                            <field name="name"/>
-                                            <field name="sequence"/>
-                                            <field name="is_ribbon"/>
-                                            <field name="is_medal"/>
-                                            <field name="medal_image"/>
-                                            <field name="attachment_id"/>
-                                        </list>
-                                    </field>
-                                </group>
-                                <group string="Customised">
-                                    <field name="custom_ledger_display_ids"
-                                           widget="custom_medal_rack" nolabel="1"
-                                           options="{'medal_type': 'mini'}">
-                                        <list>
-                                            <field name="sequence"/>
-                                            <field name="award_id"/>
-                                            <field name="award_name"/>
-                                            <field name="is_ribbon"/>
-                                            <field name="is_medal"/>
-                                            <field name="ribbon_image"/>
-                                            <field name="medal_image"/>
-                                            <field name="attachment_id"/>
-                                            <field name="add_to_ribbon"/>
-                                            <field name="add_to_big_medal"/>
-                                            <field name="add_to_mini_medal"/>
-                                        </list>
-                                    </field>
-                                </group>
-                            </group>
-                        </page>
-                    </notebook>
+                        </group>
+                    </group>
+                    <div class="o_rm_section_title">
+                        <i class="fa fa-certificate" role="img" aria-label="Tunic Medal Rack"/>
+                        <span>Tunic Medal Rack</span>
                     </div>
+                    <group class="o_rm_rack_display">
+                        <group string="Standard">
+                            <field name="rack_ledger_ids" widget="medal_rack" nolabel="1"
+                                   options="{'medal_type': 'big'}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="sequence"/>
+                                    <field name="is_ribbon"/>
+                                    <field name="is_medal"/>
+                                    <field name="medal_image"/>
+                                    <field name="attachment_id"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Customised">
+                            <field name="custom_ledger_display_ids"
+                                   widget="custom_medal_rack" nolabel="1"
+                                   options="{'medal_type': 'big'}">
+                                <list>
+                                    <field name="sequence"/>
+                                    <field name="award_id"/>
+                                    <field name="award_name"/>
+                                    <field name="is_ribbon"/>
+                                    <field name="is_medal"/>
+                                    <field name="ribbon_image"/>
+                                    <field name="medal_image"/>
+                                    <field name="attachment_id"/>
+                                    <field name="add_to_ribbon"/>
+                                    <field name="add_to_big_medal"/>
+                                    <field name="add_to_mini_medal"/>
+                                </list>
+                            </field>
+                        </group>
+                    </group>
+                    <div class="o_rm_section_title">
+                        <i class="fa fa-certificate" role="img" aria-label="Mini/Meskit Medal Rack"/>
+                        <span>Mini/Meskit Medal Rack</span>
+                    </div>
+                    <group class="o_rm_rack_display">
+                        <group string="Standard">
+                            <field name="rack_ledger_ids" widget="medal_rack" nolabel="1"
+                                   options="{'medal_type': 'mini'}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="sequence"/>
+                                    <field name="is_ribbon"/>
+                                    <field name="is_medal"/>
+                                    <field name="medal_image"/>
+                                    <field name="attachment_id"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Customised">
+                            <field name="custom_ledger_display_ids"
+                                   widget="custom_medal_rack" nolabel="1"
+                                   options="{'medal_type': 'mini'}">
+                                <list>
+                                    <field name="sequence"/>
+                                    <field name="award_id"/>
+                                    <field name="award_name"/>
+                                    <field name="is_ribbon"/>
+                                    <field name="is_medal"/>
+                                    <field name="ribbon_image"/>
+                                    <field name="medal_image"/>
+                                    <field name="attachment_id"/>
+                                    <field name="add_to_ribbon"/>
+                                    <field name="add_to_big_medal"/>
+                                    <field name="add_to_mini_medal"/>
+                                </list>
+                            </field>
+                        </group>
+                    </group>
                 </page>
             </notebook>
         </field>

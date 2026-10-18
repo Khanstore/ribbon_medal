@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import json
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -125,7 +127,7 @@ class SaleOrder(models.Model):
                     line.product_id = variant.id
                 issue_method = getattr(person, cfg['issue_method'])
                 unit, message = issue_method(
-                    *cfg['issue_args'], deposited_award_ids=line.deposited_award_ids.ids)
+                    *cfg['issue_args'], deposited_award_ids=line._rm_deposit_quantities())
                 line[unit_field] = unit.id
                 if not order[unit_field]:
                     order[unit_field] = unit.id
@@ -273,14 +275,47 @@ class SaleOrderLine(models.Model):
              "product_id is now the person's own specific rack variant, "
              'not a fixed generic product it could otherwise be matched '
              'against.')
-    deposited_award_ids = fields.Many2many(
-        'rm.prb', string='Customer-Deposited Medals',
-        help="Awards whose medal the customer is supplying themselves "
-             "for this line, instead of the shop providing one from "
-             "stock - only meaningful for a Tunic/Meskit Medal Rack "
-             "line. Each one's medal (+ any attachment) cost is left "
-             "out of this line's price, and the actual manufacturing "
-             "won't require that medal from stock for this unit.")
+    is_rack_line = fields.Boolean(
+        string='Is Rack Line',
+        compute='_compute_is_rack_line',
+        help='Technical flag used by the Sale Order line editor button.'
+    )
+
+    @api.depends('rack_type', 'product_id', 'product_id.product_tmpl_id.rm_is_finished_rack')
+    def _compute_is_rack_line(self):
+        for line in self:
+            line.is_rack_line = bool(
+                line.rack_type or
+                (line.product_id and line.product_id.product_tmpl_id.rm_is_finished_rack)
+            )
+
+    def _infer_rack_type_from_product(self):
+        self.ensure_one()
+        if self.rack_type:
+            return self.rack_type
+        if not self.product_id:
+            return False
+        config = self.env['sale.order']._get_rack_kind_config()
+        product_tmpl = self.product_id.product_tmpl_id
+        for rack_type, cfg in config.items():
+            tmpl = self.env.ref(cfg['product_xmlid'], raise_if_not_found=False)
+            if tmpl and tmpl == product_tmpl:
+                return rack_type
+        return False
+
+    deposited_award_quantities = fields.Text(
+        string='Customer-Deposited Medal Quantities', copy=True,
+        help='JSON map of award record IDs to quantities deposited by the customer. '
+             'This records quantities for order pricing and manufacturing only; '
+             'it does not create inventory receipts or stock moves.')
+
+    def _rm_deposit_quantities(self):
+        self.ensure_one()
+        try:
+            data = json.loads(self.deposited_award_quantities or '{}')
+            return {int(key): max(0, int(value)) for key, value in data.items() if int(value) > 0}
+        except (ValueError, TypeError, AttributeError):
+            return {}
 
     @api.onchange('product_id')
     def _onchange_product_id_rack_prompt(self):
@@ -320,20 +355,29 @@ class SaleOrderLine(models.Model):
             self._apply_rack_person()
 
     def action_open_person_wizard(self):
-        """Row button on a rack line - opens a popup to pick the
-        Person it's for."""
+        """Open the Person/deposited-medal editor for this rack line.
+
+        Older/imported lines may have an empty stored rack_type even though
+        their product is a finished rack. Repair that value before opening
+        the same editor used for newly-created rack lines.
+        """
         self.ensure_one()
+        rack_type = self._infer_rack_type_from_product()
+        if not rack_type:
+            raise UserError(_('This Sale Order line is not a recognised rack line.'))
+        if not self.rack_type:
+            self.rack_type = rack_type
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Select a Person'),
+            'name': _('Edit Rack Configuration'),
             'res_model': 'rm.sale.line.person.wizard',
             'view_mode': 'form',
             'target': 'new',
             'context': {
                 'default_line_id': self.id,
                 'default_person_id': self.person_id.id,
-                'default_rack_type': self.rack_type,
-                'default_deposited_award_ids': [(6, 0, self.deposited_award_ids.ids)],
+                'default_rack_type': rack_type,
+                'default_initial_deposit_quantities': self.deposited_award_quantities or '{}',
             },
         }
 
@@ -349,7 +393,7 @@ class SaleOrderLine(models.Model):
         self.ensure_one()
         if self.person_id and self.rack_type:
             self.price_unit = self.person_id._rack_price(
-                self.rack_type, excluded_award_ids=self.deposited_award_ids.ids)
+                self.rack_type, deposited_award_quantities=self._rm_deposit_quantities())
             variant = self.person_id._resolve_rack_variant(self.rack_type)
             if variant:
                 self.product_id = variant.id
@@ -364,7 +408,9 @@ class SaleOrderLine(models.Model):
         new_lines = [self.product_id.name or '']
         if self.person_id:
             new_lines.append(_('(For: %s)') % self.person_id.rm_rack_label())
-        if self.deposited_award_ids:
-            new_lines.append(_('(Deposited: %s)') % ', '.join(self.deposited_award_ids.mapped('name')))
+        quantities = self._rm_deposit_quantities()
+        if quantities:
+            awards = self.env['rm.prb'].browse(list(quantities)).exists()
+            new_lines.append(_('(Deposited: %s)') % ', '.join('%s × %s' % (award.display_name, quantities[award.id]) for award in awards))
         new_lines.extend(rest)
         self.name = '\n'.join(new_lines)

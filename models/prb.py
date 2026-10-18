@@ -55,6 +55,51 @@ class RmPRB(models.Model):
             if tmpl:
                 tmpl.sudo().image_1920 = record.device_image
 
+    def action_regenerate_rack_images(self):
+        """Rebuild the stored composite picture (image_variant_1920) of
+        every ALREADY-BUILT Ribbon Rack / Medal Rack that includes this
+        decoration, using its CURRENT ribbon/medal/device images.
+
+        Building that composite only happens once per unique row/
+        combination, the first time it's needed (rm.rack.product's and
+        rm.medal.rack's identity is locked permanently via
+        get_or_create - see those models). So editing this decoration's
+        images afterwards does NOT, by itself, touch any Rack already
+        built from it - only a fresh combination that happens to need
+        building for the first time would pick up the new image.
+
+        Call this once, right after changing an image here, to push
+        that change out to every Rack that already exists instead of
+        waiting for each to eventually get rebuilt on its own (which,
+        for an existing combination, never happens automatically).
+        """
+        self.ensure_one()
+        racks = self.env['rm.rack.product'].search([
+            ('rack_line_ids.line_id.item_ids.award_id', '=', self.id),
+            ('product_id', '!=', False),
+        ])
+        medal_racks = self.env['rm.medal.rack'].search([
+            ('part_award_ids.award_id', '=', self.id),
+            ('product_id', '!=', False),
+        ])
+        for rack in racks:
+            rack._generate_rack_image()
+        for medal_rack in medal_racks:
+            medal_rack._generate_rack_image()
+        message = _('Regenerated %(ribbon_count)s Ribbon Rack image(s) and '
+                    '%(medal_count)s Medal Rack image(s).')
+        message = message % {'ribbon_count': len(racks), 'medal_count': len(medal_racks)}
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Rack Images Updated'),
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
     def copy(self, default=None):
         # 1. Initialize the default dictionary if it's not provided
         default = dict(default or {})

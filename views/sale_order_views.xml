@@ -33,13 +33,18 @@
                             icon="fa-plus"/>
                 </div>
             </xpath>
-            <xpath expr="//field[@name='order_line']//field[@name='product_id']" position="after">
+            <!-- Odoo 18 renders sale.order.order_line as a <list>. Keep the
+                 target explicit and put the technical flag in the same list
+                 so the row button has a reliable visibility value. -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_qty']" position="before">
                 <field name="rack_type" column_invisible="1"/>
                 <field name="person_id" column_invisible="1"/>
+                <field name="is_rack_line" column_invisible="1"/>
                 <button name="action_open_person_wizard" type="object"
+                        class="btn btn-link"
                         icon="fa-user"
-                        invisible="not rack_type"
-                        title="Select Person"/>
+                        invisible="not is_rack_line"
+                        title="Edit rack person and deposited-medal quantities"/>
             </xpath>
         </field>
     </record>

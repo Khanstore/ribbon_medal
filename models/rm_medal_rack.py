@@ -294,32 +294,41 @@ class RmMedalRack(models.Model):
         })
 
     def _rm_apply_medal_deposits(self, production, deposited_award_ids):
-        """Drop the raw-material requirement for each deposited award's
-        own (size-matched) Medal variant from THIS SPECIFIC MO -
-        everything else (backing, mounting hardware, the Medal Part,
-        any non-deposited medals in the same rack) is left required as
-        normal. No inventory/consignment tracking of the customer's own
-        medal is done here - it's simply not required from stock for
-        this build."""
+        """Reduce this MO's medal raw-material quantities by the exact
+        number of customer-supplied units per award. The shared BOM remains
+        unchanged. Legacy list callers retain their previous all-units-exempt
+        behavior for the specified awards."""
         self.ensure_one()
-        size_label = self.size.upper()
-        awards = self.env['rm.prb'].browse(deposited_award_ids).exists()
-        variant_ids = set()
+        if isinstance(deposited_award_ids, dict):
+            quantities = {int(key): max(0, int(value))
+                          for key, value in deposited_award_ids.items() if int(value) > 0}
+        else:
+            quantities = {int(award_id): 10**9 for award_id in (deposited_award_ids or [])}
+        if not quantities:
+            return
+        awards = self.env['rm.prb'].browse(list(quantities)).exists()
+        required_by_product = {}
         for award in awards:
             decoration = award.medal_id
             tmpl = decoration.medal_product_tmpl_id if decoration else False
-            variant = self._get_size_variant(tmpl, size_label) if tmpl else False
+            variant = self._get_size_variant(tmpl, self.size.upper()) if tmpl else False
             if variant:
-                variant_ids.add(variant.id)
-        if not variant_ids:
-            return
-        moves = production.move_raw_ids.filtered(lambda m: m.product_id.id in variant_ids)
-        if not moves:
-            return
-        moves.unlink()
+                required_by_product[variant.id] = required_by_product.get(variant.id, 0) + quantities.get(award.id, 0)
+        for move in production.move_raw_ids.filtered(lambda m: m.product_id.id in required_by_product):
+            remaining = required_by_product[move.product_id.id]
+            if remaining <= 0:
+                continue
+            remove_qty = min(move.product_uom_qty, remaining)
+            required_by_product[move.product_id.id] -= remove_qty
+            new_qty = move.product_uom_qty - remove_qty
+            if new_qty <= 0:
+                move.unlink()
+            else:
+                move.product_uom_qty = new_qty
         production.message_post(body=_(
-            'Customer-deposited medal(s) for this unit - not pulled from stock: %s'
-        ) % ', '.join(awards.mapped('display_name')))
+            'Customer-deposited medal quantities applied to this unit (not pulled from stock): %s'
+        ) % ', '.join('%s × %s' % (award.display_name, quantities[award.id])
+                      for award in awards if quantities.get(award.id, 0)))
 
 
 class RmMedalRackUnit(models.Model):

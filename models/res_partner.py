@@ -556,33 +556,43 @@ class ResPartner(models.Model):
         sorted_acquisitions = acquisitions.sorted(key=lambda a: a.sequence, reverse=True)
         return sorted_acquisitions.mapped('award_id')
 
-    def _medal_rack_price(self, size, excluded_award_ids=None):
-        """Same arithmetic as tunic_medal_rack_price/meskit_medal_rack_price
-        (sum of each medal-eligible acquisition's own medal + attachment
-        list price), but with any award in `excluded_award_ids` left out
-        of the sum - used when the customer is depositing their own
-        medal for those specific awards, so they aren't charged for
-        medals the shop isn't actually supplying. Uses the Customised
-        Ledger instead of the live Acquisition Ledger whenever this
-        person has one for this size (see _custom_medal_rows)."""
+    def _medal_rack_price(self, size, excluded_award_ids=None, deposited_award_quantities=None):
+        """Price medal rack acquisitions, subtracting only the requested
+        number of customer-supplied medal units per award. Legacy callers
+        using excluded_award_ids still exclude all matching rows."""
         self.ensure_one()
-        excluded = set(excluded_award_ids) if excluded_award_ids else set()
+        quantities = {int(k): max(0, int(v)) for k, v in (deposited_award_quantities or {}).items()}
+        excluded = set(excluded_award_ids or [])
         custom_rows = self._custom_medal_rows(size)
         if custom_rows:
-            if excluded:
-                custom_rows = custom_rows.filtered(lambda row: row.award_id.id not in excluded)
-            return sum(self._custom_row_medal_price(row) for row in custom_rows)
+            remaining = dict(quantities)
+            priced_rows = []
+            for row in custom_rows:
+                award_id = row.award_id.id
+                if award_id in excluded:
+                    continue
+                if remaining.get(award_id, 0) > 0:
+                    remaining[award_id] -= 1
+                    continue
+                priced_rows.append(row)
+            return sum(self._custom_row_medal_price(row) for row in priced_rows)
         flag_field = 'add_to_big_medal' if size == 'l' else 'add_to_mini_medal'
         acquisitions = self.env['rm.acquisition'].search([
-            ('person_id', '=', self.id),
-            ('is_medal', '=', True),
-            (flag_field, '=', True),
-        ])
-        if excluded:
-            acquisitions = acquisitions.filtered(lambda a: a.award_id.id not in excluded)
-        return sum(acquisitions.mapped('medal_list_price')) + sum(acquisitions.mapped('attachment_list_price'))
+            ('person_id', '=', self.id), ('is_medal', '=', True), (flag_field, '=', True),
+        ], order='id')
+        remaining = dict(quantities)
+        priced = self.env['rm.acquisition']
+        for acquisition in acquisitions:
+            award_id = acquisition.award_id.id
+            if award_id in excluded:
+                continue
+            if remaining.get(award_id, 0) > 0:
+                remaining[award_id] -= 1
+                continue
+            priced |= acquisition
+        return sum(priced.mapped('medal_list_price')) + sum(priced.mapped('attachment_list_price'))
 
-    def _rack_price(self, rack_type, excluded_award_ids=None):
+    def _rack_price(self, rack_type, excluded_award_ids=None, deposited_award_quantities=None):
         """This person's current estimated price for `rack_type`, same
         as reading the plain rack_total_price/tunic_medal_rack_price/
         meskit_medal_rack_price field directly - except when
@@ -596,10 +606,10 @@ class ResPartner(models.Model):
         cfg = config.get(rack_type)
         if not cfg:
             return 0.0
-        if not excluded_award_ids or rack_type == 'ribbon':
+        if not excluded_award_ids and not deposited_award_quantities or rack_type == 'ribbon':
             return self[cfg['price_field']]
         size = 'l' if rack_type == 'tunic_medal' else 's'
-        return self._medal_rack_price(size, excluded_award_ids=excluded_award_ids)
+        return self._medal_rack_price(size, excluded_award_ids=excluded_award_ids, deposited_award_quantities=deposited_award_quantities)
 
     def _resolve_rack_variant(self, rack_type):
         """Resolve (find-or-create identity + product ONLY - no stock

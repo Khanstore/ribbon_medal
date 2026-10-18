@@ -1,4 +1,4 @@
-// Visual polish for the "Personnel Info" tab on the standard Contacts
+// Visual polish for the Personnel-only tabs on the standard Contacts
 // form (base.view_partner_form, inherited by view_partner_form_rm_is_person)
 // and the identity subtitle in its header. Scoped entirely under
 // .o_rm_person_subtitle / .o_rm_personnel_page so nothing here can leak
@@ -12,7 +12,7 @@
 // both Odoo's light and dark backend themes without a separate dark-mode
 // branch. The one deliberate accent - a muted brass/gold, evoking a
 // campaign ribbon or citation card without tipping into kitsch - is used
-// sparingly: section icons and the active inner-tab underline only.
+// sparingly, on section icons only.
 
 $rm-accent: #b8892b;
 $rm-card-border: rgba(127, 127, 127, 0.22);
@@ -101,35 +101,5 @@ $rm-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     // ribbon/medal images are involved.
     .o_rm_rack_display .o_group {
         background: var(--o-view-background-color, #fff);
-    }
-
-    // The inner notebook (Service Info / Acquisitions / Customisation /
-    // Compare) as a compact segmented control instead of full-width
-    // Odoo tabs, so four sub-pages don't read as heavy as the outer
-    // Contacts-form tab strip they sit directly beneath.
-    > .o_notebook {
-        > .o_notebook_headers {
-            border-bottom: 1px solid $rm-card-border;
-            margin-bottom: 12px;
-
-            .nav-link {
-                font-size: 13px;
-                padding: 6px 14px;
-                border: none;
-                border-bottom: 2px solid transparent;
-                color: inherit;
-                opacity: 0.65;
-
-                &.active {
-                    opacity: 1;
-                    border-bottom-color: $rm-accent;
-                    font-weight: 600;
-                }
-
-                &:hover:not(.active) {
-                    opacity: 0.9;
-                }
-            }
-        }
     }
 }

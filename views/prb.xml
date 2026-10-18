@@ -24,6 +24,16 @@
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_regenerate_rack_images" type="object"
+                                class="oe_stat_button" icon="fa-refresh"
+                                invisible="not ribbon_image and not medal_image">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Update</span>
+                                <span class="o_stat_text">Rack Images</span>
+                            </div>
+                        </button>
+                    </div>
                     <group>
                         <group>
                             <field name="name"/>
@@ -47,6 +57,12 @@
                         <field name="medal_image" widget="image" class="oe_avatar"/>
                         <field name="device_image" widget="image" class="oe_avatar"/>
                     </group>
+                    <p class="text-muted">
+                        Uploading a new image here only affects Racks built from now on.
+                        Racks already built for a person keep their own stored picture -
+                        use the <strong>Update Rack Images</strong> button above to push
+                        this change out to every Rack already built with this decoration.
+                    </p>
                 </sheet>
             </form>
         </field>

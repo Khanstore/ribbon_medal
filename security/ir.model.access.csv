@@ -56,3 +56,4 @@ access_rm_medal_rack_user,rm.medal.rack.user,model_rm_medal_rack,group_ribbon_me
 access_rm_medal_rack_manager,rm.medal.rack.manager,model_rm_medal_rack,group_ribbon_medal_manager,1,1,1,1
 access_rm_medal_rack_unit_user,rm.medal.rack.unit.user,model_rm_medal_rack_unit,group_ribbon_medal_user,1,1,1,0
 access_rm_medal_rack_unit_manager,rm.medal.rack.unit.manager,model_rm_medal_rack_unit,group_ribbon_medal_manager,1,1,1,1
+access_rm_sale_line_person_wizard_deposit,rm.sale.line.person.wizard.deposit,model_rm_sale_line_person_wizard_deposit,group_ribbon_medal_user,1,1,1,1

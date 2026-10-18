@@ -37,6 +37,14 @@
                                 <span class="o_stat_text">Medal Product</span>
                             </div>
                         </button>
+                        <button name="action_regenerate_rack_images" type="object"
+                                class="oe_stat_button" icon="fa-refresh"
+                                invisible="not ribbon_image and not medal_image">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Update</span>
+                                <span class="o_stat_text">Rack Images</span>
+                            </div>
+                        </button>
                     </div>
                     <div class="oe_title">
                         <label for="decoration_name"/>
@@ -63,6 +71,13 @@
                                 <field name="medal_image" widget="image"
                                        invisible="not is_medal"/>
                             </group>
+                            <p class="text-muted">
+                                Uploading a new image here only affects Racks built from
+                                now on. Racks already built with this Decoration keep
+                                their own stored picture - use the
+                                <strong>Update Rack Images</strong> button above to push
+                                this change out to every Rack already built with it.
+                            </p>
                         </page>
                     </notebook>
                 </sheet>

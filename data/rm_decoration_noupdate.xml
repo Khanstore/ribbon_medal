@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Protects every rm.decoration record loaded from
+         data/rm.decoration.csv from being silently overwritten by that
+         CSV's own values again on a later module update
+         (`-u ribbon_medal`), including any ribbon_image/medal_image
+         URL you add to the CSV for an already-loaded id.
+
+         Plain data files (csv OR xml) listed under 'data' in the
+         manifest always load with noupdate=False - there is no way to
+         declare noupdate inside a .csv file itself (unlike XML's own
+         <odoo noupdate="1">) - so without this, EVERY module update
+         re-applies EVERY row of rm.decoration.csv, discarding any
+         change made afterwards through the Ribbons / Medals UI (a
+         manually uploaded image, a renamed decoration, etc.).
+
+         This file must be listed in __manifest__.py's 'data' list
+         IMMEDIATELY AFTER data/rm.decoration.csv. What happens on
+         each module update, in order:
+           1. rm.decoration.csv loads. Existing ids (already
+              noupdate=True from a previous run of this same file)
+              are left untouched - their current DB values win. A
+              BRAND NEW id not seen before is created fresh, with
+              noupdate=False.
+           2. This file then marks EVERY rm.decoration record from
+              this module (old and newly-created alike) noupdate=True.
+
+         Net effect: every row loads from the CSV exactly ONCE - the
+         update cycle where its id first appears - and is protected
+         from every update after that, indefinitely, including edits
+         made through the UI afterwards. Add a new row any time and it
+         follows the same one-time rule automatically. -->
+    <function model="ir.model.data" name="write">
+        <function model="ir.model.data" name="search">
+            <value eval="[('module', '=', 'ribbon_medal'), ('model', '=', 'rm.decoration')]"/>
+        </function>
+        <value eval="{'noupdate': True}"/>
+    </function>
+</odoo>

@@ -1,8 +1,8 @@
 {
     'name': 'Ribbon Medal - Personnel Decorations',
-    'version': '18.0.2.5.0',
+    'version': '18.0.2.7.11',
     'category': 'Human Resources',
-    'summary': 'Manage personnel records and their decorations (ribbons/medals) for military/police organizations',
+    'summary': 'Professional personnel awards, ribbon and medal rack design, production and fulfillment',
     'description': """
 Ribbon Medal
 ============
@@ -20,7 +20,7 @@ Features
   4-column grid, filled starting bottom-right toward top-left in order of
   seniority precedence.
 """,
-    'author': 'Khan Store',
+    'author': 'SM Ashraf',
     'license': 'LGPL-3',
     'depends': ['base', 'sale', 'stock', 'mail','website_sale','purchase' ,'product', 'mrp'],
     'data': [
@@ -31,6 +31,7 @@ Features
         'data/rm.forces.csv',
         'data/rm_attachment_data.xml',
         'data/rm.decoration.csv',
+        'data/rm_decoration_noupdate.xml',
         'data/rm.rules.category.csv',
 
         'data/rm.prb.csv',

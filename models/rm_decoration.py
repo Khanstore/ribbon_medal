@@ -131,3 +131,52 @@ class RmDecoration(models.Model):
             'view_mode': 'form',
             'res_id': self.medal_product_tmpl_id.id,
         }
+
+    def action_regenerate_rack_images(self):
+        """Rebuild the stored composite picture (image_variant_1920) of
+        every ALREADY-BUILT Ribbon Rack / Medal Rack that includes this
+        Decoration - via any rm.prb (Award/PRB) that uses it as its
+        Ribbon and/or Medal - using its CURRENT ribbon_image/medal_image.
+
+        Building that composite only happens once per unique row/
+        combination, the first time it's needed (rm.rack.product's and
+        rm.medal.rack's identity is locked permanently via
+        get_or_create - see those models). So editing this Decoration's
+        images afterwards does NOT, by itself, touch any Rack already
+        built from it - only a fresh combination that happens to need
+        building for the first time would pick up the new image.
+
+        Call this once, right after changing an image here, to push
+        that change out to every Rack that already exists instead of
+        waiting for each to eventually get rebuilt on its own (which,
+        for an existing combination, never happens automatically).
+        """
+        self.ensure_one()
+        prb_ids = self.env['rm.prb'].search([
+            '|', ('ribbon_id', '=', self.id), ('medal_id', '=', self.id),
+        ]).ids
+        racks = self.env['rm.rack.product'].search([
+            ('rack_line_ids.line_id.item_ids.award_id', 'in', prb_ids),
+            ('product_id', '!=', False),
+        ]) if prb_ids else self.env['rm.rack.product']
+        medal_racks = self.env['rm.medal.rack'].search([
+            ('part_award_ids.award_id', 'in', prb_ids),
+            ('product_id', '!=', False),
+        ]) if prb_ids else self.env['rm.medal.rack']
+        for rack in racks:
+            rack._generate_rack_image()
+        for medal_rack in medal_racks:
+            medal_rack._generate_rack_image()
+        message = _('Regenerated %(ribbon_count)s Ribbon Rack image(s) and '
+                    '%(medal_count)s Medal Rack image(s).')
+        message = message % {'ribbon_count': len(racks), 'medal_count': len(medal_racks)}
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Rack Images Updated'),
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+            },
+        }

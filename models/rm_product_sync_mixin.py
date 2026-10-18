@@ -83,17 +83,52 @@ class RmProductSyncMixin(models.AbstractModel):
         return vals
 
     def _get_size_variant(self, product_tmpl, size):
-        """Return the `size` ('S' or 'L') product.product variant of
-        `product_tmpl`. Shared by every model that needs a specific-size
-        variant of an auto-managed product (Rack Lines, Set Orders,
-        Medal Parts, Medal Racks) so the lookup logic lives in one
-        place instead of being duplicated per model."""
-        if not product_tmpl:
-            return self.env['product.product']
-        return product_tmpl.product_variant_ids.filtered(
-            lambda p: size in p.product_template_attribute_value_ids.mapped(
-                'product_attribute_value_id.name')
-        )[:1]
+        """Resolve a size variant and repair missing Size values on legacy
+        templates where safe. This prevents an old/manual product-template
+        edit from blocking order confirmation with a missing Size L/S medal.
+        Existing templates and unrelated attribute lines are preserved."""
+        Product = self.env['product.product']
+        if not product_tmpl or size not in ('S', 'L'):
+            return Product
+        template = product_tmpl.exists()
+        if not template:
+            return Product
+        size_line = template.attribute_line_ids.filtered(
+            lambda line: line.attribute_id.name == 'Size')[:1]
+        if not size_line:
+            attribute, values = self._get_size_attribute_and_values()
+            value = values.filtered(lambda item: item.name == size)[:1]
+            if not value:
+                value = self.env['product.attribute.value'].create({
+                    'name': size, 'attribute_id': attribute.id,
+                })
+            self.env['product.template.attribute.line'].create({
+                'product_tmpl_id': template.id,
+                'attribute_id': attribute.id,
+                'value_ids': [(6, 0, [value.id])],
+            })
+        else:
+            attribute = size_line.attribute_id
+            value = attribute.value_ids.filtered(lambda item: item.name == size)[:1]
+            if not value:
+                value = self.env['product.attribute.value'].create({
+                    'name': size, 'attribute_id': attribute.id,
+                })
+            if value.id not in size_line.value_ids.ids:
+                size_line.write({'value_ids': [(4, value.id)]})
+        template.invalidate_recordset(['product_variant_ids'])
+        variants = template.product_variant_ids.filtered(
+            lambda product: size in product.product_template_attribute_value_ids.filtered(
+                lambda ptav: ptav.attribute_id.name == 'Size'
+            ).mapped('product_attribute_value_id.name')
+        )
+        if variants:
+            return variants[:1]
+        raise UserError(_(
+            'Could not resolve the Size %s variant for product "%s". '
+            'Check that its Size attribute uses "Always" variant creation '
+            'and that the attribute line contains this value.'
+        ) % (size, template.display_name))
 
     def _zero_value_for_field(self, field):
         """A conservative, inoffensive default for a field we don't

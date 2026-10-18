@@ -4,14 +4,12 @@
         <field name="name">rm.sale.line.person.wizard.form</field>
         <field name="model">rm.sale.line.person.wizard</field>
         <field name="arch" type="xml">
-            <form string="Select a Person">
+            <form string="Configure Rack Person and Deposited Medals">
                 <field name="line_id" invisible="1"/>
                 <field name="order_id" invisible="1"/>
                 <field name="rack_type" invisible="1"/>
                 <p>
-                    Search below to find the Person this line is for - pick
-                    them from the results, and this line will be priced at
-                    their current estimated price for this rack type.
+                    Choose the person for this rack. When editing an existing rack line, Confirm updates that same line; it does not add a duplicate. Deposited quantities are restored from the saved line and affect pricing/manufacturing only.
                 </p>
                 <group>
                     <field name="search_term" widget="rm_live_search"
@@ -39,15 +37,23 @@
                         </group>
                         <group invisible="rack_type == 'ribbon' or not person_id"
                                string="Customer-Deposited Medals">
-                            <field name="available_award_ids" invisible="1"/>
-                            <field name="deposited_award_ids" nolabel="1"
-                                   widget="many2many_tags"
-                                   domain="[('id', 'in', available_award_ids)]"
-                                   placeholder="None - tick any award whose medal the customer is supplying themselves"/>
+                            <div class="o_form_label">Enter the quantity the customer supplies for each medal. Use 0 when the shop supplies it.</div>
+                            <field name="deposit_line_ids" nolabel="1">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="award_id" force_save="1"/>
+                                    <field name="max_quantity" readonly="1" string="Acquired Qty"/>
+                                    <field name="quantity" string="Qty Deposited"/>
+                                </list>
+                            </field>
                         </group>
                     </div>
                     <div class="text-center flex-shrink-0" style="min-width: 200px;"
                          invisible="not person_id">
+                        <div class="mb-2">
+                            <label for="rack_quantity" class="form-label fw-bold">Rack Qty</label>
+                            <field name="rack_quantity" nolabel="1" class="oe_inline"
+                                   style="max-width: 110px; text-align: center;"/>
+                        </div>
                         <field name="rack_preview_image" widget="image" nolabel="1"
                                class="oe_avatar" options="{'size': [200, 200]}"/>
                         <div class="text-muted small mt-1" invisible="rack_preview_image">
