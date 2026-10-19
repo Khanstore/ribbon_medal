@@ -19,6 +19,12 @@ class ResPartner(models.Model):
     """
     _inherit = 'res.partner'
 
+    # Odoo 18 uses _rec_names_search for the fields searched by
+    # relational-field autocomplete. Keep this declaration on res.partner
+    # so the standard Odoo partner search can include ID Number without
+    # overriding name_search() or _search_display_name().
+    _rec_names_search = ['name', 'id_number', 'phone', 'mobile', 'email']
+
     is_person = fields.Boolean(
         string='Is Personnel', default=False, index=True,
         help='Tick to treat this Contact as a Personnel record (adds ID '

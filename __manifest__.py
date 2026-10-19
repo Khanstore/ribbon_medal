@@ -1,6 +1,6 @@
 {
     'name': 'Ribbon Medal - Personnel Decorations',
-    'version': '18.0.2.7.13',
+    'version': '18.0.2.7.19',
     'category': 'Human Resources',
     'summary': 'Professional personnel awards, ribbon and medal rack design, production and fulfillment',
     'description': """

@@ -15,6 +15,7 @@ class SaleOrder(models.Model):
              'rack lines (Ribbon Rack, Tunic Medal Rack, Meskit Medal '
              'Rack) for several different people. This is only used '
              'for a rack line that has no Person of its own set.')
+
     rack_unit_id = fields.Many2one(
         'rm.rack.unit', string='Ribbon Rack Unit', readonly=True, copy=False,
         help='Set to the first Ribbon Rack Unit issued for this order, for '

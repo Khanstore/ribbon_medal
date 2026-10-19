@@ -20,7 +20,7 @@
                 </button>
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="before">
-                <field name="person_id"/>
+                <field name="person_id" invisible="1"/>
                 <field name="rack_unit_id" invisible="1"/>
                 <field name="tunic_medal_rack_unit_id" invisible="1"/>
                 <field name="meskit_medal_rack_unit_id" invisible="1"/>
